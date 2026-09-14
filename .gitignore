@@ -1,0 +1,37 @@
+# ---- SECRETS — never commit, never zip, never share ----
+.env
+.env.*
+!.env.example
+*_config.json
+angel_config.json
+gemini_config.json
+
+# ---- market data & trained models (regenerate; see findings/09-data-assets.md) ----
+data_cache/
+backups/
+
+# ---- runtime state written by the live server ----
+runtime/
+logs/
+
+# ---- python ----
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---- editor / OS ----
+.DS_Store
+**/.DS_Store
+.idea/
+.vscode/
+
+# ---- scratch ----
+*.tmp
+*.log
+login_step2.png
+login_error.png
+research/archive/*.pkl
+research/archive/head2head.json

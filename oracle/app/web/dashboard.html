@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NIFTY BEAST — paper trading terminal</title>
+<style>
+  :root{
+    --page:#0d0d0d; --surface:#1a1a19; --border:rgba(255,255,255,.10);
+    --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835;
+    --up:#0ca30c; --down:#d03b3b; --entry:#c3c2b7;
+    --sl:#e66767; --tgt:#3987e5; --amber:#c98500;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);
+       font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px}
+  h1{font-size:19px;font-weight:700}
+  .badge{font-size:11px;font-weight:700;letter-spacing:.06em;padding:3px 9px;
+         border-radius:99px;border:1px solid var(--border);color:var(--ink2)}
+  .badge.live{color:var(--up);border-color:var(--up)}
+  .badge.replay{color:var(--amber);border-color:var(--amber)}
+  #status{color:var(--muted);font-size:12px}
+  .tiles{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 14px}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;
+        padding:10px 16px;min-width:130px}
+  .tile .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .tile .v{font-size:21px;font-weight:700;margin-top:2px}
+  .pos{color:var(--up)} .neg{color:var(--down)}
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  @media(min-width:1150px){.grid{grid-template-columns:1fr 1fr}}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+         padding:14px 14px 10px;overflow:hidden}
+  .prow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:8px}
+  .prow .name{font-size:16px;font-weight:700}
+  .prow .px{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;
+        border:1px solid var(--border);color:var(--ink2)}
+  .chip.long{color:var(--up);border-color:var(--up)}
+  .chip.short{color:var(--down);border-color:var(--down)}
+  .chip.no{color:var(--amber);border-color:var(--amber)}
+  .instr{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;
+         color:var(--muted);background:var(--page);border:1px solid var(--border);
+         border-radius:8px;padding:5px 10px;margin-bottom:8px;white-space:nowrap;
+         overflow-x:auto}
+  /* ---- FORECAST card ---- */
+  .fc{background:var(--page);border:1px solid var(--border);border-radius:10px;
+      padding:12px;margin-bottom:10px}
+  .fc-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .fc-action{font-size:26px;font-weight:800;letter-spacing:.02em}
+  .fc-action.buy{color:var(--up)} .fc-action.sell{color:var(--down)}
+  .fc-action.wait{color:var(--amber)} .fc-action.idle{color:var(--muted)}
+  .fc-note{font-size:14px;color:var(--ink2);margin-top:6px}
+  .gobox{display:flex;flex-direction:column;align-items:center;padding:5px 14px;
+         border-radius:10px;border:2px solid var(--axis);min-width:118px}
+  .gobox .gk{font-size:10px;color:var(--muted);letter-spacing:.06em;
+             text-transform:uppercase}
+  .gobox .gv{font-size:19px;font-weight:800;color:var(--muted)}
+  .gobox.no{border-color:var(--amber)}   .gobox.no .gv{color:var(--amber)}
+  .gobox.yes{border-color:var(--up);animation:gopulse 1s infinite}
+  .gobox.yes .gv{color:var(--up)}
+  .gobox.in{border-color:var(--tgt)}     .gobox.in .gv{color:var(--tgt)}
+  @keyframes gopulse{50%{filter:brightness(1.6)}}
+  .fc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+           gap:8px;margin-top:10px}
+  .fc-cell{background:var(--surface);border:1px solid var(--border);
+           border-radius:8px;padding:7px 10px}
+  .fc-cell .k{font-size:10px;color:var(--muted);text-transform:uppercase;
+              letter-spacing:.06em}
+  .fc-cell .v{font-size:16px;font-weight:700;margin-top:2px;
+              font-variant-numeric:tabular-nums}
+  .fc-cell .s{font-size:11px;color:var(--muted)}
+  .meter{display:block;height:6px;border-radius:99px;background:var(--grid);
+         margin-top:6px;overflow:hidden}
+  .meter i{display:block;height:100%;border-radius:99px;background:var(--tgt)}
+  .tfs{margin-left:auto;display:flex;gap:4px}
+  .tfb{padding:3px 10px;font-size:11px;font-weight:700;border-radius:6px;
+       border:1px solid var(--border);background:var(--page);color:var(--ink2)}
+  .tfb.on{border-color:var(--tgt);color:var(--tgt)}
+  .indrow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .ind{font-size:11px;font-weight:600;padding:3px 9px;border-radius:99px;
+       border:1px solid var(--border);color:var(--ink2)}
+  .ind.bull{color:var(--up);border-color:var(--up)}
+  .ind.bear{color:var(--down);border-color:var(--down)}
+  .ind.neutral{color:var(--muted)}
+  .ind.pat{color:var(--tgt);border-color:var(--tgt)}
+  .chartwrap{position:relative}
+  canvas{width:100%;height:340px;display:block;border-radius:8px}
+  .tip{position:absolute;pointer-events:none;background:var(--page);
+       border:1px solid var(--border);border-radius:6px;padding:5px 8px;
+       font-size:11px;color:var(--ink2);display:none;white-space:nowrap;
+       font-variant-numeric:tabular-nums;z-index:5}
+  .btns{display:flex;gap:8px;margin:10px 0 6px}
+  button{font:inherit;font-weight:700;padding:7px 18px;border-radius:8px;cursor:pointer;
+         border:1px solid var(--border);background:var(--page);color:var(--ink)}
+  button:hover{filter:brightness(1.3)}
+  .buy{border-color:var(--up);color:var(--up)}
+  .sell{border-color:var(--down);color:var(--down)}
+  .replaybtn{margin-left:auto;color:var(--ink2)}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;
+        font-variant-numeric:tabular-nums}
+  th{color:var(--muted);text-align:left;font-weight:600;padding:4px 8px;
+     border-bottom:1px solid var(--axis);font-size:11px;text-transform:uppercase;
+     letter-spacing:.05em}
+  td{padding:4px 8px;border-bottom:1px solid var(--grid);color:var(--ink2)}
+  .tablewrap{max-height:150px;overflow-y:auto}
+  footer{margin-top:16px;color:var(--muted);font-size:12px;max-width:900px}
+  .msg{font-size:12px;color:var(--amber);min-height:16px;margin-top:2px}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚡ NIFTY BEAST</h1>
+  <span id="mode" class="badge">…</span>
+  <span id="day" class="badge"></span>
+  <span id="status">connecting…</span>
+  <span style="margin-left:auto;display:flex;gap:8px">
+  <a href="/forecasts" style="font-size:12px;color:var(--ink2);
+     text-decoration:none;border:1px solid var(--border);padding:3px 10px;
+     border-radius:99px">⑆ Forecast window</a>
+  <a href="/quantum" style="font-size:12px;color:var(--ink2);
+     text-decoration:none;border:1px solid var(--border);padding:3px 10px;
+     border-radius:99px">◈ Quantum view</a>
+  <a href="/volatility" style="font-size:12px;color:#4aa8e8;text-decoration:none;border:1px solid #4aa8e8;padding:3px 10px;border-radius:99px">◭ Volatility</a>
+  <a href="/pulse" style="font-size:12px;color:#e8b24a;
+     text-decoration:none;border:1px solid #e8b24a;padding:3px 10px;
+     border-radius:99px">◈ Pulse</a></span>
+</header>
+
+<div class="tiles">
+  <div class="tile"><div class="k">Paper capital</div><div class="v" id="capital">—</div></div>
+  <div class="tile"><div class="k">Booked P&amp;L (your trades)</div><div class="v" id="realized">—</div></div>
+  <div class="tile"><div class="k">Open P&amp;L</div><div class="v" id="unreal">—</div></div>
+  <div class="tile"><div class="k">Trades today</div><div class="v" id="ntrades">—</div></div>
+</div>
+
+<div class="grid" id="panels"></div>
+
+<footer>
+  <b>Paper money only.</b> This terminal exists so you can verify the engine's REAL
+  accuracy for free, over many sessions, before risking a rupee. Honest backtest:
+  ~50–57% win rate, edge comes from 1.5R targets + skipping low-confidence days —
+  not from being right every time. 100% accuracy does not exist; anyone claiming
+  it is scamming you. Data: free Yahoo Finance (may lag a few minutes).
+</footer>
+
+<script>
+const qs = new URLSearchParams(location.search);
+const IDX = qs.get("index") ? [qs.get("index")] : ["BANKNIFTY","NIFTY50","FINNIFTY"];
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const P = {}; // per-index UI handles
+const h12 = t => { if(!t||t.length<5) return t||"";
+  let h=+t.slice(0,2), m=t.slice(3,5), ap=h>=12?"PM":"AM";
+  h=h%12||12; return h+":"+m+" "+ap; };
+
+
+const t2m = t => +t.slice(0,2)*60 + +t.slice(3,5);
+const m2t = m => String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+function displayBars(d, tf){
+  let bars = d.candles.slice();
+  if(d.live && (!bars.length || d.live[0] > bars[bars.length-1][0]))
+    bars = bars.concat([d.live]);           // the moving, still-forming candle
+  if(tf<=1) return bars;
+  const out=[];
+  for(const b of bars){
+    const bucket = Math.floor((t2m(b[0])-555)/tf);
+    const last = out[out.length-1];
+    if(last && last._b===bucket){
+      last[2]=Math.max(last[2],b[2]); last[3]=Math.min(last[3],b[3]); last[4]=b[4];
+    }else{
+      const nb=[m2t(555+bucket*tf), b[1], b[2], b[3], b[4]]; nb._b=bucket; out.push(nb);
+    }
+  }
+  return out;
+}
+function setTF(n,v,btn){
+  P[n].tf=v;
+  document.querySelectorAll(`#${n}-tfs .tfb[data-tf]`).forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  draw(n);
+}
+
+function panelHTML(n){return `
+  <div class="panel" id="p-${n}">
+    <div class="prow">
+      <span class="name">${n}</span>
+      <span class="px" id="${n}-px">—</span>
+      <span class="chip" id="${n}-bias">…</span>
+      <span class="chip" id="${n}-verdict">…</span>
+      <span class="chip" id="${n}-lag"></span>
+      <span class="tfs" id="${n}-tfs">
+        <button class="tfb on" data-tf="1"  onclick="setTF('${n}',1,this)">1m</button>
+        <button class="tfb"    data-tf="3"  onclick="setTF('${n}',3,this)">3m</button>
+        <button class="tfb"    data-tf="5"  onclick="setTF('${n}',5,this)">5m</button>
+        <button class="tfb"    data-tf="15" onclick="setTF('${n}',15,this)">15m</button>
+        <button class="tfb" title="open this index in its own window"
+          onclick="window.open('/?index=${n}','_blank','width=800,height=1000')">🗗</button>
+      </span>
+    </div>
+    <div class="fc" id="${n}-fc">
+      <div class="fc-top">
+        <span class="gobox" id="${n}-go">
+          <span class="gk">Enter now?</span><span class="gv" id="${n}-gov">—</span>
+        </span>
+        <span class="fc-action idle" id="${n}-fa">WAIT</span>
+        <span class="chip" id="${n}-ftrig"></span>
+      </div>
+      <div class="fc-note" id="${n}-fnote">loading data…</div>
+      <div class="fc-grid" id="${n}-fgrid"></div>
+    </div>
+    <div class="instr" id="${n}-instr">waiting for data…</div>
+    <div class="indrow" id="${n}-ind"></div>
+    <div class="chartwrap">
+      <canvas id="${n}-cv"></canvas>
+      <div class="tip" id="${n}-tip"></div>
+    </div>
+    <div class="btns">
+      <input type="number" id="${n}-qty" placeholder="Qty (e.g. 15)" style="width:70px; background:#111; color:#fff; border:1px solid #333; border-radius:4px; padding:4px;" onchange="fetch('/api/set_qty?index=${n}&qty='+this.value)">
+      <button class="buy"  onclick="manual('${n}','buy')">▲ Paper BUY</button>
+      <button class="sell" onclick="manual('${n}','sell')">▼ Paper SELL</button>
+      <button onclick="manual('${n}','close')">Close</button>
+    </div>
+    <div class="msg" id="${n}-msg"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>time</th><th>who</th><th>side</th><th>entry</th><th>exit</th>
+      <th>qty</th><th>R</th><th>P&amp;L ₹</th><th>why</th></tr></thead>
+      <tbody id="${n}-log"></tbody>
+    </table></div>
+  </div>`;}
+
+document.getElementById("panels").innerHTML = IDX.map(panelHTML).join("");
+if(IDX.length===1) document.getElementById("panels").style.gridTemplateColumns="1fr";
+IDX.forEach(n=>{
+  const cv = document.getElementById(`${n}-cv`);
+  P[n] = {cv, ctx: cv.getContext("2d"), tip: document.getElementById(`${n}-tip`),
+          data: null, hover: null};
+  cv.addEventListener("mousemove", e=>{
+    const r = cv.getBoundingClientRect();
+    const x = e.clientX-r.left, y = e.clientY-r.top;
+    const p = P[n];
+    if(p.drag && (e.buttons & 1)){
+      const dx = x - p.drag.x0;
+      const bars = Math.round(dx / (p.pxPerBar || 5));
+      p.view.offset = Math.max(0, Math.min(p.drag.off0 + bars,
+                        (p.totalBars||0) - (p.view.count || p.totalBars)));
+      p.hover = null; p.tip.style.display = "none";
+    } else {
+      p.hover = {x, y};
+    }
+    draw(n);
+  });
+  cv.addEventListener("mousedown", e=>{
+    const r = cv.getBoundingClientRect();
+    P[n].view = P[n].view || {count:0, offset:0};
+    P[n].drag = {x0: e.clientX-r.left, off0: P[n].view.offset||0};
+  });
+  window.addEventListener("mouseup", ()=>{P[n].drag = null;});
+  cv.addEventListener("wheel", e=>{
+    e.preventDefault();
+    const p = P[n];
+    p.view = p.view || {count:0, offset:0};
+    const total = p.totalBars || 0;
+    if(!total) return;
+    const base = p.view.count || total;
+    let c = Math.round(base * (e.deltaY > 0 ? 1.25 : 0.8));
+    c = Math.max(15, Math.min(c, total));
+    p.view.count = (c >= total) ? 0 : c;       // 0 = show everything
+    p.view.offset = Math.min(p.view.offset||0, Math.max(0, total - c));
+    draw(n);
+  }, {passive:false});
+  cv.addEventListener("dblclick", ()=>{P[n].view = {count:0, offset:0}; draw(n);});
+  cv.addEventListener("mouseleave", ()=>{P[n].hover=null; P[n].tip.style.display="none"; draw(n);});
+});
+
+async function manual(index, act){
+  let q = document.getElementById(`${index}-qty`).value;
+  const url = `/api/manual?index=${index}&action=${act}&qty=${q}`;
+  const res = await fetch(url).then(r=>r.json());
+  document.getElementById(`${index}-msg`).textContent = res.msg || "";
+}
+
+const fmt = v => "₹" + Math.round(v).toLocaleString("en-IN");
+function setPnl(el, v){ el.textContent = (v>=0?"+":"") + fmt(v).replace("₹-","-₹");
+  el.className = "v " + (v>=0?"pos":"neg"); }
+
+function draw(n){
+  const {cv, ctx, data, hover, tip} = P[n];
+  if(!data || !data.candles.length) return;
+  const tf = P[n].tf || 1;
+  const csFull = displayBars(data, tf);
+  if(!csFull.length) return;
+  P[n].totalBars = csFull.length;
+  const view = P[n].view || {count:0, offset:0};
+  const nvis = view.count && view.count < csFull.length ? view.count : csFull.length;
+  const end = csFull.length - Math.min(view.offset||0, csFull.length - nvis);
+  const csAll = csFull.slice(end - nvis, end);
+  const dpr = window.devicePixelRatio||1;
+  const W = cv.clientWidth, H = cv.clientHeight;
+  if(cv.width!==W*dpr){cv.width=W*dpr; cv.height=H*dpr;}
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle = css("--page"); ctx.fillRect(0,0,W,H);
+
+  const cs = csAll, padR=82, padT=10, padB=20;
+  const plotW = W-padR-8, plotH = H-padT-padB;
+  let lo=Infinity, hi=-Infinity;
+  cs.forEach(c=>{lo=Math.min(lo,c[3]); hi=Math.max(hi,c[2]);});
+  const lines=[];
+  const pos = data.auto_pos || data.manual_pos_view;
+  if(pos){lines.push([pos.entry,"--entry","ENTRY",false],
+                     [pos.sl,"--sl","SL",true],[pos.tgt,"--tgt","TGT",true]);}
+  if(data.or){lo=Math.min(lo,data.or.lo); hi=Math.max(hi,data.or.hi);}
+  lines.forEach(l=>{lo=Math.min(lo,l[0]); hi=Math.max(hi,l[0]);});
+  const pad=(hi-lo)*0.06||1; lo-=pad; hi+=pad;
+  const Y = v => padT + plotH*(1-(v-lo)/(hi-lo));
+  P[n].pxPerBar = plotW/cs.length;
+  const bw = Math.max(2, Math.min(14, plotW/cs.length - 2));
+  const X = i => 8 + (i+0.5)*(plotW/cs.length);
+
+  // grid + right axis labels
+  ctx.strokeStyle = css("--grid"); ctx.fillStyle = css("--muted");
+  ctx.font = "10px system-ui"; ctx.textAlign="left"; ctx.lineWidth=1;
+  for(let g=0; g<5; g++){
+    const v = lo + (hi-lo)*g/4, y = Y(v);
+    ctx.beginPath(); ctx.moveTo(8,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    ctx.fillText(Math.round(v).toLocaleString("en-IN"), W-padR+6, y+3);
+  }
+  // time labels
+  ctx.textAlign="center";
+  const step = Math.max(1, Math.floor(cs.length/6));
+  for(let i=0;i<cs.length;i+=step) ctx.fillText(h12(cs[i][0]), X(i), H-6);
+
+  // opening-range band
+  if(data.or){
+    ctx.fillStyle = "rgba(137,135,129,0.10)";
+    ctx.fillRect(8, Y(data.or.hi), plotW, Y(data.or.lo)-Y(data.or.hi));
+  }
+  // candles
+  const up = css("--up"), down = css("--down");
+  cs.forEach((c,i)=>{
+    const [t,o,h,l,cl] = c, x = X(i), col = cl>=o?up:down;
+    ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,Y(h)); ctx.lineTo(x,Y(l)); ctx.stroke();
+    const y1=Y(Math.max(o,cl)), y2=Y(Math.min(o,cl));
+    ctx.fillRect(x-bw/2, y1, bw, Math.max(1,y2-y1));
+  });
+  // entry / SL / TGT lines with labels
+  lines.forEach(([v,varname,label,dashed])=>{
+    const y=Y(v); ctx.strokeStyle=css(varname); ctx.lineWidth=1.5;
+    ctx.setLineDash(dashed?[5,4]:[]);
+    ctx.beginPath(); ctx.moveTo(8,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=css(varname); ctx.font="bold 10px system-ui"; ctx.textAlign="left";
+    ctx.fillText(`${label} ${Math.round(v).toLocaleString("en-IN")}`, W-padR+6, y-4);
+  });
+  // trade markers
+  (data.trades||[]).forEach(t=>{
+    const tm = t2m(t.time);
+    const i = cs.findIndex(c=>{const cm=t2m(c[0]); return tm>=cm && tm<cm+tf;});
+    if(i<0) return;
+    ctx.fillStyle = t.pnl>=0 ? up : down; ctx.font="12px system-ui"; ctx.textAlign="center";
+    ctx.fillText(t.pnl>=0?"✚":"✕", X(i), Y(t.exit)-8);
+  });
+  // crosshair + tooltip
+  if(hover && hover.x>8 && hover.x<W-padR){
+    const i = Math.min(cs.length-1, Math.max(0, Math.floor((hover.x-8)/(plotW/cs.length))));
+    const c = cs[i], x=X(i);
+    ctx.strokeStyle=css("--axis"); ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x,padT); ctx.lineTo(x,H-padB); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(8,hover.y); ctx.lineTo(W-padR,hover.y); ctx.stroke();
+    ctx.setLineDash([]);
+    tip.style.display="block";
+    tip.style.left = Math.min(hover.x+14, W-170)+"px";
+    tip.style.top  = Math.max(4, hover.y-40)+"px";
+    tip.innerHTML = `<b>${h12(c[0])}</b>&nbsp; O ${c[1]} &nbsp;H ${c[2]}<br>` +
+                    `L ${c[3]} &nbsp;C ${c[4]} &nbsp;&nbsp;` +
+                    `y: ${Math.round(lo+(hi-lo)*(1-(hover.y-padT)/plotH)).toLocaleString("en-IN")}`;
+  }
+}
+
+function cell(k, v, s){
+  return `<div class="fc-cell"><div class="k">${k}</div><div class="v">${v}</div>`+
+         (s?`<div class="s">${s}</div>`:"")+`</div>`;
+}
+function renderForecast(n, f){
+  const fa = document.getElementById(`${n}-fa`);
+  const note = document.getElementById(`${n}-fnote`);
+  const grid = document.getElementById(`${n}-fgrid`);
+  const trig = document.getElementById(`${n}-ftrig`);
+  const go = document.getElementById(`${n}-go`);
+  const gov = document.getElementById(`${n}-gov`);
+  
+  if(!f){ 
+    fa.textContent="WAITING"; fa.className="fc-action idle";
+    note.textContent="loading data…"; grid.innerHTML=""; trig.textContent="";
+    go.style.display = "none";
+    return; 
+  }
+  
+  fa.textContent = "BEST PREDICTION";
+  fa.className = "fc-action " + (f.bias === "LONG" ? "buy" : "sell");
+  go.style.display = "none"; // Hide Enter now box
+  note.textContent = "Continuously scanning 4 horizons every minute.";
+  trig.textContent = "";
+
+  let cells = "";
+  cells += cell("Confidence",
+                `${f.conf}% ${f.bias ? "("+f.bias+")" : ""}`,
+                `<span class="meter"><i style="width:${f.conf}%"></i></span>`);
+                
+  if(f.horizons){
+    let hz_html = "";
+    for(const [k, hz] of Object.entries(f.horizons)){
+       hz_html += `<span style="margin-right:10px; padding:3px 6px; background:#222; border-radius:4px;">${k}: <span style="color:${hz.dir==='UP'?'#4caf50':'#f44336'}">${hz.dir}</span> ${hz.conf}%</span>`;
+    }
+    cells += `<div style="grid-column: 1 / -1; margin-top:10px; font-size:12px; border-top:1px solid #333; padding-top:5px;">Forecasts: ${hz_html}</div>`;
+  }
+  
+  grid.innerHTML = cells;
+}
+
+async function tick(){
+  let s;
+  try{ s = await fetch("/api/state").then(r=>r.json()); }
+  catch(e){ document.getElementById("status").textContent="server not reachable"; return; }
+  document.getElementById("capital").textContent = fmt(s.capital);
+  setPnl(document.getElementById("realized"), s.realized);
+  setPnl(document.getElementById("unreal"), s.unrealized);
+  let nt=0, modeSet=false;
+  for(const n of IDX){
+    const d = s.indices[n]; if(!d) continue;
+    nt += d.trades.filter(t=>t.kind==="MANUAL").length;
+    if(!modeSet){
+      const m=document.getElementById("mode");
+      m.textContent=d.mode; m.className="badge "+(d.mode==="LIVE"?"live":"replay");
+      document.getElementById("day").textContent=d.day;
+      document.getElementById("status").textContent=d.status;
+      modeSet=true;
+    }
+    document.getElementById(`${n}-px`).textContent =
+      d.price ? d.price.toLocaleString("en-IN") : "—";
+    const bias=document.getElementById(`${n}-bias`);
+    if(d.bias){
+      bias.textContent = `${d.bias.side} ${d.bias.conf}%`;
+      bias.className = "chip "+(d.bias.side==="LONG"?"long":"short");
+      const v=document.getElementById(`${n}-verdict`);
+      v.textContent = d.bias.tradeable ? "TRADEABLE" : "NO-TRADE DAY";
+      v.className = "chip "+(d.bias.tradeable?"":"no");
+    }
+    const lag=document.getElementById(`${n}-lag`);
+    lag.textContent = (d.mode==="LIVE" && d.lag!=null) ? `lag ${d.lag}m` : "";
+    document.getElementById(`${n}-instr`).textContent = d.instruction;
+    renderForecast(n, d.forecast);
+    let chips = (d.indicators||[]).map(i =>
+      `<span class="ind ${i.verdict}">${i.name}: ${i.value}</span>`).join("");
+    const bulls = (d.indicators||[]).filter(i=>i.verdict==="bull").length;
+    if(d.indicators && d.indicators.length)
+      chips = `<span class="ind">${bulls}/${d.indicators.length} bullish</span>` + chips;
+    if(d.pattern) chips += `<span class="ind pat">Pattern: ${d.pattern}</span>`;
+    document.getElementById(`${n}-ind`).innerHTML = chips;
+    document.getElementById(`${n}-log`).innerHTML = d.trades.slice().reverse().map(t=>
+      `<tr><td>${h12(t.time)}</td><td>${t.kind}</td><td>${t.side}</td>
+       <td>${t.entry}</td><td>${t.exit}</td><td>${t.qty}</td>
+       <td class="${t.r>=0?'pos':'neg'}">${t.r>0?"+":""}${t.r}</td>
+       <td class="${t.pnl>=0?'pos':'neg'}">${t.pnl>0?"+":""}${Math.round(t.pnl)}</td>
+       <td>${t.reason}</td></tr>`).join("");
+    P[n].data = d; draw(n);
+  }
+  document.getElementById("ntrades").textContent = nt;
+}
+tick(); setInterval(tick, 1500);
+
+// ---- fast tick lane: 250 ms price/live-candle updates + smooth animation ----
+async function fastTick(){
+  let t;
+  try{ t = await fetch("/api/tick").then(r=>r.json()); }catch(e){ return; }
+  for(const n of IDX){
+    const d = P[n].data, u = t[n];
+    if(!d || !u) continue;
+    if(u.price){
+      d.price = u.price;
+      const px = document.getElementById(`${n}-px`);
+      if(px) px.textContent = u.price.toLocaleString("en-IN");
+    }
+    if(u.live){
+      if(!d.live || d.live[0] !== u.live[0]){
+        d.live = u.live.slice();
+        P[n].anim = {cur: u.live[4], target: u.live[4]};
+      }else{
+        d.live[1]=u.live[1]; d.live[2]=u.live[2]; d.live[3]=u.live[3];
+        (P[n].anim = P[n].anim || {cur:u.live[4]}).target = u.live[4];
+      }
+    }
+  }
+}
+setInterval(fastTick, 250);
+
+function animLoop(){
+  for(const n of IDX){
+    const p = P[n], d = p.data;
+    if(d && d.live && p.anim){
+      const a = p.anim;
+      if(a.cur === undefined) a.cur = a.target;
+      if(Math.abs(a.target - a.cur) > 0.03){
+        a.cur += (a.target - a.cur) * 0.22;      // glide toward the real price
+        d.live[4] = a.cur;
+        d.live[2] = Math.max(d.live[2], a.cur);
+        d.live[3] = Math.min(d.live[3], a.cur);
+        draw(n);
+      }
+    }
+  }
+  requestAnimationFrame(animLoop);
+}
+requestAnimationFrame(animLoop);
+</script>
+</body>
+</html>

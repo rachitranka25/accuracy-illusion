@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Today's Accuracy Snapshot</title>
+<style>
+  :root {
+    --ink:#0f1a1f; --muted:#3d5059; --line:#cdd7db;
+    --accent:#0a7c96; --accent2:#c97014; --bull:#1a8546; --bear:#c03328;
+    --bg:#ffffff; --panel:#f8f9fa;
+    --sans:"Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  body {
+    margin: 20px;
+    padding: 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+  h3 {
+    font-size: 15pt;
+    color: var(--accent);
+    margin: 0 0 10px 0;
+    font-weight: 600;
+  }
+  .sub {
+    font-size: 10.5pt;
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+  table {
+    width: 100%;
+    max-width: 800px;
+    border-collapse: collapse;
+    font-size: 10pt;
+    margin: 0 0 35px;
+    border: 1px solid var(--line);
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 10px 14px;
+    text-align: left;
+    vertical-align: middle;
+  }
+  th {
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 600;
+  }
+  tr:nth-child(even) td {
+    background: var(--panel);
+  }
+  .mono {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .up { color: var(--bull); font-weight: 600; }
+  .dn { color: var(--bear); font-weight: 600; }
+  .na { color: var(--muted); font-style: italic; }
+  .container {
+    max-width: 800px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h3>Day 5 — Thursday, 30 July 2026</h3>
+  
+  <p class="sub">1. All Signals (Base model accuracy, every minute forecast)</p>
+  <table>
+    <tr>
+      <th rowspan="2" style="width:15%">Horizon</th>
+      <th colspan="3" style="width:42.5%">NIFTY50 (375 forecasts)</th>
+      <th colspan="3" style="width:42.5%">BANKNIFTY (375 forecasts)</th>
+    </tr>
+    <tr>
+      <th>Hits</th><th>Total</th><th>Accuracy</th>
+      <th>Hits</th><th>Total</th><th>Accuracy</th>
+    </tr>
+    <tr>
+      <td><b>5m</b></td>
+      <td class="mono">206</td><td class="mono">365</td><td class="mono up">56.4%</td>
+      <td class="mono">190</td><td class="mono">365</td><td class="mono">52.1%</td>
+    </tr>
+    <tr>
+      <td><b>15m</b></td>
+      <td class="mono">194</td><td class="mono">345</td><td class="mono up">56.2%</td>
+      <td class="mono">171</td><td class="mono">345</td><td class="mono">49.6%</td>
+    </tr>
+    <tr>
+      <td><b>30m</b></td>
+      <td class="mono">137</td><td class="mono">315</td><td class="mono">43.5%</td>
+      <td class="mono">123</td><td class="mono">315</td><td class="mono dn">39.0%</td>
+    </tr>
+    <tr>
+      <td><b>60m</b></td>
+      <td class="mono">139</td><td class="mono">256</td><td class="mono up">54.3%</td>
+      <td class="mono">99</td><td class="mono">256</td><td class="mono dn">38.7%</td>
+    </tr>
+  </table>
+
+  <p class="sub">2. STRONG Signals Only (4/4 Alignment — All horizons agree at HIGH tier)</p>
+  <table>
+    <tr>
+      <th rowspan="2" style="width:15%">Horizon</th>
+      <th colspan="3" style="width:42.5%">NIFTY50 (No 4/4 signals today)</th>
+      <th colspan="3" style="width:42.5%">BANKNIFTY (129 signals)</th>
+    </tr>
+    <tr>
+      <th>Hits</th><th>Total</th><th>Accuracy</th>
+      <th>Hits</th><th>Total</th><th>Accuracy</th>
+    </tr>
+    <tr>
+      <td><b>5m</b></td>
+      <td class="mono na">0</td><td class="mono na">0</td><td class="mono na">-</td>
+      <td class="mono">61</td><td class="mono">129</td><td class="mono">47.3%</td>
+    </tr>
+    <tr>
+      <td><b>15m</b></td>
+      <td class="mono na">0</td><td class="mono na">0</td><td class="mono na">-</td>
+      <td class="mono">57</td><td class="mono">129</td><td class="mono">44.2%</td>
+    </tr>
+    <tr>
+      <td><b>30m</b></td>
+      <td class="mono na">0</td><td class="mono na">0</td><td class="mono na">-</td>
+      <td class="mono">20</td><td class="mono">129</td><td class="mono dn">15.5%</td>
+    </tr>
+    <tr>
+      <td><b>60m</b></td>
+      <td class="mono na">0</td><td class="mono na">0</td><td class="mono na">-</td>
+      <td class="mono">46</td><td class="mono">129</td><td class="mono dn">35.7%</td>
+    </tr>
+  </table>
+
+</div>
+</body>
+</html>

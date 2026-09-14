@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forecast Window — NIFTY BEAST</title>
+<style>
+  :root{
+    --page:#0d0d0d; --surface:#1a1a19; --border:rgba(255,255,255,.10);
+    --ink:#fff; --ink2:#c3c2b7; --muted:#898781; --grid:#2c2c2a;
+    --up:#0ca30c; --down:#d03b3b; --blue:#3987e5; --amber:#c98500;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--page);color:var(--ink);padding:16px;
+       font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+  header{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  h1{font-size:18px}
+  a.nav{font-size:12px;color:var(--ink2);text-decoration:none;
+        border:1px solid var(--border);padding:3px 10px;border-radius:99px}
+  .note{font-size:12px;color:var(--muted)}
+  .card{background:var(--surface);border:1px solid var(--border);
+        border-radius:12px;padding:14px;margin-bottom:14px;align-self:start}
+  .card h2{font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
+  @media(min-width:1100px){.grid{grid-template-columns:1fr 1fr}}
+  .cur{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+  .cell{background:var(--page);border:1px solid var(--border);border-radius:8px;
+        padding:6px 12px;min-width:96px}
+  .cell .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .cell .v{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
+  .cell .s{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+  .hcard{min-width:200px;flex:1}
+  input.qty{font:inherit;font-weight:700;width:90px;background:var(--page);
+            color:var(--ink);border:1px solid var(--border);border-radius:8px;
+            padding:4px 8px}
+  .dirUP{color:var(--up)} .dirDOWN{color:var(--down)}
+  .tierHIGH{border-color:#0ca30c !important;box-shadow:0 0 8px rgba(12,163,12,.25)}
+  .tierMEDIUM{border-color:#c98500 !important}
+  .tierLOW{border-color:var(--border)}
+  .tier-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.05em;
+              padding:2px 6px;border-radius:4px;margin-left:6px;vertical-align:middle}
+  .tier-badge.HIGH{background:#0ca30c;color:#fff}
+  .tier-badge.MEDIUM{background:#c98500;color:#fff}
+  .tier-badge.LOW{background:#444;color:#999}
+  .cell.bestpick{border-color:#ffd24a !important;
+    box-shadow:0 0 0 2px rgba(255,210,74,.4),0 0 18px rgba(255,210,74,.35) !important}
+  .best-badge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.05em;
+    padding:2px 6px;border-radius:4px;margin-left:6px;background:#ffd24a;color:#1a1a19}
+  .accline{font-size:12px;color:var(--ink2);margin-bottom:8px}
+  .signalbar{border-radius:10px;padding:14px 18px;margin:0 0 12px;font-weight:800;
+             font-size:20px;letter-spacing:.02em;display:flex;flex-direction:column;gap:3px}
+  .signalbar .sb-sub{font-size:12px;font-weight:600;opacity:.85;letter-spacing:0}
+  .strongbar.UP{background:rgba(12,163,12,.16);border:2px solid #0ca30c;color:#0ca30c}
+  .strongbar.DOWN{background:rgba(214,48,48,.16);border:2px solid #d63030;color:#d63030}
+  .strongbar.UP{animation:pulseG 1.6s ease-in-out infinite}
+  @keyframes pulseG{0%,100%{box-shadow:0 0 0 rgba(12,163,12,0)}50%{box-shadow:0 0 14px rgba(12,163,12,.4)}}
+  @media (prefers-reduced-motion:reduce){.strongbar.UP{animation:none}}
+  .waitbar{background:var(--card);border:2px dashed var(--border);color:var(--muted);
+           font-weight:700;font-size:16px}
+  .elitebar{border:1px solid var(--border);border-radius:10px;padding:12px 14px;
+            margin:0 0 10px;background:#101312;display:grid;gap:8px}
+  .elitebar.SNIPE{border-color:#ffd24a;box-shadow:0 0 0 2px rgba(255,210,74,.16)}
+  .elitebar.TAKE{border-color:rgba(12,163,12,.75)}
+  .elitebar.WAIT{border-style:dashed;color:var(--muted)}
+  .eline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .pill{font-size:10px;font-weight:800;letter-spacing:.06em;padding:3px 7px;
+        border-radius:5px;border:1px solid var(--border);color:var(--ink2)}
+  .pill.gold{background:#ffd24a;color:#17130a;border-color:#ffd24a}
+  .pill.green{background:#0ca30c;color:#fff;border-color:#0ca30c}
+  .pill.wait{background:#333;color:#aaa}
+  .elitebar b{color:var(--ink)}
+  .elite-sub{font-size:12px;color:var(--ink2);line-height:1.5}
+  .elite-metric{font-size:11px;color:var(--muted)}
+  .elite-tag{font-size:9px;font-weight:800;border-radius:4px;padding:2px 5px;
+             background:rgba(255,210,74,.16);color:#ffd24a;margin-left:4px}
+  table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+  th{color:var(--muted);text-align:right;font-weight:600;padding:4px 8px;
+     border-bottom:1px solid var(--grid);font-size:11px;text-transform:uppercase}
+  td{padding:4px 8px;border-bottom:1px solid var(--grid);color:var(--ink2);text-align:right}
+  th:first-child,td:first-child{text-align:left}
+  .hit{color:var(--up);font-weight:700} .miss{color:var(--down);font-weight:700}
+  .pend{color:var(--muted)}
+  .tablewrap{max-height:420px;overflow-y:auto}
+  tbody tr.mrow{cursor:pointer}
+  tbody tr.mrow:hover td{background:rgba(255,255,255,.04)}
+  tbody tr.mrow.sel td{background:rgba(57,135,229,.18);color:var(--ink)}
+  tbody tr.mrow.sel td:first-child{box-shadow:inset 3px 0 0 var(--blue);font-weight:700}
+  tr.drow td{background:var(--page);padding:10px 8px;text-align:left}
+  .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+  .dcell{border:1px solid var(--border);border-radius:8px;padding:8px 10px;
+         font-size:12px;color:var(--ink2);line-height:1.6}
+  .dcell b{color:var(--ink)}
+  button{font:inherit;font-size:12px;font-weight:700;padding:4px 12px;border-radius:8px;
+         cursor:pointer;border:1px solid var(--border);background:var(--page);color:var(--ink2)}
+  #ai-text{font-size:13px;color:var(--ink2);white-space:pre-wrap;line-height:1.6}
+  footer{font-size:12px;color:var(--muted);margin-top:8px;max-width:900px}
+</style>
+</head>
+<body>
+<header>
+  <h1>⑆ Forecast Window</h1>
+  <a class="nav" href="/">⚡ Beast view</a>
+  <a class="nav" href="/quantum">◈ Quantum view</a>
+  <a class="nav" href="/pulse" style="color:#e8b24a">◈ Pulse</a>
+  <a class="nav" href="/volatility" style="color:#4aa8e8">◭ Volatility</a>
+  <span class="note">fresh forecasts every minute · click any row for the FULL detail · ✓ hit = prediction was RIGHT, ✗ miss = wrong</span>
+</header>
+
+<div id="smartmoney" style="margin:10px 0;padding:10px 14px;border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;background:#141a18;font-size:13px;display:none"></div>
+
+<div class="card">
+  <h2>🧠 AI Technical Analyst (Gemini) <button onclick="loadAI(true)">↻ refresh</button>
+      <span class="note">reads the chart structure &amp; levels — never signals</span></h2>
+  <div id="ai-text">loading briefing…</div>
+</div>
+
+<div class="card">
+  <h2>🎯 AI Co-pilot verdict <button onclick="loadCopilot(true)">↻ refresh</button>
+      <span class="note">synthesizes forecasts + indicators + hit-rates — opinion, not a backtested signal</span></h2>
+  <div class="cur" id="copilot">loading…</div>
+</div>
+
+<div class="grid" id="panels"></div>
+
+<footer>
+  Every forecast is scored against the real market 15 minutes later — the hit-rates
+  above are live and unfiltered. Expect ~50–58%, not more: that is what genuine
+  short-horizon forecasting looks like. The edge comes from the 1.5R bracket and
+  your discipline, not from being right every time.
+</footer>
+
+<script>
+const IDX = ["BANKNIFTY","NIFTY50","FINNIFTY"];
+const h12 = t => { if(!t||t.length<5) return t||"";
+  let h=+t.slice(0,2), m=t.slice(3,5), ap=h>=12?"PM":"AM";
+  h=h%12||12; return h+":"+m+" "+ap; };
+
+function panel(n){return `
+  <div>
+  <div class="card">
+    <h2>${n} <span class="note" id="${n}-px"></span>
+      <span style="margin-left:auto;font-size:12px;color:var(--muted)">Your qty:
+      <input class="qty" id="${n}-qty" type="number" min="0" step="1"
+             value="${localStorage.getItem(n+"-qty")||""}" placeholder="units"
+             oninput="localStorage.setItem('${n}-qty',this.value)"></span></h2>
+    <div id="${n}-elite"></div>
+    <div class="accline" id="${n}-acc">…</div>
+    <div class="cur" id="${n}-cur"></div>
+    <div class="tablewrap"><table>
+      <thead><tr><th>time</th><th>price</th><th>5m</th><th>15m</th><th>30m</th>
+      <th>1h</th><th>results (5/15/30/60)</th></tr></thead>
+      <tbody id="${n}-rows"></tbody>
+    </table></div>
+  </div>
+  </div>`;}
+document.getElementById("panels").innerHTML = IDX.map(panel).join("");
+
+const HIST = {}, OPEN = {};
+function toggleRow(n, t){
+  (OPEN[n] = OPEN[n] || new Set()).has(t) ? OPEN[n].delete(t) : OPEN[n].add(t);
+  tick();
+}
+function detailRow(n, r, qty){
+  const HL = {"5m":"NEXT 5 MIN","15m":"NEXT 15 MIN","30m":"NEXT 30 MIN","60m":"NEXT 1 HOUR"};
+  const cells = Object.entries(HL).map(([k,label])=>{
+    const z = r.h[k]; if(!z || z.sl==null) return "";
+    const res = z.outcome==="hit" ? `<span class="hit">✓ HIT — prediction right</span>`
+              : z.outcome==="miss"? `<span class="miss">✗ MISS — prediction wrong</span>`
+              : `<span class="pend">… waiting for result</span>`;
+    const mv = z.move==null ? "" : ` (moved ${z.move>0?"+":""}${z.move} pts)`;
+    const hold = k==="60m" ? "1 hr" : k;
+    const dirSign = z.dir==="UP" ? 1 : -1;
+    const pnl = (z.move!=null && qty>0) ? Math.round(z.move * qty * dirSign) : null;
+    const pnlStr = pnl==null ? "" :
+      `<br><b class="${pnl>=0?'hit':'miss'}">held ${hold} → ${pnl>=0?"+":"−"}₹${Math.abs(pnl).toLocaleString("en-IN")}</b>`+
+      ` <span style="opacity:.55;font-size:11px">(index/futures basis: pts × ${qty}. OPTIONS give less — roughly ½ for ATM, minus time decay)</span>`;
+    const rr = qty>0 ? `<br>your qty ${qty} → risk <b>₹${Math.round(qty*z.sl_pts).toLocaleString("en-IN")}</b>,`+
+                       ` reward <b>₹${Math.round(qty*z.tgt_pts).toLocaleString("en-IN")}</b>` : "";
+    const tier = z.tier || (z.conf>=57?"HIGH":z.conf>=53?"MEDIUM":"LOW");
+    return `<div class="dcell tier${tier}"><b>${label}</b>: <span class="dir${z.dir}">${z.dir==="UP"?"▲ UP":"▼ DOWN"}</span>`+
+      ` <b>${z.conf}%</b> confidence <span class="tier-badge ${tier}">${tier}</span><br>`+
+      `entry ref <b>${r.price.toLocaleString("en-IN")}</b> · hold ≤ ${k==="60m"?"1 hr":k}<br>`+
+      `stoploss (z) <b>${z.sl.toLocaleString("en-IN")}</b> (−${z.sl_pts} pts)<br>`+
+      `target (w) <b>${z.tgt.toLocaleString("en-IN")}</b> (+${z.tgt_pts} pts)${rr}<br>${res}${mv}${pnlStr}</div>`;
+  }).join("");
+  return `<tr class="drow"><td colspan="7"><div class="dgrid">${cells}</div></td></tr>`;
+}
+const cell=(k,v,cls="")=>`<div class="cell"><div class="k">${k}</div>`+
+                         `<div class="v ${cls}">${v}</div></div>`;
+function eliteBlock(best, elite){
+  const pct = elite && elite.pct!=null ? `${elite.pct}% (${elite.green}/${elite.n})` : "collecting";
+  if(!best){
+    return `<div class="elitebar WAIT"><div class="eline"><span class="pill wait">WARMING</span>
+      <b>waiting for enough candles</b></div><div class="elite-sub">No elite setup yet.</div></div>`;
+  }
+  const act = best.action || "WAIT";
+  const dirCls = best.dir==="UP" ? "dirUP" : "dirDOWN";
+  const dirTxt = best.dir==="UP" ? "▲ LONG" : "▼ SHORT";
+  const pill = act==="SNIPE" ? "gold" : act==="TAKE" ? "green" : "wait";
+  const title = act==="WAIT" ? "WAIT — no elite setup" : `${act} ${dirTxt} · ${best.horizon}`;
+  const levels = act==="WAIT" ? "sit out until score/alignment improves" :
+    `entry ${best.price?.toLocaleString("en-IN")} · target ${best.tgt?.toLocaleString("en-IN")} (+${best.tgt_pts}) · SL ${best.sl?.toLocaleString("en-IN")} (-${best.sl_pts})`;
+  return `<div class="elitebar ${act}">
+    <div class="eline">
+      <span class="pill ${pill}">${act}</span>
+      <b class="${dirCls}">${title}</b>
+      <span class="pill">grade ${best.grade}</span>
+      <span class="pill">score ${best.score}</span>
+      ${best.ultra?'<span class="elite-tag">ULTRA</span>':''}
+      ${best.hi_conviction?'<span class="elite-tag">HIGH VOL</span>':''}
+    </div>
+    <div class="elite-sub">${levels}</div>
+    <div class="elite-metric">Elite green-rate today: <b>${pct}</b> · expected ${best.expectancy_pts>0?"+":""}${best.expectancy_pts} pts · speed ${best.ppm} pts/min · ${best.align}/4 aligned</div>
+  </div>`;
+}
+
+async function tick(){
+  let s;
+  try{ s = await fetch("/api/forecasts").then(r=>r.json()); }catch(e){ return; }
+  for(const n of IDX){
+    const d = s[n]; if(!d) continue;
+    document.getElementById(`${n}-px`).textContent =
+      (d.price? "· "+d.price.toLocaleString("en-IN") : "") + (d.mode? " · "+d.mode : "");
+    const HZ0 = ["5m","15m","30m","60m"];
+    document.getElementById(`${n}-acc`).textContent =
+      "Hit-rate today: " + HZ0.map(k=>{
+        const a=(d.acc||{})[k]||{};
+        return k+" "+(a.pct!=null? a.pct+"% ("+a.hits+"/"+a.n+")" : "…");
+      }).join(" · ") +
+      "  |  out-of-sample: " + HZ0.map(k=>k+" "+((d.backtest_acc||{})[k]??"—")+"%").join(" · ");
+    const c = d.current;
+    document.getElementById(`${n}-elite`).innerHTML = eliteBlock(d.best_now, d.elite||{});
+    if(!c || !c.h){
+      document.getElementById(`${n}-cur`).innerHTML =
+        `<span class="note">warming up (needs enough candles for the indicators)…</span>`;
+      document.getElementById(`${n}-rows`).innerHTML = "";
+      continue;
+    }
+    const HZ = ["5m","15m","30m","60m"];
+    const HL = {"5m":"NEXT 5 MIN","15m":"NEXT 15 MIN","30m":"NEXT 30 MIN","60m":"NEXT 1 HOUR"};
+    // Show the REALIZED out-of-sample accuracy for this tier, not the model's raw
+    // probability. Measured on 11,204 live-scored forecasts, the raw number is badly
+    // inflated — the 60-min horizon averages 55.5% "confidence" but is right 47.3%
+    // of the time. Showing the raw figure was telling you 76% for a ~50% call.
+    const arrow = z => {
+      const t = z.tier || (z.conf>=57?"HIGH":z.conf>=53?"MEDIUM":"LOW");
+      const real = z.tier_acc!=null ? z.tier_acc : null;
+      const shown = real!=null ? `${real}%` : "—";
+      return `<span class="dir${z.dir}" title="model signal strength ${z.conf}% (raw, uncalibrated)">`+
+             `${z.dir==="UP"?"▲":"▼"} ${shown}</span>`;
+    };
+    const qty = parseFloat(document.getElementById(`${n}-qty`).value) || 0;
+    const tierOf = z => z.tier || (z.conf>=57?"HIGH":z.conf>=53?"MEDIUM":"LOW");
+    // single most-reliable horizon right now: HIGH tier, best out-of-sample accuracy
+    let bestK=(d.best_now && d.best_now.action!=="WAIT") ? d.best_now.horizon : null;
+    let bestScore=-1;
+    for(const k of HZ){
+      if(bestK) break;
+      const z=c.h[k]; if(!z||z.sl==null) continue;
+      if(tierOf(z)!=="HIGH") continue;
+      const score=(z.tier_acc||0)*1000 + (z.conf||0);   // OOS acc primary, conf tiebreak
+      if(score>bestScore){bestScore=score; bestK=k;}
+    }
+    const hcard = k => {
+      const z = c.h[k];
+      const tier = tierOf(z);
+      const isBest = k===bestK;
+      const sug = c.risk_rupees && z.sl_pts ? (c.risk_rupees/z.sl_pts).toFixed(1) : null;
+      const rr = qty>0 ? `risk ₹${Math.round(qty*z.sl_pts).toLocaleString("en-IN")}`+
+                         ` · reward ₹${Math.round(qty*z.tgt_pts).toLocaleString("en-IN")}`
+                       : (sug? `1%-risk qty: ${sug} u` : "");
+      const acc = z.tier_acc!=null ? `<div class="s"><b>${tier}</b> tier hit-rate: ~${z.tier_acc}% <span style="opacity:.6">(out-of-sample)</span></div>` : "";
+      return `<div class="cell hcard tier${tier}${isBest?' bestpick':''}"><div class="k">${HL[k]} <span class="tier-badge ${tier}">${tier}</span>${isBest?'<span class="best-badge">★ BEST NOW</span>':''}</div>
+        <div class="v">${arrow(c.h[k])}</div>
+        ${acc}
+        <div class="s">SL ${z.sl.toLocaleString("en-IN")} (−${z.sl_pts}) ·
+             TGT ${z.tgt.toLocaleString("en-IN")} (+${z.tgt_pts})</div>
+        <div class="s">${rr}</div></div>`;
+    };
+    const ready = c && c.h && c.h["5m"].sl;
+    const sig = (c && c.signal) || {};
+    const hc = sig.hi_conviction;
+    const banner = !ready ? "" : (sig.strong
+      ? `<div class="signalbar strongbar ${sig.dir}"${hc?' style="box-shadow:0 0 0 3px #ffd24a inset,0 0 14px rgba(255,210,74,.5)"':''}>`+
+        `${hc?"🔥 ":"⭐ "}${hc?"HIGH-CONVICTION ":""}STRONG ${sig.dir==="UP"?"BUY / LONG ▲":"SELL / SHORT ▼"}`+
+        `<span class="sb-sub">${sig.align}/4 signals agree`+
+        `${sig.acc?` · historically right ~${sig.acc}% of the time`:""}`+
+        `${hc?` · 🔥 high-volatility regime (a bit more reliable here)`:``} — not a guarantee</span></div>`
+      : (sig.align>=3 && sig.window==="midday"
+        ? `<div class="signalbar waitbar">◻ WAIT — midday dead-zone`+
+          `<span class="sb-sub">${sig.align}/4 agree, but the model is weakest 11:00–1:30 PM (historically ~48%). Waiting for the reliable hours.</span></div>`
+        : `<div class="signalbar waitbar">◻ WAIT — no strong signal right now`+
+          `<span class="sb-sub">models not aligned enough (need 3 of 4 to agree). Sitting out is fine.</span></div>`));
+    document.getElementById(`${n}-cur`).innerHTML = !ready ?
+      `<span class="note">warming up (needs ~1.5 hours of candles for the indicators)…</span>` :
+      banner +
+      cell("Consensus", c.consensus==="MIXED" ? "≈ MIXED" :
+           (c.consensus==="UP"?"▲ UP":"▼ DOWN"),
+           c.consensus==="MIXED" ? "" : "dir"+c.consensus) +
+      HZ.map(hcard).join("");
+    HIST[n] = d.history||[];
+    const eliteRows = new Map(((d.elite||{}).rows||[]).map(p=>[p.time,p]));
+    document.getElementById(`${n}-rows`).innerHTML =
+      HIST[n].slice().reverse().map(r=>{
+        const er = eliteRows.get(r.time);
+        const marks = HZ.map(k=>{
+          const z=r.h[k];
+          return z.outcome==="hit" ? `<span class="hit">✓</span>`
+               : z.outcome==="miss"? `<span class="miss">✗</span>`
+               : `<span class="pend">·</span>`;
+        }).join(" ");
+        const isSel = OPEN[n] && OPEN[n].has(r.time);
+        let html = `<tr class="mrow${isSel?' sel':''}" onclick="toggleRow('${n}','${r.time}')">`+
+          `<td>${h12(r.time)}${er?` <span class="elite-tag">${er.action}</span>`:""}</td><td>${r.price}</td>`+
+          HZ.map(k=>`<td>${arrow(r.h[k])}</td>`).join("")+
+          `<td>${marks}</td></tr>`;
+        if(OPEN[n] && OPEN[n].has(r.time)) html += detailRow(n, r, qty);
+        return html;
+      }).join("");
+  }
+}
+async function loadAI(force){
+  const el = document.getElementById("ai-text");
+  el.textContent = "thinking…";
+  try{
+    const r = await fetch("/api/ai"+(force?"?force=1":"")).then(r=>r.json());
+    el.textContent = r.text || ("(unavailable: "+r.error+")");
+  }catch(e){ el.textContent = "(AI briefing unavailable right now)"; }
+}
+async function loadCopilot(force){
+  const el = document.getElementById("copilot");
+  try{
+    const r = await fetch("/api/copilot"+(force?"?force=1":"")).then(r=>r.json());
+    if(!r.verdict){ el.innerHTML = `<span class="note">(${r.error||"unavailable"})</span>`; return; }
+    el.innerHTML = Object.entries(r.verdict).map(([n,v])=>{
+      const cls = v.stance==="LEANS-LONG"?"dirUP":v.stance==="LEANS-SHORT"?"dirDOWN":"";
+      const dots = "●".repeat(v.conviction||0)+"○".repeat(5-(v.conviction||0));
+      return `<div class="cell" style="min-width:290px;flex:1">
+        <div class="k">${n}</div>
+        <div class="v ${cls}">${v.stance} <span class="note">${dots}</span></div>
+        <div class="note" style="margin-top:4px">${v.read||""}</div>
+        <div class="note" style="margin-top:2px">👀 wait for: ${v.wait_for||""}</div></div>`;
+    }).join("");
+  }catch(e){ el.innerHTML = `<span class="note">(co-pilot unavailable)</span>`; }
+}
+async function loadSmartMoney(){
+  try{
+    const [sm, vol] = await Promise.all([
+      fetch("/api/smartmoney").then(r=>r.json()).catch(()=>({})),
+      fetch("/api/volatility").then(r=>r.json()).catch(()=>({}))
+    ]);
+    const bn = sm.BANKNIFTY, nf = sm.NIFTY50;
+    const col = x => x==="LONG" ? "#4ade80" : "#ff6b5c";
+    const arr = x => x==="LONG" ? "▲ LONG" : "▼ SHORT";
+    const volLine = idx => {
+      const p = (vol[idx]||{}).pred;
+      if(!p) return `<span style="opacity:.5">warming up</span>`;
+      const c = p.vol==="BIG" ? "#ff9d3c" : "#5ad1a0";
+      return `<b style="color:${c}">${p.vol==="BIG"?"⚡ BIG MOVE":"● QUIET"}</b> ${p.prob}% <span style="opacity:.5">(~${p.acc}%)</span>`;
+    };
+    let html = `<div style="font-size:12px;letter-spacing:.5px;opacity:.7;margin-bottom:6px">🧭 MARKET INTELLIGENCE — all signals in one place</div>`;
+    if(bn){
+      html += `💰 <b>Smart-Money bias</b> <span style="opacity:.55">(FII · next-day, positional)</span>: `+
+        `BankNifty <b style="color:${col(bn.lean)}">${arr(bn.lean)}</b> ~${bn.acc}% · `+
+        `Nifty50 <b style="color:${col(nf.lean)}">${arr(nf.lean)}</b> ~${nf.acc}%<br>`;
+    }
+    html += `◭ <b>Volatility</b> <span style="opacity:.55">(big move? · direction-free)</span>: `+
+      `BankNifty ${volLine("BANKNIFTY")} · Nifty50 ${volLine("NIFTY50")}<br>`+
+      `<span style="opacity:.5;font-size:11px">⭐ STRONG = 3-4 horizons agree (~54%) · 🔥 HIGH-CONVICTION = STRONG + high-vol (~53%, gold glow below) · `+
+      `<a href="/pulse" style="color:#e8b24a">◈ Pulse</a> · <a href="/volatility" style="color:#4aa8e8">◭ full Volatility</a></span>`;
+    document.getElementById("smartmoney").style.display = "block";
+    document.getElementById("smartmoney").innerHTML = html;
+  }catch(e){}
+}
+tick(); setInterval(tick, 4000); loadAI(false); loadCopilot(false); loadSmartMoney();
+setInterval(loadSmartMoney, 600000);
+setInterval(()=>loadCopilot(false), 600000);   // co-pilot every 10 min
+setInterval(()=>loadAI(false), 600000);         // analyst every 10 min (also logs)
+
+// ---- fast price lane: /api/tick at 250ms so the header price is smooth (Beast-style)
+const _mode = {};
+async function fastTick(){
+  let t;
+  try{ t = await fetch("/api/tick").then(r=>r.json()); }catch(e){ return; }
+  for(const n of IDX){
+    const q = t[n]; if(!q || q.price==null) continue;
+    const el = document.getElementById(`${n}-px`);
+    if(el) el.textContent = "· "+Number(q.price).toLocaleString("en-IN")
+                          + (q.live ? " · LIVE" : (_mode[n]? " · "+_mode[n] : ""));
+  }
+}
+fastTick(); setInterval(fastTick, 250);
+</script>
+</body>
+</html>

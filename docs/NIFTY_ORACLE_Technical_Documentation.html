@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nifty Oracle — Technical Documentation</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  :root{
+    --ink:#15242b; --muted:#4a5c64; --faint:#7c8c92; --line:#d6dee1;
+    --accent:#0e6b7d; --accent2:#c2701c; --bull:#1f8a4c; --bear:#c23b2b;
+    --bg:#fff; --panel:#f4f7f8; --code:#0f1b20;
+    --sans:"Helvetica Neue",Arial,sans-serif;
+    --serif:Georgia,"Times New Roman",serif;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--ink);background:var(--bg);font-family:var(--sans);
+       font-size:10.6pt;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .page{padding:0}
+  h1,h2,h3,h4{font-family:var(--sans);line-height:1.2;color:var(--ink)}
+  h2{font-size:17pt;border-bottom:2.5px solid var(--accent);padding-bottom:5px;margin:0 0 14px;
+     page-break-before:always;page-break-after:avoid}
+  h2 .num{color:var(--accent);font-family:var(--mono);font-size:13pt;margin-right:8px}
+  h3{font-size:12.5pt;margin:18px 0 6px;color:var(--accent);page-break-after:avoid}
+  h4{font-size:11pt;margin:12px 0 4px;color:var(--ink);page-break-after:avoid}
+  p{margin:0 0 9px}
+  code{font-family:var(--mono);font-size:9pt;background:var(--panel);padding:1px 4px;border-radius:3px}
+  pre{background:var(--code);color:#e6eef0;font-family:var(--mono);font-size:8.5pt;line-height:1.45;
+      padding:11px 13px;border-radius:6px;overflow-x:auto;page-break-inside:avoid;margin:0 0 11px}
+  pre code{background:none;color:inherit;padding:0}
+  table{width:100%;border-collapse:collapse;font-size:9pt;margin:0 0 12px;page-break-inside:avoid}
+  th,td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+  th{background:var(--accent);color:#fff;font-weight:600}
+  tr:nth-child(even) td{background:var(--panel)}
+  .mono-col{font-family:var(--mono);font-size:8.4pt}
+  ul,ol{margin:0 0 10px;padding-left:20px}
+  li{margin:3px 0}
+  .callout{background:var(--panel);border-left:4px solid var(--accent2);padding:10px 14px;
+           margin:0 0 12px;border-radius:0 5px 5px 0;page-break-inside:avoid}
+  .callout.warn{border-left-color:var(--bear)}
+  .callout.good{border-left-color:var(--bull)}
+  .callout b{color:var(--ink)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:7.5pt;font-weight:700;padding:1px 6px;
+       border-radius:3px;color:#fff;vertical-align:middle}
+  .tag.hi{background:var(--bull)} .tag.md{background:var(--accent2)} .tag.lo{background:#6b7a80}
+  .up{color:var(--bull);font-weight:600} .dn{color:var(--bear);font-weight:600}
+  .formula{font-family:var(--serif);font-style:italic;background:var(--panel);padding:6px 12px;
+           border-radius:5px;display:inline-block;margin:2px 0}
+
+  /* cover */
+  .cover{height:247mm;display:flex;flex-direction:column;justify-content:center;
+         page-break-after:always;text-align:left}
+  .cover .kick{font-family:var(--mono);font-size:11pt;letter-spacing:4px;color:var(--accent);text-transform:uppercase}
+  .cover h1{font-size:44pt;margin:14px 0 6px;letter-spacing:-1.5px;line-height:1.02}
+  .cover .sub{font-family:var(--serif);font-size:16pt;color:var(--muted);font-style:italic;max-width:150mm}
+  .cover .meta{margin-top:40px;font-family:var(--mono);font-size:9.5pt;color:var(--faint);line-height:1.9}
+  .cover .rule{width:70mm;height:3px;background:var(--accent);margin:22px 0}
+  .cover .warnbox{margin-top:34px;border:1.5px solid var(--bear);border-radius:7px;padding:14px 18px;
+                  max-width:150mm;background:#fdf3f1}
+  .cover .warnbox b{color:var(--bear)}
+
+  /* TOC */
+  .toc{page-break-after:always}
+  .toc h2{page-break-before:auto}
+  .toc ol{list-style:none;padding:0;font-size:10.5pt;column-count:1}
+  .toc li{margin:5px 0;display:flex;justify-content:space-between;border-bottom:1px dotted var(--line);padding-bottom:4px}
+  .toc .t{color:var(--ink)} .toc .n{font-family:var(--mono);color:var(--accent)}
+  .small{font-size:8.6pt;color:var(--muted)}
+  .kpi{display:flex;gap:10px;margin:0 0 14px;flex-wrap:wrap}
+  .kpi .box{flex:1;min-width:80px;border:1px solid var(--line);border-radius:6px;padding:9px 11px;background:var(--panel)}
+  .kpi .k{font-family:var(--mono);font-size:7.5pt;letter-spacing:1px;text-transform:uppercase;color:var(--faint)}
+  .kpi .v{font-size:16pt;font-weight:700;font-family:var(--mono)}
+  .footer-note{font-size:8pt;color:var(--faint);text-align:center;margin-top:6px}
+  .ascii{font-family:var(--mono);font-size:8pt;line-height:1.35;background:var(--panel);
+         padding:12px;border-radius:6px;white-space:pre;overflow-x:auto;page-break-inside:avoid}
+</style>
+</head>
+<body>
+
+<!-- ========================= COVER ========================= -->
+<section class="cover">
+  <div class="kick">Technical Documentation</div>
+  <h1>Nifty Oracle</h1>
+  <div class="rule"></div>
+  <div class="sub">A free, honest intraday forecasting system for BankNifty &amp; Nifty50 — architecture, models, indicators, APIs, and the discipline that keeps it real.</div>
+  <div class="meta">
+    Version 3.1 &nbsp;·&nbsp; Engine: forecast_engine v3.1 + ORB daily engine<br>
+    Data: Angel One SmartAPI (real-time) + Yahoo Finance (fallback)<br>
+    Compiled: 26 July 2026 &nbsp;·&nbsp; Location: ~/Desktop/QUANTSSSS
+  </div>
+  <div class="warnbox">
+    <b>⚠ The one truth that matters:</b> real out-of-sample accuracy is
+    <b>~50–59%</b>, never 90%+. This document exists partly to prove that number
+    honestly. Anyone — human or AI — promising guaranteed profit or 90% accuracy
+    is lying. This system survives on selectivity and risk management, not
+    prophecy.
+  </div>
+</section>
+
+<!-- ========================= TOC ========================= -->
+<section class="toc">
+  <h2><span class="num">§</span>Contents</h2>
+  <ol>
+    <li><span class="t">1 &nbsp; Executive summary &amp; the honest truth</span><span class="n">01</span></li>
+    <li><span class="t">2 &nbsp; System architecture</span><span class="n">02</span></li>
+    <li><span class="t">3 &nbsp; Data layer &amp; caching</span><span class="n">03</span></li>
+    <li><span class="t">4 &nbsp; Feature engineering (the 13 indicators)</span><span class="n">04</span></li>
+    <li><span class="t">5 &nbsp; The models — LightGBM &amp; GradientBoosting</span><span class="n">05</span></li>
+    <li><span class="t">6 &nbsp; Confidence tiers (HIGH / MEDIUM / LOW)</span><span class="n">06</span></li>
+    <li><span class="t">7 &nbsp; The STRONG signal — consensus + time filter</span><span class="n">07</span></li>
+    <li><span class="t">8 &nbsp; The ORB daily engine</span><span class="n">08</span></li>
+    <li><span class="t">9 &nbsp; The AI layer (Gemini analyst &amp; co-pilot)</span><span class="n">09</span></li>
+    <li><span class="t">10 &nbsp; The dashboard — routes, APIs, UI</span><span class="n">10</span></li>
+    <li><span class="t">11 &nbsp; Backtesting &amp; honest results</span><span class="n">11</span></li>
+    <li><span class="t">12 &nbsp; What was tested and removed</span><span class="n">12</span></li>
+    <li><span class="t">13 &nbsp; APIs reference (Angel, Upstox, Gemini, Yahoo)</span><span class="n">13</span></li>
+    <li><span class="t">14 &nbsp; Daily operating guide</span><span class="n">14</span></li>
+    <li><span class="t">15 &nbsp; Risk management &amp; limitations</span><span class="n">15</span></li>
+    <li><span class="t">16 &nbsp; Statistical methods — what we kept &amp; removed</span><span class="n">16</span></li>
+    <li><span class="t">17 &nbsp; File-by-file reference &amp; glossary</span><span class="n">17</span></li>
+  </ol>
+</section>
+
+<!-- ========================= 1 ========================= -->
+<section>
+  <h2><span class="num">1</span>Executive summary &amp; the honest truth</h2>
+  <p>Nifty Oracle is a self-hosted, zero-cost intraday forecasting system for two
+  Indian index instruments — <b>BankNifty</b> and <b>Nifty50</b>. It answers one
+  question every minute: <i>which way is the index likely to move, how sure are
+  we, and is now a good time to act?</i> It never places live orders; it forecasts,
+  paper-trades, and enforces risk discipline.</p>
+
+  <div class="callout warn">
+    <b>Update — 28 July 2026 (supersedes stale details below).</b>
+    <ul style="margin:.4rem 0 0 1rem">
+      <li><b>Single engine.</b> The project was consolidated to <b>one</b> forecast
+      engine, <code>forecast_engine.py</code>. The legacy "Beast" (VIX/cross-index)
+      and the volatility engine were moved to <code>experiments/</code>; the Upstox
+      integration was deleted (Angel One is the only live feed). See
+      <code>STRUCTURE.md</code>.</li>
+      <li><b>Head-to-head verdict.</b> New vs legacy, logged live on Angel data, had
+      <b>no persistent winner</b> — legacy led in the morning and reversed by the
+      close (BankNifty 60m went −23 → +22 in one day). Single-window numbers flip;
+      that is noise, not edge.</li>
+      <li><b>Accuracy ≠ profit.</b> A cost-aware <b>A+ selective backtest</b> (STRONG
+      + prime window + full trend alignment, adaptive ATR stops, slippage, one entry
+      per setup) on 28 Jul <b>lost money on both indices</b> — BankNifty −₹4,629
+      (profit factor 0.20), Nifty50 −₹3,300 (0.52). A typical 30-min move
+      (~36 / ~14 pts) barely exceeds round-trip cost+slippage (~27 / ~10 pts), and
+      per-minute hit-rates are inflated ~8–11× by autocorrelation. Scored as
+      distinct trades, the edge disappears.</li>
+      <li><b>Security.</b> Secrets live only in <code>.env</code>. The Angel TOTP
+      secret is a live 2FA bypass and a <code>.gitignore</code> does not protect a
+      zipped folder — if it was ever shared, rotate the API key and reset TOTP.</li>
+    </ul>
+  </div>
+
+  <div class="callout warn">
+    <b>Update — 30 July 2026 (data breakthrough + the exhaustive investigation).</b>
+    <ul style="margin:.4rem 0 0 1rem">
+      <li><b>Real data unlocked, free.</b> The index spot has volume=0 (its "VWAP"
+      is fake). We now pull index <b>futures with real volume</b> from Angel
+      (<code>fetch_futures.py</code>: ~2.5yr daily, ~3mo 5-min) and <b>2 years of
+      per-strike option EOD with Open Interest</b> from the NSE F&amp;O bhavcopy
+      (<code>fetch_bhavcopy.py</code>; free, not geo-blocked). No IV (compute from
+      premium); intraday per-strike OI remains paid-only.</li>
+      <li><b>100+ strategies tested</b> (price, OI/PCR, cross-index, money-flow,
+      regime, ensemble, volatility, VRP) — all per-day / out-of-sample with
+      half-split stability. <b>Nothing beats ~53-54% direction robustly.</b>
+      Gap-fade looked 62% but per-day = 45% (autocorrelation). PCR-extremes hit 58%
+      and was briefly cost-positive, then <b>decayed and died</b> (last 6 mo: 36%,
+      PF 0.74). Volatility prediction is the one thing that holds (~54-65% per
+      horizon) — but it forecasts <i>magnitude, not direction</i>.</li>
+      <li><b>VRP is real but not retail-tradeable.</b> Short ATM straddles win
+      62-72% (premium &gt; realized move) — a classic <b>Taleb distribution</b>:
+      retail option costs eat the edge and a single bad week (−₹50-70k) can erase
+      months. The defined-risk (iron-fly) version caps the tail but costs then push
+      net to ~breakeven/loss. VRP is the market-maker's edge (their cost ≈ 0).</li>
+      <li><b>Conclusion (theory + our data agree).</b> A high win-rate is a warning
+      sign of hidden tail risk, not skill; short-horizon prediction is dominated by
+      microstructure noise; the only real micro-edge is HFT order-book / latency
+      arbitrage (needs colocation). Chase <b>expectancy</b>, not accuracy. Treat
+      this system as honest information / learning, not an income source.</li>
+    </ul>
+  </div>
+
+  <div class="kpi">
+    <div class="box"><div class="k">Data cost</div><div class="v up">₹0</div></div>
+    <div class="box"><div class="k">History</div><div class="v">~17 mo</div></div>
+    <div class="box"><div class="k">ML models</div><div class="v">8</div></div>
+    <div class="box"><div class="k">Indicators</div><div class="v">13</div></div>
+    <div class="box"><div class="k">STRONG acc.</div><div class="v">54–59%</div></div>
+  </div>
+
+  <h3>Two engines, one philosophy</h3>
+  <ul>
+    <li><b>Forecast Window</b> (<code>forecast_engine.py</code>) — an every-minute,
+    multi-horizon direction forecaster (5m / 15m / 30m / 60m) built on 8 LightGBM
+    models. Surfaces a <b>⭐ STRONG</b> signal only when several horizons agree with
+    high confidence during the model's reliable hours.</li>
+    <li><b>ORB daily engine</b> (now archived in <code>experiments/nifty_oracle.py</code>)
+    — a daily-bias model gating an opening-range breakout. <b>A full-history backtest
+    found no robust edge</b> (see §11), so it was moved out of the live product.
+    <code>nifty_live.py</code> stays only as a shared indicator/data utility.</li>
+  </ul>
+
+  <div class="callout warn">
+    <b>The honest truth (repeated on purpose).</b> Per-bar direction prediction on
+    liquid index data is close to a coin toss (~50–53%). The edge is small and
+    comes from <b>selectivity</b> — acting only on the strongest, best-timed setups
+    (~54–59%) — combined with a <b>1.5 : 1 reward-to-risk</b> ratio. There is no
+    configuration, data source, or model that reaches 90%. Chasing that number is
+    how retail traders lose money.
+  </div>
+
+  <h3>Design principles (the iron rules)</h3>
+  <ol>
+    <li><b>No feature ships without a walk-forward backtest proving it helps.</b>
+    Plausibility is not evidence.</li>
+    <li><b>Train/serve consistency.</b> Every feature is computed identically in
+    training and live — no lookahead, no data that only exists after the fact.</li>
+    <li><b>Honesty over comfort.</b> The UI shows the real hit-rate, labelled
+    "not a guarantee." Losing signals are not hidden.</li>
+    <li><b>Selectivity beats prediction.</b> Sitting out (WAIT) is a first-class
+    decision, not a failure.</li>
+  </ol>
+</section>
+
+<!-- ========================= 2 ========================= -->
+<section>
+  <h2><span class="num">2</span>System architecture</h2>
+  <p>The system is a single-process Python web server that streams market data,
+  computes features, runs the models, and serves three HTML dashboards. There is
+  no database — state lives in memory and a few JSON/CSV files on disk.</p>
+
+  <div class="ascii">          ┌─────────────────────────────────────────────────────────┐
+          │                  DATA SOURCES (free)                      │
+          │   Angel One SmartAPI  ──►  real-time 1-min candles + ticks│
+          │   Yahoo Finance       ──►  fallback (delayed a few min)   │
+          └───────────────────────────┬───────────────────────────────┘
+                                       │
+                  ┌────────────────────▼────────────────────┐
+                  │        angel_data.py / nifty_live.py     │
+                  │        (fetch, WebSocket, disk cache)    │
+                  └───────────┬───────────────────┬──────────┘
+                              │                   │
+             ┌────────────────▼──────┐   ┌────────▼───────────────────┐
+             │  forecast_engine.py   │   │      nifty_live.py          │
+             │  8 LightGBM models    │   │  ORB daily-bias engine      │
+             │  → tiers → STRONG     │   │  (2 GradientBoosting)       │
+             └───────────┬───────────┘   └────────────┬───────────────┘
+                         │                             │
+                  ┌──────▼─────────────────────────────▼──────┐
+                  │            nifty_dashboard.py              │
+                  │   HTTP server :8181 · state · paper P&L    │
+                  │   + ai_analyst.py (Gemini analyst/copilot) │
+                  └──────┬───────────────┬────────────┬────────┘
+                         │               │            │
+                    dashboard.html  forecast_feed  quantum_live
+                    (the Beast)     (Forecast Win)  (market state)</div>
+
+  <h3>File inventory (the live system)</h3>
+  <table>
+    <tr><th>File</th><th>Lines</th><th>Role</th></tr>
+    <tr><td class="mono-col">nifty_dashboard.py</td><td>902</td><td>HTTP server, state, paper trading, API routes, orchestration</td></tr>
+    <tr><td class="mono-col">forecast_engine.py</td><td>382</td><td>Multi-horizon LightGBM forecaster, tiers, STRONG signal</td></tr>
+    <tr><td class="mono-col">nifty_live.py</td><td>443</td><td>ORB daily-bias engine (live / replay / backtest), shared helpers</td></tr>
+    <tr><td class="mono-col">nifty_oracle.py</td><td>298</td><td>Morning-briefing CLI (daily bias, pivots, ORB plan)</td></tr>
+    <tr><td class="mono-col">angel_data.py</td><td>167</td><td>Angel One SmartAPI: auto-login (TOTP), candles, WebSocket ticks</td></tr>
+    <tr><td class="mono-col">upstox_data.py</td><td>179</td><td>Upstox OAuth + candle feed (optional backup)</td></tr>
+    <tr><td class="mono-col">upstox_autologin.py</td><td>76</td><td>Playwright auto-login stub (WIP, for friend's account)</td></tr>
+    <tr><td class="mono-col">ai_analyst.py</td><td>139</td><td>Gemini technical analyst + co-pilot verdict</td></tr>
+    <tr><td class="mono-col">backtest.py</td><td>74</td><td>Honest walk-forward accuracy (per horizon + per tier)</td></tr>
+    <tr><td class="mono-col">train_models.py</td><td>40</td><td>Pre-train / retrain the forecast models</td></tr>
+    <tr><td class="mono-col">dashboard.html</td><td>514</td><td>"The Beast" — live chart, paper trades, P&amp;L</td></tr>
+    <tr><td class="mono-col">forecast_feed.html</td><td>257</td><td>Forecast Window — horizons, tiers, STRONG/WAIT banner</td></tr>
+    <tr><td class="mono-col">quantum_live.html</td><td>220</td><td>Market-state view — 7 indicator chips</td></tr>
+  </table>
+  <p class="small">Deprecated/experimental files (broken engines, one-off scripts,
+  pre-project cruft) were moved to <code>_archive/</code> during the July 2026
+  cleanup — not deleted, so anything can be recovered.</p>
+</section>
+
+<!-- ========================= 3 ========================= -->
+<section>
+  <h2><span class="num">3</span>Data layer &amp; caching</h2>
+  <p>All data is free. The feed priority is <b>Angel One → Yahoo</b>. Angel is
+  preferred because it is real-time and — crucially — logs in via <b>TOTP</b> (a
+  local authenticator secret), so it works from anywhere without an SMS OTP.</p>
+
+  <h3>Sources</h3>
+  <table>
+    <tr><th>Source</th><th>Use</th><th>Notes</th></tr>
+    <tr><td><b>Angel One SmartAPI</b></td><td>Primary real-time feed</td><td>1-min candles via <code>getCandleData</code>; live ticks via <code>SmartWebSocketV2</code> (mode 1 LTP). Auto-login: API key + PIN + TOTP-generated OTP.</td></tr>
+    <tr><td><b>Yahoo Finance</b></td><td>Always-on fallback</td><td><code>yfinance</code>; tickers <code>^NSEBANK</code>, <code>^NSEI</code>. Can lag a few minutes and rate-limits under heavy polling.</td></tr>
+    <tr><td><b>Upstox</b></td><td>Optional backup</td><td>OAuth token expires daily (~3:30 AM). Needs SMS OTP → not used by default.</td></tr>
+  </table>
+
+  <h3>On-disk cache (<code>data_cache/</code>)</h3>
+  <table>
+    <tr><th>File</th><th>Contents</th></tr>
+    <tr><td class="mono-col">BANKNIFTY_5m_long.csv<br>NIFTY50_5m_long.csv</td><td>~26,000 rows of 5-min OHLC, Feb 2025 → Jul 2026 (~17 months, ~351 sessions). The training set.</td></tr>
+    <tr><td class="mono-col">INDIAVIX_5m_long.csv</td><td>India VIX 5-min history (was used by the removed "extras" experiment).</td></tr>
+    <tr><td class="mono-col">*_daily.csv</td><td>Daily bars for the ORB bias model (2 years).</td></tr>
+    <tr><td class="mono-col">*_5m.csv</td><td>Per-day intraday cache written during sessions.</td></tr>
+    <tr><td class="mono-col">*_models_v2.pkl</td><td>Pickled trained models + tiers + STRONG stats, keyed by data-date and version (v3.1). First train ≈ 2–3 min, then instant load.</td></tr>
+  </table>
+  <p><code>forecast_history_v2.json</code> stores every forecast with its ✓/✗
+  outcome per horizon, so the UI can show today's live hit-rate.</p>
+</section>
+
+<!-- ========================= 4 ========================= -->
+<section>
+  <h2><span class="num">4</span>Feature engineering — the 13 indicators</h2>
+  <p>The forecast models consume <b>13 features</b> (<code>BASE_COLS</code>), all
+  computed from 5-minute OHLC bars and all <b>causal</b> (only past/current data).
+  This self-consistency is deliberate: every feature means the same thing in
+  training and in live inference.</p>
+
+  <table>
+    <tr><th>#</th><th>Feature</th><th>What it captures</th><th>Formula (essence)</th></tr>
+    <tr><td>1</td><td class="mono-col">r1</td><td>1-bar return / momentum</td><td class="mono-col">close.pct_change()</td></tr>
+    <tr><td>2</td><td class="mono-col">rsi</td><td>Relative Strength Index (14)</td><td class="mono-col">100 − 100/(1+RS)</td></tr>
+    <tr><td>3</td><td class="mono-col">ema20</td><td>Distance from EMA-20 (trend)</td><td class="mono-col">close/EMA20 − 1</td></tr>
+    <tr><td>4</td><td class="mono-col">macd_hist</td><td>MACD histogram (momentum shift)</td><td class="mono-col">(MACD − signal)/close</td></tr>
+    <tr><td>5</td><td class="mono-col">bb_width</td><td>Bollinger band width (volatility spread)</td><td class="mono-col">2·σ20 / MA20</td></tr>
+    <tr><td>6</td><td class="mono-col">bb_pos</td><td>Bollinger %b (position in band)</td><td class="mono-col">(close − MA20)/(2·σ20)</td></tr>
+    <tr><td>7</td><td class="mono-col">atr_pct</td><td>ATR as % of price (volatility)</td><td class="mono-col">ATR14 / close</td></tr>
+    <tr><td>8</td><td class="mono-col">parkinson_vol</td><td>High-low range volatility</td><td class="mono-col">√(mean(ln(h/l)²)/(4ln2))</td></tr>
+    <tr><td>9</td><td class="mono-col">vwap</td><td>Distance from session VWAP</td><td class="mono-col">close/VWAP − 1</td></tr>
+    <tr><td>10</td><td class="mono-col">tod</td><td>Time of day (session phase)</td><td class="mono-col">(min − 555)/375</td></tr>
+    <tr><td>11</td><td class="mono-col">dow</td><td>Day of week</td><td class="mono-col">weekday / 4</td></tr>
+    <tr><td>12</td><td class="mono-col">regime_vol</td><td>Rolling volatility of returns</td><td class="mono-col">std(r1, 20)</td></tr>
+    <tr><td>13</td><td class="mono-col">hurst</td><td>Hurst exponent (trend vs range)</td><td class="mono-col">log(R/S)/log(20)</td></tr>
+  </table>
+
+  <div class="callout">
+    <b>Why tree models don't need feature de-correlation.</b> Several features
+    overlap (EMA, MACD, RSI all encode momentum). Linear models would suffer from
+    this multicollinearity; gradient-boosted trees simply pick the best split at
+    each node and are unaffected. This is why no PCA / copula / whitening step is
+    needed or used.
+  </div>
+</section>
+
+<!-- ========================= 5 ========================= -->
+<section>
+  <h2><span class="num">5</span>The models — LightGBM &amp; GradientBoosting</h2>
+  <p>Ten trained models total. Both algorithms are <b>gradient boosting</b> — an
+  ensemble of small decision trees where each new tree corrects the previous
+  trees' errors. The difference is implementation, not idea.</p>
+
+  <table>
+    <tr><th></th><th>LightGBM</th><th>GradientBoosting (sklearn)</th></tr>
+    <tr><td><b>Used for</b></td><td>Forecast Window (8 models)</td><td>ORB daily bias (2 models)</td></tr>
+    <tr><td><b>Data size</b></td><td>~26,000 rows (big)</td><td>~500 days (small)</td></tr>
+    <tr><td><b>Why</b></td><td>Fast, handles large data, leaf-wise growth</td><td>Stable on small data, proven, less overfit-prone</td></tr>
+  </table>
+
+  <h3>5.1 Forecast models (8 × LightGBM)</h3>
+  <p>For each index (BankNifty, Nifty50) and each horizon (5m / 15m / 30m / 60m) a
+  separate binary classifier predicts <i>P(price higher after k bars)</i>. Label:
+  <span class="formula">y = 1 if close(t+k) &gt; close(t) else 0</span></p>
+  <pre><code>LGBMClassifier(
+    objective="binary", num_leaves=24, max_depth=4,
+    learning_rate=0.02, n_estimators=500,
+    subsample=0.75, colsample_bytree=0.7,
+    reg_alpha=0.5, reg_lambda=2.0,      # strong regularisation
+    min_child_samples=80)               # → resists overfitting noise</code></pre>
+  <p>Training uses a held-out validation slice (last ~10% of sessions) with early
+  stopping, then retrains on all data for production. Horizons in 5-min bars:
+  <code>5m→1, 15m→3, 30m→6, 60m→12</code>.</p>
+
+  <h3>5.2 Daily-bias models (2 × GradientBoosting)</h3>
+  <p>Predicts whether the day closes above its open. Features are daily: returns
+  (1/3/5-day), RSI, EMA-20/50 distance, ATR%, range position, gap, day-of-week,
+  plus (BankNifty only) MACD, Bollinger %b, Stochastic. Nifty50 stays lean —
+  indicator features overfit it.</p>
+  <pre><code>GradientBoostingClassifier(n_estimators=150, max_depth=3,
+                           learning_rate=0.05, subsample=0.8)
+FEATURE_SETS = {"BANKNIFTY": BASE+INDICATORS (13),
+                "NIFTY50":   BASE (10)}</code></pre>
+  <p class="small">Candlestick patterns (doji, engulfing, hammer) are computed for
+  the UI but are <b>not</b> model inputs — they did not improve accuracy.</p>
+</section>
+
+<!-- ========================= 6 ========================= -->
+<section>
+  <h2><span class="num">6</span>Confidence tiers — HIGH / MEDIUM / LOW</h2>
+  <p>A raw probability like 0.53 is nearly meaningless on its own. Instead each
+  forecast is bucketed into a tier whose <b>real held-out hit-rate is measured and
+  displayed</b>. Thresholds are learned per horizon from the validation slice — not
+  hard-coded — so the tiers actually fire.</p>
+
+  <table>
+    <tr><th>Tier</th><th>Definition</th><th>Typical held-out accuracy</th></tr>
+    <tr><td><span class="tag hi">HIGH</span></td><td>Top ~28% most-confident calls (conf ≥ 72nd percentile)</td><td>~53–57%</td></tr>
+    <tr><td><span class="tag md">MEDIUM</span></td><td>Next ~35%</td><td>~49–53%</td></tr>
+    <tr><td><span class="tag lo">LOW</span></td><td>Remaining ~37%</td><td>~48–51% (coin toss)</td></tr>
+  </table>
+
+  <p>Calibration (<code>_calibrate_tiers</code>) computes the confidence
+  distribution on the validation set, sets the HIGH/MEDIUM cutoffs by percentile,
+  and records each bucket's accuracy. Only the <b>HIGH</b> tier carries a usable
+  edge; MEDIUM and LOW are shown for transparency but should not be traded alone.</p>
+
+  <div class="callout good">
+    <b>Key insight.</b> Accuracy does not come from predicting more — it comes from
+    predicting <i>less</i>, but only when confident. The tier system is how the
+    engine says "I don't know" most of the time and "I'm relatively sure" rarely.
+  </div>
+</section>
+
+<!-- ========================= 7 ========================= -->
+<section>
+  <h2><span class="num">7</span>The STRONG signal — consensus + time filter</h2>
+  <p>The <b>⭐ STRONG</b> signal is the system's single actionable output. It is the
+  result of two stacked filters, both derived from backtests.</p>
+
+  <h3>Filter 1 — multi-horizon consensus</h3>
+  <p>A single horizon at HIGH tier is ~54%. But when <b>≥3 of the 4 horizons are
+  simultaneously HIGH and agree on direction</b>, accuracy rises:</p>
+  <table>
+    <tr><th>Horizons HIGH &amp; agreeing</th><th>BankNifty</th><th>Minutes</th></tr>
+    <tr><td>≥ 1</td><td>53.8%</td><td>2445</td></tr>
+    <tr><td>≥ 2</td><td>55.9%</td><td>1031</td></tr>
+    <tr><td><b>≥ 3</b></td><td><b>59.0%</b></td><td>314</td></tr>
+    <tr><td><b>≥ 4 (all agree)</b></td><td><b>60.4%</b></td><td>67</td></tr>
+  </table>
+  <p>The rule ships at <code>STRONG_MIN_ALIGN = 3</code>.</p>
+  <div class="callout warn" style="margin-top:8px">
+    <b>Honesty note (reconciled 30 Jul 2026).</b> The table above is an <i>early
+    held-out validation</i> cut, and the ≥4 row is only 67 minutes. On <b>live
+    logged sessions</b> the STRONG signal comes in around <b>~54%</b> (and the
+    model's own stored <code>strong_acc</code> ≈ 54%). Treat <b>~54%</b> as the
+    honest, conservative STRONG number — the 59–60% here was a smaller, rosier
+    sample. Also note: "N horizons agreeing on direction" (any tier) is a looser
+    metric than "N horizons HIGH <i>and</i> agreeing", so it reads a few points
+    lower again. Different cuts, all honest — but <b>~54% is the one to quote.</b>
+  </div>
+
+  <h3>Filter 2 — the midday dead-zone</h3>
+  <p>Backtesting the 30-minute HIGH tier by time of day revealed a consistent
+  pattern across both indices:</p>
+  <table>
+    <tr><th>Window</th><th>BankNifty</th><th>Nifty50</th></tr>
+    <tr><td>Morning 09:15–11:00</td><td class="up">55.1%</td><td class="up">56.8%</td></tr>
+    <tr><td>Midday 11:00–13:30</td><td class="dn">47.9%</td><td>52.6%</td></tr>
+    <tr><td>Afternoon 13:30–15:30</td><td class="up">54.7%</td><td class="up">55.3%</td></tr>
+  </table>
+  <p>Midday is the model's weakest window — BankNifty actually drops <b>below a coin
+  toss</b>. Therefore STRONG is <b>suppressed between 11:00 and 13:30</b>
+  (<code>DEAD_ZONE</code>). During those hours the UI shows a distinct
+  "WAIT — midday dead-zone" banner even when the horizons agree.</p>
+
+  <pre><code>strong = (align &gt;= 3) AND (time not in 11:00–13:30)
+signal = {strong, dir, align, acc, window}   # window: "prime" | "midday"</code></pre>
+
+  <div class="callout">
+    <b>Net effect.</b> Out of ~375 forecast minutes per session, STRONG fires only a
+    handful of times — precisely when several models agree with high confidence in
+    the reliable hours. Every other minute is an honest WAIT.
+  </div>
+</section>
+
+<!-- ========================= 8 ========================= -->
+<section>
+  <h2><span class="num">8</span>The ORB daily engine</h2>
+  <p>The Opening-Range Breakout engine (<code>nifty_live.py</code>) is the
+  project's original trading strategy, separate from the minute-by-minute
+  forecaster. It was long described as the "money engine" — but an honest
+  full-history backtest (§11) does <b>not</b> support that. It is documented here
+  as designed; the honest performance verdict is in §11.</p>
+
+  <h3>The rules</h3>
+  <ol>
+    <li><b>Bias at the open.</b> The daily model sets a LONG/SHORT bias with a
+    probability. If confidence &lt; 58%, the whole day is <b>NO-TRADE</b> (unless
+    the BankNifty adaptive unlock triggers).</li>
+    <li><b>09:15–09:45 build the opening range</b> (its high and low). No trading.</li>
+    <li><b>Entry:</b> a 1-minute close beyond the range in the bias direction.</li>
+    <li><b>Stop:</b> the opposite side of the range. <b>Target:</b> 1.5R.</li>
+    <li><b>Exits:</b> stop, target, or the 15:15 square-off — whichever first.</li>
+    <li><b>Limits:</b> BankNifty up to 5 trades, entries until 14:30; Nifty50 up to
+    3, entries until 13:30. (Both tuned by backtest — extending Nifty50 loses.)</li>
+  </ol>
+
+  <h3>Adaptive unlock (BankNifty only)</h3>
+  <p>On borderline-confidence days, a breakout is taken only if <b>4 of 4 intraday
+  indicators</b> (RSI, EMA, MACD, VWAP) align with it; otherwise the day is
+  skipped. (Only these four count — a July 2026 fix stopped the expanded 7-chip
+  market-state card from loosening this gate to "4 of 7.")</p>
+
+  <div class="callout warn">
+    <b>Honest verdict (supersedes the old "money engine" claim).</b> On the full
+    17-month / 351-session walk-forward, even with the adaptive unlock and all tuned
+    settings, the ORB engine has <b>no robust edge</b>: BankNifty <b>−12.6R</b>,
+    Nifty50 <b>+0.9R</b> (flat), and both LOSE on the training half while only
+    profiting on the recent test half — regime luck, not an edge. Win-rate ~44–49%
+    at 1.5:1 is break-even before costs and negative after. <b>Do not trade this
+    with real money.</b> See §11.</p>
+  </div>
+</section>
+
+<!-- ========================= 9 ========================= -->
+<section>
+  <h2><span class="num">9</span>The AI layer — Gemini analyst &amp; co-pilot</h2>
+  <p><code>ai_analyst.py</code> adds two Gemini-powered panels. <b>They do not
+  affect the forecast numbers</b> — the models run entirely without them. They are
+  human-readable context only.</p>
+  <table>
+    <tr><th>Panel</th><th>Endpoint</th><th>Output</th></tr>
+    <tr><td><b>AI Technical Analyst</b></td><td class="mono-col">/api/ai</td><td>Reads the live snapshot (day stats, opening range, prior levels, indicators, hit-rate) → structure, levels that matter, confirm/invalidate scenarios. Never a buy/sell signal.</td></tr>
+    <tr><td><b>AI Co-pilot</b></td><td class="mono-col">/api/copilot</td><td>Strict-JSON verdict: stance (LEANS-LONG / SHORT / STAND-ASIDE), conviction 1–5, read, wait-for. Conviction 4–5 only when horizons + indicators + hit-rates agree.</td></tr>
+  </table>
+  <p>Model: <code>gemini-flash-latest</code> (free tier). Responses are cached ~10
+  minutes to stay inside the free daily quota. If the quota is exhausted, only
+  these two panels degrade — the forecaster is unaffected.</p>
+</section>
+
+<!-- ========================= 10 ========================= -->
+<section>
+  <h2><span class="num">10</span>The dashboard — routes, APIs, UI</h2>
+  <p><code>nifty_dashboard.py</code> runs a threaded HTTP server on
+  <code>localhost:8181</code>. Per-index worker threads stream data, feed the
+  engines, and update in-memory <code>STATE</code>; the browser polls JSON APIs.</p>
+
+  <h3>Pages</h3>
+  <table>
+    <tr><th>Route</th><th>Page</th><th>Purpose</th></tr>
+    <tr><td class="mono-col">/</td><td>dashboard.html</td><td>The Beast — live candles, auto + manual paper trades, P&amp;L tiles, trade log, indicator chips</td></tr>
+    <tr><td class="mono-col">/forecasts</td><td>forecast_feed.html</td><td>Forecast Window — 4-horizon cards, tiers, STRONG/WAIT banner, per-minute history with ✓/✗</td></tr>
+    <tr><td class="mono-col">/quantum</td><td>quantum_live.html</td><td>Market-state view — 7 indicator chips</td></tr>
+  </table>
+
+  <h3>JSON APIs</h3>
+  <table>
+    <tr><th>Endpoint</th><th>Returns</th></tr>
+    <tr><td class="mono-col">/api/state</td><td>Live candles, trades, P&amp;L, indicators per index</td></tr>
+    <tr><td class="mono-col">/api/tick</td><td>Latest price (polled at 250 ms for smooth candles)</td></tr>
+    <tr><td class="mono-col">/api/forecasts</td><td>Current multi-horizon forecast, signal, today's hit-rate, backtest accuracy, history</td></tr>
+    <tr><td class="mono-col">/api/ai · /api/copilot</td><td>Gemini analyst text / co-pilot verdict</td></tr>
+  </table>
+  <p class="small">Modes: market open (Mon–Fri 09:15–15:30) → <b>LIVE</b>; otherwise
+  <b>CLOSED</b> (last session shown statically). Forecasts are generated only in
+  LIVE mode during market hours (a triple guard prevents stray after-hours rows).</p>
+</section>
+
+<!-- ========================= 11 ========================= -->
+<section>
+  <h2><span class="num">11</span>Backtesting &amp; honest results</h2>
+  <p>Run <code>python3 backtest.py</code>. Methodology: train on all sessions
+  before a cutoff, test on the last 45 held-out sessions, no lookahead, thresholds
+  calibrated on train only. Below are the real out-of-sample hit-rates.</p>
+
+  <h4>BankNifty (out-of-sample)</h4>
+  <table>
+    <tr><th>Horizon</th><th>All signals</th><th>HIGH tier</th><th>MEDIUM</th><th>LOW</th></tr>
+    <tr><td>5m</td><td>52.0%</td><td class="up">54%</td><td>49%</td><td>52%</td></tr>
+    <tr><td>15m</td><td>51.1%</td><td class="up">52%</td><td>51%</td><td>50%</td></tr>
+    <tr><td>30m</td><td>50.1%</td><td class="up">56%</td><td>49%</td><td>47%</td></tr>
+    <tr><td>60m</td><td>48.6%</td><td class="up">54%</td><td>45%</td><td>47%</td></tr>
+  </table>
+
+  <h4>Nifty50 (out-of-sample)</h4>
+  <table>
+    <tr><th>Horizon</th><th>All signals</th><th>HIGH tier</th><th>MEDIUM</th><th>LOW</th></tr>
+    <tr><td>5m</td><td>49.8%</td><td class="up">51%</td><td>50%</td><td>48%</td></tr>
+    <tr><td>15m</td><td>50.0%</td><td class="up">54%</td><td>47%</td><td>49%</td></tr>
+    <tr><td>30m</td><td>49.7%</td><td class="up">56%</td><td>48%</td><td>47%</td></tr>
+    <tr><td>60m</td><td>51.8%</td><td class="up">54%</td><td>53%</td><td>49%</td></tr>
+  </table>
+
+  <p><b>Reading these numbers.</b> "All signals" hovers around 50% — a coin toss, as
+  expected. The <b>HIGH tier consistently beats it by 4–6 points</b>. Stacking the
+  STRONG consensus + time filter on top lifts the actionable subset to ~54–59%.
+  Those are honest hit-rates for the model's <i>direction</i> — but see the
+  trading verdict below: a good hit-rate is not the same as making money.</p>
+
+  <h3>ORB trading backtest — the honest verdict</h3>
+  <p>The ORB strategy was run over the <b>full 17-month / 351-session</b> dataset
+  (walk-forward daily bias), including the tuned per-index settings and BankNifty's
+  adaptive unlock. Results, split into a training half (first 60%) and a test half
+  (last 40%):</p>
+  <table>
+    <tr><th>Index</th><th>Train (first 60%)</th><th>Test (last 40%)</th><th>Full 351</th></tr>
+    <tr><td>BankNifty</td><td class="dn">−15.2R (43% win)</td><td class="up">+2.6R (53%)</td><td class="dn">−12.6R</td></tr>
+    <tr><td>Nifty50</td><td class="dn">−2.8R (46% win)</td><td class="up">+3.7R (52%)</td><td>+0.9R (flat)</td></tr>
+  </table>
+  <div class="callout warn">
+    <b>No robust edge.</b> Both indices <b>lose on the training half</b> and only
+    profit on the recent test half — the signature of regime luck, not a real edge
+    (a genuine edge is positive on both). A parameter sweep found <b>no</b> setting
+    positive on both halves. Win-rate ~44–49% at 1.5 : 1 is break-even before costs;
+    realistic ~0.15R/trade transaction costs push it negative. The old "positive-R
+    money engine" claim came from a short, lucky 60-day window. <b>Conclusion: do
+    not trade this with real money — use it as an information and paper-trading tool.</b></p>
+  </div>
+</section>
+
+<!-- ========================= 12 ========================= -->
+<section>
+  <h2><span class="num">12</span>What was tested and removed</h2>
+  <p>The graveyard is as important as the codebase. Each item below was a plausible
+  idea that <b>failed an honest backtest</b> and was removed — documented so nobody
+  re-adds it on a hunch.</p>
+  <table>
+    <tr><th>Idea</th><th>Result</th><th>Verdict</th></tr>
+    <tr><td>Rapid-fire 5-min ML scalper (many trades/day)</td><td>Lost money in all 18 configurations</td><td class="dn">Removed</td></tr>
+    <tr><td>Extra features: VIX, GARCH, cross-index, cointegration</td><td>Train/serve skew (built from 2yr history at train, only intraday live); no reliable gain</td><td class="dn">Removed</td></tr>
+    <tr><td>Candlestick patterns (doji, engulfing, hammer) as model inputs</td><td>Helped neither index</td><td class="dn">UI-only</td></tr>
+    <tr><td>Chart-pattern-essence features (swings, range, squeeze, breakout)</td><td>BankNifty flat; Nifty50 mixed (+3.7 one horizon, −5.5 another = overfit noise)</td><td class="dn">Rejected</td></tr>
+    <tr><td>Meta-labeling + triple-barrier (López de Prado)</td><td>Rigorous multi-horizon, threshold on validation: base game deeply negative, meta couldn't find enough good trades</td><td class="dn">Rejected</td></tr>
+    <tr><td>ORB engine as a real-money strategy</td><td>Full 351-session walk-forward: no robust edge (loses on train, regime-luck on test); break-even before costs, negative after</td><td class="dn">Info-only</td></tr>
+    <tr><td>Time-of-day / regime filter on STRONG</td><td>Midday dead-zone real &amp; consistent (BN 48%); good hours 55–57%</td><td class="up">Shipped ✓</td></tr>
+    <tr><td>Multi-horizon HIGH consensus (≥3 agree)</td><td>Lifts BankNifty to ~59–60%</td><td class="up">Shipped ✓</td></tr>
+  </table>
+  <h3>Ideas floated, not yet tested</h3>
+  <ul>
+    <li><b>Conviction-based position sizing</b> — bet more on STRONG, nothing on WAIT (improves profit more than accuracy).</li>
+    <li><b>Gap / news-day stand-aside filter</b> — the one live loss (−1.08R) was a gap-down news day.</li>
+    <li><b>Daily loss limit</b> — stop after N losing trades to protect capital.</li>
+  </ul>
+</section>
+
+<!-- ========================= 13 ========================= -->
+<section>
+  <h2><span class="num">13</span>APIs reference</h2>
+
+  <h3>Angel One SmartAPI (primary)</h3>
+  <ul>
+    <li>Library: <code>smartapi-python</code>; config: <code>angel_config.json</code> (api_key, client_code, pin, totp_secret).</li>
+    <li>Auto-login: PIN + a 6-digit code generated locally from the TOTP secret via <code>pyotp</code> — <b>no SMS OTP</b>, so it works abroad.</li>
+    <li>Candles: <code>getCandleData</code> (throttled ~2s). Ticks: <code>SmartWebSocketV2</code>, mode 1 LTP, exchangeType 1, price in paise/100.</li>
+    <li>Index tokens: BankNifty <code>99926009</code>, Nifty50 <code>99926000</code>, India VIX <code>99926017</code>.</li>
+    <li>Test: <code>python3 angel_data.py</code>.</li>
+  </ul>
+
+  <h3>Upstox (optional backup)</h3>
+  <ul>
+    <li>Config: <code>upstox_config.json</code>; OAuth token expires ~3:30 AM daily and needs SMS OTP.</li>
+    <li>Commands: <code>python3 upstox_data.py login</code> → open URL → <code>token &lt;code&gt;</code>.</li>
+    <li><b>Historical option chain</b>: Upstox <i>Expired Instruments</i> API — requires Upstox Plus (currently free to activate, ~6 months history). Not used until it passes a backtest.</li>
+    <li><code>upstox_autologin.py</code>: a Playwright + pyotp stub to automate the daily login (WIP — for a friend's India-based account).</li>
+  </ul>
+
+  <h3>Gemini &amp; Yahoo</h3>
+  <ul>
+    <li>Gemini: <code>gemini_config.json</code>, model <code>gemini-flash-latest</code>, free tier, ~10-min cache. Powers only the AI panels.</li>
+    <li>Yahoo: <code>yfinance</code>, no key. Fallback feed; avoid frequent polling (rate-limited).</li>
+  </ul>
+  <div class="callout warn">
+    <b>Security.</b> Config files hold live credentials — never print, commit, or
+    share them. If a key is ever exposed in chat/logs, regenerate it in the
+    provider's developer console.
+  </div>
+</section>
+
+<!-- ========================= 14 ========================= -->
+<section>
+  <h2><span class="num">14</span>Daily operating guide</h2>
+  <ol>
+    <li><b>Any time (optional):</b> pre-train models — <code>python3 train_models.py</code>.</li>
+    <li><b>At/after 09:15 on a weekday:</b> <code>python3 nifty_dashboard.py</code>. Angel logs in automatically; the browser opens to <code>localhost:8181</code>.</li>
+    <li>Open <code>/forecasts</code>. Watch the banner:
+      <ul>
+        <li><span class="tag hi">⭐ STRONG</span> BUY/SELL → the actionable moment (act on your own judgement + risk rules).</li>
+        <li><b>WAIT</b> → do nothing. This is most of the day, by design.</li>
+        <li><b>WAIT — midday dead-zone</b> → models agree but it is the weak 11:00–13:30 window.</li>
+      </ul>
+    </li>
+    <li>Cross-check with the Beast (<code>/</code>): consensus, indicator chips, paper P&amp;L, AI Co-pilot.</li>
+    <li>Respect position sizing (1% risk), the 15:15 square-off, and NO-TRADE days.</li>
+    <li>Any time, verify honesty: <code>python3 backtest.py</code>.</li>
+  </ol>
+</section>
+
+<!-- ========================= 15 ========================= -->
+<section>
+  <h2><span class="num">15</span>Risk management &amp; limitations</h2>
+  <h3>Hard limits of this system</h3>
+  <ul>
+    <li><b>Accuracy ceiling ~59%.</b> No amount of tuning reaches 70–90%. Index
+    direction is genuinely near-random at short horizons.</li>
+    <li><b>Warm-up.</b> Forecasts need ~1.5 hours of candles before the rolling
+    indicators (20-bar windows) are valid.</li>
+    <li><b>Free-data quirks.</b> Yahoo lags; Angel revises the final bar to the
+    official close (a live tick and the official close can differ slightly).</li>
+    <li><b>Regime dependence.</b> Trained on Feb 2025–Jul 2026. A market regime very
+    unlike that period will degrade accuracy until retrained.</li>
+  </ul>
+  <h3>Survival rules</h3>
+  <ol>
+    <li>Risk 1% of capital per trade. <b>Never raise it.</b> A 4–6 loss streak is
+    normal; at 10% risk that is account death.</li>
+    <li>Winners target 1.5R, losers cut at 1R — the math, not the hit-rate, is the edge.</li>
+    <li>Only act on STRONG, in the good hours. WAIT is a decision.</li>
+    <li>Paper-trade ≥ 20 sessions before real money. Only risk what you can lose entirely.</li>
+    <li>Nothing here is financial advice. Forecasting is probabilistic.</li>
+  </ol>
+</section>
+
+<!-- ========================= 16 ========================= -->
+<section>
+  <h2><span class="num">16</span>Statistical methods — what we kept &amp; removed</h2>
+  <p>Beyond the classic indicators, the project experimented with heavier
+  statistical / econometric methods. True to the iron rule, each was
+  <b>tested, not assumed</b>. Some survived and are live features; the more
+  sophisticated ones did not and were removed. This section documents both.</p>
+
+  <h3>16.1 Kept — statistical features that survived testing</h3>
+  <p>These are among the 13 live features. They stayed because they are
+  <b>computed identically in training and live</b> (no skew) and earned their place
+  in the walk-forward backtest.</p>
+  <table>
+    <tr><th>Method</th><th>What it measures</th><th>How it's computed</th></tr>
+    <tr><td><b>Hurst exponent</b></td>
+        <td>Whether the market is <i>trending</i> (H&gt;0.5), <i>mean-reverting / choppy</i> (H&lt;0.5), or a random walk (H≈0.5). The model behaves differently in each regime.</td>
+        <td>Rescaled-range (R/S) analysis over a rolling 20-bar window: <code>log(R/S)/log(20)</code>.</td></tr>
+    <tr><td><b>Parkinson volatility</b></td>
+        <td>Intraday volatility using the high–low range — more efficient than close-to-close because it uses the full bar.</td>
+        <td><code>√(mean(ln(H/L)²) / (4·ln2))</code> over 12 bars.</td></tr>
+    <tr><td><b>Regime volatility</b></td>
+        <td>How wild the market is right now — a simple statistical "temperature."</td>
+        <td>Rolling standard deviation of 1-bar returns (20 bars).</td></tr>
+  </table>
+
+  <h3>16.2 Removed — sophisticated statistics that failed the test</h3>
+  <p>These sounded powerful and dominated the old engine's feature-importance list
+  (it once claimed "statistical features are the top 6"). But an honest walk-forward
+  exposed two fatal problems: a <b>train/serve mismatch</b> (they were built from 2
+  years of continuous history at training time, but only today's intraday bars at
+  live time — so they meant different things) and <b>no reliable accuracy gain</b>.</p>
+  <table>
+    <tr><th>Method</th><th>The idea</th><th>Why it was removed</th></tr>
+    <tr><td><b>GARCH(1,1)</b></td>
+        <td>An econometric model that forecasts volatility on the principle that volatility clusters — calm follows calm, turbulence follows turbulence.</td>
+        <td>Train/serve skew (rolling fit needs long history, absent intraday); slow; no measurable edge.</td></tr>
+    <tr><td><b>Cointegration spread z-score</b></td>
+        <td>Measures how far BankNifty and Nifty have drifted from their usual relationship — a pairs-trading / mean-reversion signal.</td>
+        <td>The normalisation referenced the series' start, which differed wildly between the 2-year train window and a single live day; did not help direction.</td></tr>
+    <tr><td><b>India VIX features</b></td>
+        <td>The market's "fear index" (raw level + rolling percentile) as a sentiment input.</td>
+        <td>Helped inconsistently across horizons; part of the skewed "extras" set. Note: VIX data is still cached, just not fed to the model.</td></tr>
+  </table>
+
+  <div class="callout warn">
+    <b>The lesson.</b> Sophistication is not edge. GARCH and cointegration are
+    genuine, respected techniques — and they still failed here, because a method only
+    earns a place if it survives an honest, train/serve-consistent backtest. The
+    plain statistical features that stayed (Hurst, Parkinson, regime volatility) won
+    precisely because they are simple and consistent, not because they are fancy.
+  </div>
+
+  <h2><span class="num">17</span>File-by-file reference &amp; glossary</h2>
+  <h3>Key modules</h3>
+  <table>
+    <tr><th>Module</th><th>Public surface</th></tr>
+    <tr><td class="mono-col">forecast_engine.py</td><td><code>ForecastEngine(name, capital, risk).forecast(candles, day)</code> → dict with <code>h</code> (per-horizon), <code>signal</code> (STRONG), <code>consensus</code>; <code>.backtest_acc</code>, <code>.tier_info</code>, <code>.strong_acc</code>. Constants: <code>HORIZONS</code>, <code>BASE_COLS</code>, <code>STRONG_MIN_ALIGN</code>, <code>DEAD_ZONE</code>.</td></tr>
+    <tr><td class="mono-col">nifty_live.py</td><td><code>ORBEngine.on_minute(...)</code>, <code>build_daily_features</code>, <code>walk_forward_bias</code>, <code>rsi</code>, <code>flat</code>, <code>TICKERS</code>, <code>FEATURE_SETS</code>.</td></tr>
+    <tr><td class="mono-col">angel_data.py</td><td><code>AngelFeed(cfg).candles(name, interval)</code>, WebSocket tick stream, TOTP auto-login.</td></tr>
+    <tr><td class="mono-col">ai_analyst.py</td><td><code>briefing(snapshot)</code>, <code>copilot(snapshot)</code>.</td></tr>
+  </table>
+
+  <h3>Glossary</h3>
+  <table>
+    <tr><th>Term</th><th>Meaning</th></tr>
+    <tr><td><b>Horizon</b></td><td>How far ahead a forecast looks: 5, 15, 30 or 60 minutes.</td></tr>
+    <tr><td><b>Tier</b></td><td>Confidence bucket (HIGH / MEDIUM / LOW) with a measured hit-rate.</td></tr>
+    <tr><td><b>STRONG</b></td><td>≥3 horizons HIGH and agreeing, in the good hours. The one actionable signal.</td></tr>
+    <tr><td><b>R</b></td><td>One unit of risk. +1.5R means a win of 1.5× the amount risked.</td></tr>
+    <tr><td><b>ORB</b></td><td>Opening-Range Breakout — the daily strategy.</td></tr>
+    <tr><td><b>Walk-forward</b></td><td>Backtest that only ever trains on the past and tests on the future — no lookahead.</td></tr>
+    <tr><td><b>Dead-zone</b></td><td>11:00–13:30, when the model is weakest and STRONG is suppressed.</td></tr>
+    <tr><td><b>TOTP</b></td><td>Time-based one-time password — a code generated locally from a secret, no SMS needed.</td></tr>
+  </table>
+
+  <p class="footer-note">Nifty Oracle · Technical Documentation · v3.1 · 26 July 2026 ·
+  Built honestly — no 90%, ever.</p>
+</section>
+
+</body>
+</html>

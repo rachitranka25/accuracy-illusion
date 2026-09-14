@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+title: >-
+  The Accuracy Illusion: How overlapping samples manufacture 71% hit-rates
+  in intraday index forecasting
+message: If you use this work, please cite it as below.
+type: software
+authors:
+  - given-names: Rachit
+    family-names: Ranka
+    alias: rachitranka25
+repository-code: https://github.com/rachitranka25/accuracy-illusion
+abstract: >-
+  An empirical study of intraday predictability on NSE index derivatives using
+  only freely available retail data. Across 100+ strategies and seven model
+  families, out-of-sample directional accuracy does not exceed ~50%, and an
+  over-capacity model scores identically on real and shuffled labels. Reported
+  accuracies of 60-85% are shown to be artefacts of scoring overlapping
+  forecasts, which inflates hit-rates 8-11x. Volatility (magnitude) prediction
+  reaches 68-74% out-of-sample and is stable, and the variance risk premium is
+  identified as the only measurable, retail-reachable positive expectancy.
+keywords:
+  - market microstructure
+  - intraday forecasting
+  - negative results
+  - overlapping samples
+  - volatility forecasting
+  - variance risk premium
+  - NSE
+  - index options
+license: MIT

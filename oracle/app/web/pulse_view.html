@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PULSE — One Signal / Minute</title>
+<style>
+  :root{
+    --bg:#0c0a07; --panel:#17130d; --line:#2c2417; --ink:#ede4d3;
+    --dim:#9a8d76; --head:#fbf3e2; --gold:#e8b24a;
+    --up:#5ad17f; --dn:#ff6a55; --mono:"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1a1408,var(--bg));
+    color:var(--ink);font-family:var(--mono);padding:clamp(14px,3vw,30px);line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+  header{display:flex;flex-direction:column;gap:5px;border-bottom:1px solid var(--line);padding-bottom:14px}
+  h1{margin:0;font-size:clamp(18px,3.4vw,26px);color:var(--gold);letter-spacing:2px;font-weight:700}
+  .sub{color:var(--dim);font-size:12.5px}
+  .nav{margin-top:4px}
+  .nav a{color:var(--dim);text-decoration:none;font-size:12px;margin-right:16px;letter-spacing:.5px}
+  .nav a:hover{color:var(--gold)} .nav a.on{color:var(--gold)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:20px;display:flex;flex-direction:column;gap:16px}
+  .idx{display:flex;justify-content:space-between;align-items:baseline}
+  .idx .nm{font-size:15px;letter-spacing:2px;color:var(--head);font-weight:600}
+  .idx .px{color:var(--dim);font-size:13px}
+  .signal{border-radius:12px;padding:20px;text-align:center;border:1.5px solid;position:relative}
+  .signal.up{background:linear-gradient(180deg,rgba(90,209,127,.12),transparent);border-color:rgba(90,209,127,.5)}
+  .signal.dn{background:linear-gradient(180deg,rgba(255,106,85,.12),transparent);border-color:rgba(255,106,85,.5)}
+  .signal .dir{font-size:30px;font-weight:800;letter-spacing:1px}
+  .signal.up .dir{color:var(--up)} .signal.dn .dir{color:var(--dn)}
+  .signal .sub2{font-size:12px;color:var(--dim);margin-top:5px}
+  .signal .star{position:absolute;top:12px;right:14px;font-size:12px;color:var(--gold)}
+  .lvls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .lv{background:#0e0b06;border:1px solid var(--line);border-radius:10px;padding:11px;text-align:center}
+  .lv .k{font-size:10px;color:var(--dim);letter-spacing:.6px;text-transform:uppercase}
+  .lv .v{font-size:16px;font-weight:700;color:var(--head);font-variant-numeric:tabular-nums;margin-top:3px}
+  .lv.tg .v{color:var(--up)} .lv.sl .v{color:var(--dn)}
+  .lv .p{font-size:10px;color:var(--dim);margin-top:1px}
+  .stat{display:flex;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--line);padding-top:12px;font-size:12px;color:var(--dim)}
+  .stat .big{font-size:22px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+  table{width:100%;border-collapse:collapse;font-size:11.5px;font-variant-numeric:tabular-nums}
+  th,td{padding:5px 5px;text-align:right;border-bottom:1px solid #201a10;white-space:nowrap}
+  th{color:var(--dim);font-weight:500;font-size:10px;text-transform:uppercase}
+  th:first-child,td:first-child{text-align:left}
+  td.up{color:var(--up)} td.dn{color:var(--dn)}
+  td.win{color:var(--up);font-weight:700} td.loss{color:var(--dn);font-weight:700}
+  td.profit{color:#9bd67f;font-weight:600} td.open{color:var(--gold)}
+  .scroll{max-height:300px;overflow-y:auto;margin-top:2px}
+  .note{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+    font-size:12px;color:var(--dim)}
+  .note b{color:var(--ink)}
+  .fl-row{margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px}
+  .fl-btn{font:inherit;font-size:12px;font-weight:700;padding:5px 12px;border-radius:99px;
+          cursor:pointer;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--dim)}
+  .fl-btn.on{background:var(--gold);color:#141414;border-color:var(--gold)}
+  #fl-desc{color:var(--dim);font-weight:400}
+  .bot{margin:14px 0;border:1px solid rgba(233,178,74,.35);border-radius:12px;
+    background:linear-gradient(180deg,rgba(233,178,74,.06),rgba(20,20,20,0));overflow:hidden}
+  .bot-h{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
+    gap:8px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .bot-title{font-weight:800;font-size:15px;color:var(--gold)}
+  .bot-sub{font-size:11px;color:var(--dim)}
+  .bot-eq{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+  .bot-ret{font-size:13px;font-weight:800;margin-left:8px}
+  .up{color:#5fcf7a} .dn{color:#e07a7a}
+  .bot-tbl{width:100%;border-collapse:collapse;font-size:12px}
+  .bot-tbl th{text-align:left;color:var(--dim);font-weight:600;padding:6px 12px;font-size:10px;
+    text-transform:uppercase;letter-spacing:.4px}
+  .bot-tbl td{padding:7px 12px;border-top:1px solid rgba(255,255,255,.05);
+    font-variant-numeric:tabular-nums}
+  .bot-empty{padding:14px 16px;font-size:12px;color:var(--dim)}
+  .chip{font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;
+    background:rgba(233,178,74,.14);color:var(--gold);border:1px solid rgba(233,178,74,.3)}
+  .bot-risk{padding:9px 16px;font-size:11px;color:var(--dim);
+    border-top:1px solid rgba(255,255,255,.06);line-height:1.6}
+  .midbadge{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.3px;
+    padding:2px 7px;border-radius:5px;background:rgba(140,150,170,.16);
+    color:#aeb7c6;border:1px solid rgba(140,150,170,.3);margin-bottom:4px}
+  .midtag{color:#8a94a8;font-size:11px}
+  .papertag{font-size:11px}
+  .belowtag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;
+    background:rgba(200,150,60,.16);color:#d9a441;border:1px solid rgba(200,150,60,.35)}
+  .rsok{color:#7ee2a8;font-size:11px;opacity:.9}
+  .rsbad{color:#ff8f82;font-size:11px;opacity:.9}
+  tr.midrow{opacity:.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>◈ PULSE</h1>
+    <div class="sub">Best setups only — sniper filters, speed gates, meta-quality and live path scoring.
+      Fewer calls, cleaner exits, faster green ticks.</div>
+    <div class="nav">
+      <a href="/">Beast</a><a href="/forecasts">Forecast</a><a href="/quantum">Quantum</a><a href="/pulse" class="on">Pulse ◈</a>
+    </div>
+    <div class="fl-row">
+      <span style="color:var(--dim)">Flavor:</span>
+      <button class="fl-btn" id="fl-sniper" onclick="setFlavor('sniper')">◎ Sniper</button>
+      <button class="fl-btn" id="fl-hit" onclick="setFlavor('hit')">🎯 High hit-rate</button>
+      <button class="fl-btn" id="fl-classic" onclick="setFlavor('classic')">🎇 Classic</button>
+      <span id="fl-desc"></span>
+    </div>
+  </header>
+
+  <div id="bot-panel"></div>
+
+  <div class="grid" id="cards"></div>
+
+  <div class="note">
+    <b>How it works:</b> Only high-quality setups are shown; Sniper mode requires extra quality,
+    speed and momentum before a call appears. <b>✓ HIT</b> = target reached first (full green).
+    <b>◆ PROFIT</b> = target not reached but closed in profit (partial gain).
+    <b>✗ MISS</b> = stoploss hit first, or closed on the losing side. Green rate counts HIT + PROFIT.
+    This improves selectivity honestly; it is not a guaranteed 90% system.
+  </div>
+</div>
+
+<script>
+const F = n => n==null ? "—" : Number(n).toLocaleString("en-IN",{maximumFractionDigits:1});
+const arrow = d => d==="UP" ? "▲ LONG" : "▼ SHORT";
+let FLAVOR = localStorage.getItem("pulse-flavor") || "sniper";
+const FL_DESC = {sniper:"strictest mode — tight target, faster exits, extra speed/quality gates",
+                 hit:"tight target — higher green-rate, smaller wins, controlled re-entries",
+                 classic:"clean few trades · smaller SL (0.7×) · bigger target (1×) · no re-entries"};
+if(FLAVOR==="big") FLAVOR="classic";   // big removed -> fall back
+if(FLAVOR==="green90") FLAVOR="classic";
+function paintFlavor(){
+  for(const f of ["sniper","hit","classic"])
+    document.getElementById("fl-"+f).classList.toggle("on", FLAVOR===f);
+  document.getElementById("fl-desc").textContent = FL_DESC[FLAVOR]||"";
+}
+function setFlavor(f){ FLAVOR=f; localStorage.setItem("pulse-flavor",f); paintFlavor(); tick(); }
+async function tick(){
+  let data; try{ data = await (await fetch("/api/pulse?mode="+FLAVOR)).json(); }catch(e){ return; }
+  const host = document.getElementById("cards");
+  // preserve scroll positions so the list doesn't jump to top on refresh
+  const saved = {};
+  host.querySelectorAll(".scroll").forEach(el=>{ if(el.id) saved[el.id]=el.scrollTop; });
+  host.innerHTML = "";
+  for(const name of Object.keys(data)){
+    const d = data[name], c = d.current;
+    if(!c){ host.innerHTML += `<div class="card"><div class="idx"><span class="nm">${name}</span></div>
+      <div style="color:var(--dim);text-align:center;padding:30px">waiting for market…</div></div>`; continue; }
+    const cls = c.dir==="UP" ? "up":"dn";
+    const rows = (d.history||[]).slice().reverse().slice(0,140).map(r=>{
+      let oc, res;
+      const tm = r.mins!=null ? ` · ${r.mins}m${r.timed?"⏱":""}` : "";
+      const rupee = "";   // no rupee estimate — we don't know your strike/premium/lots
+      if(r.outcome==="hit"){ res=`<td class="win">✓ HIT +${r.pts}${tm}${rupee}</td>`; }
+      else if(r.outcome==="profit"){ res=`<td class="profit">◆ PROFIT +${r.pts}${tm}${rupee}</td>`; }
+      else if(r.outcome==="miss"){ res=`<td class="loss">✗ MISS ${r.pts>0?"+":""}${r.pts}${tm}${rupee}</td>`; }
+      else { res='<td class="open">· open</td>'; }
+      const md = r.midday ? ' <span class="midtag" title="midday dead-zone — weaker">⏸</span>' : '';
+      const pp = r.paper ? ' <span class="papertag" title="closing-momentum signal (Gao/Han/Li/Zhou, JFE 2018)">📄</span>' : '';
+      const bb = r.below_bar ? ' <span class="belowtag" title="best setup of the day, but it did NOT clear the quality filter — size down or sit out">⚠ below bar</span>' : '';
+      const qq = r.quality!=null ? ` <span class="belowtag" title="setup quality score">Q${r.quality}</span>` : '';
+      return `<tr class="${r.midday||r.below_bar?'midrow':''}"><td>${r.time}${md}${pp}${bb}${qq}</td><td>${F(r.price)}</td>
+        <td class="${r.dir==='UP'?'up':'dn'}">${arrow(r.dir)}</td>
+        <td>${F(r.tgt)}</td><td>${F(r.sl)}</td>${res}</tr>`;
+    }).join("");
+    host.innerHTML += `
+      <div class="card">
+        <div class="idx"><span class="nm">${name}</span><span class="px">${d.mode||""} · ₹${F(d.price)}</span></div>
+        <div class="signal ${cls}">
+          ${c.strong?'<span class="star">⭐ STRONG</span>':''}
+          ${c.midday?'<span class="midbadge">⏸ MIDDAY DEAD-ZONE · weaker (~48%), size down</span>':''}
+          <div class="dir">${arrow(c.dir)}</div>
+          <div class="sub2">@ ${c.time} · entry ₹${F(c.price)} · conf ${c.conf||"—"}% · quality ${c.quality||"—"}${c.ultra?" · ULTRA":""}</div>
+        </div>
+        <div class="lvls">
+          <div class="lv"><div class="k">Entry</div><div class="v">${F(c.price)}</div></div>
+          <div class="lv tg"><div class="k">Target</div><div class="v">${F(c.tgt)}</div><div class="p">+${c.tgt_pts} pts</div></div>
+          <div class="lv sl"><div class="k">Stoploss</div><div class="v">${F(c.sl)}</div><div class="p">−${c.sl_pts} pts</div></div>
+        </div>
+        <div class="stat">
+          <span>Green rate today<br>
+            <span style="font-size:10px">avg green: ${d.avg_green_min!=null?d.avg_green_min+"m":"—"} · net ${d.net_pts>0?"+":""}${d.net_pts||0} pts</span></span>
+          <span style="text-align:right"><span class="big">${d.pct!=null?d.pct+"%":"—"}</span><br>
+            <span style="font-size:11px">${d.hits||0} full hit · ${d.profits||0} partial green · ${d.misses||0} miss</span></span>
+        </div>
+        <div class="scroll" id="sc-${name}">
+          <table><thead><tr><th>Time</th><th>Entry</th><th>Call</th><th>Target</th><th>SL</th><th>Result</th></tr></thead>
+          <tbody>${rows}</tbody></table>
+        </div>
+      </div>`;
+  }
+  // restore scroll positions
+  for(const id in saved){ const el=document.getElementById(id); if(el) el.scrollTop=saved[id]; }
+}
+const IDXNAME = {BANKNIFTY:"BankNifty", NIFTY50:"Nifty 50", FINNIFTY:"FinNifty"};
+async function tickBot(){
+  let data; try{ data = await (await fetch("/api/bot?cap=10000")).json(); }catch(e){ return; }
+  // pick the index that actually has setups today (bot focuses where BIG-move fires)
+  let best=null;
+  for(const n in data){ const v=data[n];
+    if(!best || (v.trades&&v.trades.length>(data[best].trades||[]).length)) best=n; }
+  const host = document.getElementById("bot-panel");
+  const blocks = Object.keys(data).filter(n=>(data[n].trades||[]).length>0);
+  const show = blocks.length?blocks:[best].filter(Boolean);
+  host.innerHTML = show.map(n=>{
+    const v=data[n]; if(!v) return "";
+    const ret=v.day_return_pct||0; const cls=ret>=0?"up":"dn";
+    const rows=(v.trades||[]).map(t=>{
+      const oc = t.outcome==="win"?`<span class="up">✓ WIN</span>`
+               : t.outcome==="loss"?`<span class="dn">✗ LOSS</span>`
+               : `<span style="color:var(--dim)">· open</span>`;
+      const pnl = t.pnl>0?`<span class="up">+₹${F(t.pnl)}</span>`
+                : t.pnl<0?`<span class="dn">−₹${F(-t.pnl)}</span>`:"—";
+      const rp = t.ret_pct!=null&&t.outcome!=="open"?` <span style="font-size:10px;color:var(--dim)">(${t.ret_pct>0?"+":""}${t.ret_pct}%)</span>`:"";
+      return `<tr><td>${t.time}</td><td><b>${arrow(t.dir)}</b></td>
+        <td>${t.option} <span class="chip">${t.level_lbl}</span></td>
+        <td>${t.lots}× · ₹${F(t.deploy)}</td>
+        <td>${oc}${rp}</td><td>${pnl}</td><td style="color:var(--dim)">₹${F(t.equity)}</td></tr>`;
+    }).join("");
+    const body = (v.trades||[]).length
+      ? `<table class="bot-tbl"><thead><tr><th>Time</th><th>Call</th><th>Option @ level</th>
+         <th>Size</th><th>Result</th><th>P&L</th><th>Balance</th></tr></thead><tbody>${rows}</tbody></table>`
+      : `<div class="bot-empty">Aaj tak koi BIG-move setup nahi mila (vol=BIG + key level). Bot intezaar kar raha hai — no trade is also a decision. 🛡️</div>`;
+    return `<div class="bot">
+      <div class="bot-h">
+        <div><div class="bot-title">🔥 ₹10,000 Bot — ${IDXNAME[n]||n}</div>
+          <div class="bot-sub">BIG-move setups only · ${v.n||0} trades · ${v.win_pct!=null?v.win_pct+"% win":"—"}${v.open?` · ${v.open} live`:""}</div></div>
+        <div style="text-align:right">
+          <span class="bot-eq ${cls}">₹${F(v.equity)}</span>
+          <span class="bot-ret ${cls}">${ret>=0?"+":""}${ret}%</span>
+          <div class="bot-sub">start ₹${F(v.capital)}</div></div>
+      </div>
+      ${body}
+      <div class="bot-risk">🛡️ <b>Risk rules:</b> ek setup me max 35% capital · baaki cash · din −40% pe ruk jaata hai.
+        Achhe (big-move) din +70-80%, par har din nahi — 73% baar bada move nahi aata, isliye chhota size taaki tu un dino tak zinda rahe.
+        <b>Ye simulation hai (paper), asli paisa nahi.</b></div>
+    </div>`;
+  }).join("");
+}
+paintFlavor(); tick(); tickBot(); setInterval(tick, 10000); setInterval(tickBot, 12000);
+</script>
+</body>
+</html>

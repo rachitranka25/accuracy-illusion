@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Single Signal — Nifty Oracle</title>
+<style>
+  :root{
+    --bg:#0b0e0d; --panel:#141a18; --line:#232c29; --ink:#dfe6e2;
+    --dim:#8a938d; --head:#f0f5f2; --up:#4ade80; --dn:#ff6b5c; --wait:#c9a24b;
+    --mono:"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);
+    padding:clamp(14px,3vw,28px);line-height:1.5}
+  .wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+  header{display:flex;flex-direction:column;gap:4px}
+  h1{margin:0;font-size:clamp(17px,3vw,22px);color:var(--head);letter-spacing:.5px}
+  .sub{color:var(--dim);font-size:12.5px}
+  .nav a{color:var(--dim);text-decoration:none;font-size:12px;margin-right:14px}
+  .nav a:hover{color:var(--ink)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px;display:flex;flex-direction:column;gap:14px}
+  .idx{font-size:14px;letter-spacing:1.5px;color:var(--head);display:flex;
+    justify-content:space-between;align-items:center}
+  .idx .px{color:var(--dim);font-weight:400}
+  .call{border-radius:10px;padding:16px;text-align:center;border:1px solid}
+  .call.up{background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.4)}
+  .call.dn{background:rgba(255,107,92,.08);border-color:rgba(255,107,92,.4)}
+  .call.wait{background:rgba(201,162,75,.06);border-color:rgba(201,162,75,.3)}
+  .call .big{font-size:26px;font-weight:700;letter-spacing:.5px}
+  .call.up .big{color:var(--up)} .call.dn .big{color:var(--dn)} .call.wait .big{color:var(--wait)}
+  .call .meta{font-size:12px;color:var(--dim);margin-top:4px}
+  .levels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px}
+  .lv{background:#0e1412;border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center}
+  .lv .k{color:var(--dim);font-size:10.5px;letter-spacing:.5px;text-transform:uppercase}
+  .lv .v{color:var(--head);font-weight:600;font-variant-numeric:tabular-nums}
+  .lv.t .v{color:var(--up)} .lv.s .v{color:var(--dn)}
+  .score{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);
+    border-top:1px solid var(--line);padding-top:10px}
+  .score b{color:var(--head)}
+  table{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+  th,td{padding:5px 6px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--dim);font-weight:500;text-align:right;font-size:10.5px;text-transform:uppercase}
+  th:first-child,td:first-child{text-align:left}
+  td.up{color:var(--up)} td.dn{color:var(--dn)} td.wait{color:var(--wait)}
+  td.hit{color:var(--up)} td.miss{color:var(--dn)}
+  .scroll{max-height:340px;overflow-y:auto}
+  .note{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;font-size:12px;color:var(--dim)}
+  .note b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎯 Single Signal Window</h1>
+    <div class="sub">Har minute ek hi forecast — direction + entry + target + SL (good margin). Honest, scored live.</div>
+    <div class="nav" style="margin-top:6px">
+      <a href="/">Dashboard</a><a href="/forecasts">4-Horizon</a><a href="/quantum">Market State</a><a href="/single">Single ●</a>
+    </div>
+  </header>
+
+  <div class="grid" id="cards"></div>
+
+  <div class="note">
+    <b>Kaise banta hai:</b> Direction = 4 horizons ka consensus (3/4+ agree → signal, warna WAIT).
+    Target &amp; SL = 30-min ka volatility-calibrated bracket (1.5:1 R:R) — realistic margins,
+    fantasy nahi. <b>Honest hit-rate niche live update hota hai.</b> Ye ~52–59% hai (trending
+    din pe zyada, choppy pe kam) — 90% nahi, koi guarantee nahi. Sirf information hai.
+  </div>
+</div>
+
+<script>
+const F = n => n==null ? "—" : Number(n).toLocaleString("en-IN",{maximumFractionDigits:1});
+function dirClass(d){ return d==="UP"?"up":d==="DOWN"?"dn":"wait"; }
+function arrow(d){ return d==="UP"?"▲ LONG":d==="DOWN"?"▼ SHORT":"WAIT"; }
+
+async function tick(){
+  let data;
+  try{ data = await (await fetch("/api/single")).json(); }
+  catch(e){ return; }
+  const host = document.getElementById("cards");
+  host.innerHTML = "";
+  for(const name of Object.keys(data)){
+    const d = data[name], c = d.current;
+    const dir = c && c.dir;
+    const cls = dirClass(dir);
+    const rows = (d.history||[]).slice().reverse().slice(0,120).map(r=>{
+      const oc = r.outcome==="hit"?'<td class="hit">✓</td>':r.outcome==="miss"?'<td class="miss">✗</td>':"<td>·</td>";
+      return `<tr><td>${r.time||""}</td><td>${F(r.price)}</td>
+        <td class="${dirClass(r.dir)}">${r.dir?arrow(r.dir):"WAIT"}</td>
+        <td>${r.tgt_pts!=null?"+"+r.tgt_pts:""}</td><td>${r.sl_pts!=null?"−"+r.sl_pts:""}</td>${oc}</tr>`;
+    }).join("");
+    const pct = d.pct!=null ? d.pct+"%" : "—";
+    const lv = (c && dir) ? `
+      <div class="levels">
+        <div class="lv"><div class="k">Entry</div><div class="v">${F(c.price)}</div></div>
+        <div class="lv t"><div class="k">Target (+${c.tgt_pts})</div><div class="v">${F(c.tgt)}</div></div>
+        <div class="lv s"><div class="k">Stoploss (−${c.sl_pts})</div><div class="v">${F(c.sl)}</div></div>
+      </div>` : "";
+    host.innerHTML += `
+      <div class="card">
+        <div class="idx">${name}<span class="px">${d.mode||""} · ${F(d.price)}</span></div>
+        <div class="call ${cls}">
+          <div class="big">${dir?arrow(dir):"⏸ WAIT"}</div>
+          <div class="meta">${c?("@ "+(c.time||"")+" · "+(c.strong?"⭐ STRONG · ":"")+"conf "+(c.conf||"—")+"%"):"no signal yet"}${dir?"":" — horizons split, sitting out"}</div>
+        </div>
+        ${lv}
+        <div class="score"><span>Today's hit-rate</span><span><b>${pct}</b> (${d.hits||0}/${d.n||0})</span></div>
+        <div class="scroll">
+          <table><thead><tr><th>Time</th><th>Price</th><th>Call</th><th>Tgt</th><th>SL</th><th>✓</th></tr></thead>
+          <tbody>${rows||'<tr><td colspan="6" style="text-align:center;color:var(--dim)">waiting for market…</td></tr>'}</tbody></table>
+        </div>
+      </div>`;
+  }
+}
+tick(); setInterval(tick, 5000);
+</script>
+</body>
+</html>
