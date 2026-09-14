@@ -199,6 +199,88 @@ def diebold_mariano(err_a, err_b, h=1):
     return stat, 2 * (1 - stats.norm.cdf(abs(stat)))
 
 
+# ── scoring a hit sequence honestly ────────────────────────────────────
+def hit_runs(h):
+    """Lengths of maximal constant stretches in a hit indicator sequence."""
+    h = np.asarray(h)
+    if len(h) == 0:
+        return np.array([1])
+    breaks = np.flatnonzero(np.diff(h)) + 1
+    return np.diff(np.concatenate([[0], breaks, [len(h)]]))
+
+
+def effective_n(h):
+    """Design effect for a run-structured hit sequence (Kish; Moulton 1990).
+
+    Clusters are the runs of constant hit indicator, so
+        n_eff = n / (sum_i L_i^2 / n).
+    Reported alongside n whenever forecasts overlap.
+    """
+    L = hit_runs(h)
+    n = int(L.sum())
+    if n < 2:
+        return float(n), 1.0
+    deff = max(1.0, float((L ** 2).sum()) / n)
+    return n / deff, deff
+
+
+def interval_at(correct, n_eff, z=1.96):
+    """Normal interval on a proportion, evaluated at an effective sample size."""
+    n = max(n_eff, 2.0)
+    p = correct
+    se = np.sqrt(max(p * (1 - p), 1e-12) / n)
+    return max(0.0, p - z * se), min(1.0, p + z * se)
+
+
+# ── one generative model, shared by every simulation ───────────────────
+#
+# An earlier version of this work used two different synthetic forecasters in
+# two different experiments, and they disagreed about the effective sample size
+# of the same session by a factor of four. Both now come from here.
+#
+# The model: a forecaster holds a direction for a run drawn from the empirically
+# measured run-length distribution, and picks that direction to agree with the
+# market at the start of the run with probability `bias`. Crucially the CALL is
+# constant within a run while the TRUTH is not, so the hit indicator is only
+# partly block-structured. A forecaster whose hits were constant within a run
+# would be a different and much more strongly dependent object, and assuming one
+# inflates the correction.
+
+def persistent_forecast(truth, run_bars, rng, bias=0.5):
+    """Calls that persist, with a tunable tilt toward being right.
+
+    bias = 0.5 gives a forecaster with no skill whatsoever. Higher values tilt
+    each run toward the direction prevailing when the run starts, which is how a
+    real model with a small edge behaves.
+    """
+    truth = np.asarray(truth)
+    n = len(truth)
+    out = np.empty(n, dtype=int)
+    i = 0
+    while i < n:
+        length = min(int(rng.choice(run_bars)), n - i)
+        anchor = truth[i]
+        call = anchor if rng.random() < bias else 1 - anchor
+        out[i:i + length] = call
+        i += length
+    return out
+
+
+def true_hit_rate(sessions, run_bars, bias, rng, reps=400):
+    """The long-run hit-rate of the above DGP, measured rather than assumed.
+
+    With persistence the realised rate is not `bias`, because the call is
+    anchored on one bar and then held across others. Coverage has to be tested
+    against the rate the process actually produces.
+    """
+    hit = tot = 0
+    for t in sessions:
+        for _ in range(reps):
+            p = persistent_forecast(t, run_bars, rng, bias)
+            hit += int((p == t).sum()); tot += len(t)
+    return hit / tot
+
+
 def header(title, sub=""):
     print(f"\n{'='*78}\n{title}")
     if sub:

@@ -200,6 +200,29 @@ def evaluate(name, horizon, folds, quick):
 
     results = []
 
+    def score_all(label, fold_preds, fold_truth):
+        """Per-bar, per-event and design-effect-corrected views of one model.
+
+        The per-bar figure is what a dashboard reports. It is retained only so
+        the reader can see the gap; the honest numbers are the other two.
+        """
+        per_bar = C.Score(label)
+        per_evt = C.Score(label + " [per event]")
+        hits, n_effs = [], []
+        for p_, t_ in zip(fold_preds, fold_truth):
+            per_bar.add(t_, p_)
+            per_evt.add(t_[::k], p_[::k])          # one observation per k bars
+            h = (np.asarray(p_) == np.asarray(t_)).astype(int)
+            ne, _ = C.effective_n(h)
+            hits.append(h); n_effs.append(ne)
+        n_eff_total = float(sum(n_effs))
+        per_bar.extra["n_eff"] = round(n_eff_total, 1)
+        per_bar.extra["ci_at_n_eff"] = [round(x, 4)
+                                        for x in C.interval_at(per_bar.acc, n_eff_total)]
+        lo, hi = per_bar.extra["ci_at_n_eff"]
+        per_bar.extra["significant_at_n_eff"] = not (lo <= 0.5 <= hi)
+        return per_bar, per_evt
+
     maj = C.Score("majority-class baseline")
     for tr, te in splits:
         maj.add(y[te], np.full(len(te), int(round(y[tr].mean()))))
@@ -213,12 +236,14 @@ def evaluate(name, horizon, folds, quick):
             sc = StandardScaler().fit(X.iloc[tr])
             a, b = sc.transform(X.iloc[tr]), sc.transform(X.iloc[te])
             m = make(); m.fit(a, y[tr]); p = m.predict(b)
-            real.add(y[te], p); preds.append(p); truths.append(y[te])
+            preds.append(p); truths.append(y[te])
 
             m2 = make(); m2.fit(a, y_shuf[tr]); ctrl.add(y_shuf[te], m2.predict(b))
+        real, per_evt = score_all(label, preds, truths)
         real.extra["seconds"] = round(time.time() - t0, 1)
         real.extra["pt_p"] = round(C.pesaran_timmermann(
             np.concatenate(truths), np.concatenate(preds))[1], 4)
+        real.extra["per_event"] = per_evt.as_dict()
         results.append((real, ctrl))
 
     for label, cls in SEQ_MODELS.items():
@@ -231,30 +256,48 @@ def evaluate(name, horizon, folds, quick):
             yt, yp = fit_torch(cls, Xs, y, tr, te, C.SEED)
             if yt is None:
                 continue
-            real.add(yt, yp); preds.append(yp); truths.append(yt)
+            preds.append(yp); truths.append(yt)
             st, sp = fit_torch(cls, Xs, y_shuf, tr, te, C.SEED)
             if st is not None:
                 ctrl.add(st, sp)
-        real.extra["seconds"] = round(time.time() - t0, 1)
         if preds:
+            real, per_evt = score_all(label, preds, truths)
             real.extra["pt_p"] = round(C.pesaran_timmermann(
                 np.concatenate(truths), np.concatenate(preds))[1], 4)
+            real.extra["per_event"] = per_evt.as_dict()
+        real.extra["seconds"] = round(time.time() - t0, 1)
         results.append((real, ctrl))
 
+    print(f"{'model':<28}{'per-bar':>9}{'p(bar)':>9}{'n_eff':>8}{'CI at n_eff':>16}"
+          f"{'per-event':>11}{'p(evt)':>9}{'shuf':>7}")
+    print("-" * 97)
     for real, ctrl in results:
-        line = real.row()
-        if ctrl is not None and ctrl.n:
-            line += f"  | shuffled {ctrl.acc*100:.1f}%  Δ{abs(real.acc-ctrl.acc)*100:+.1f}"
-        if "pt_p" in real.extra:
-            line += f"  PT p={real.extra['pt_p']:.3f}"
+        pe = real.extra.get("per_event")
+        ne = real.extra.get("n_eff")
+        ci = real.extra.get("ci_at_n_eff")
+        sig = "*" if real.extra.get("significant_at_n_eff") else " "
+        line = (f"{real.name:<28}{real.acc*100:>8.1f}%{real.p_vs_coin:>9.3f}"
+                f"{(f'{ne:,.0f}' if ne else '—'):>8}"
+                f"{(f'[{ci[0]*100:.1f},{ci[1]*100:.1f}]{sig}' if ci else '—'):>16}"
+                f"{(f'{pe[chr(34)+chr(34)]}' if False else (f'{pe['accuracy']*100:.1f}%' if pe else '—')):>11}"
+                f"{(f'{pe['p_vs_coinflip']:.3f}' if pe else '—'):>9}"
+                f"{(f'{ctrl.acc*100:.1f}%' if ctrl is not None and ctrl.n else '—'):>7}")
         print(line)
+    print("  * interval at n_eff excludes 0.5")
 
     best = max((r for r, _ in results[1:]), key=lambda s: s.acc)
-    print(f"\n  best family: {best.name} at {best.acc*100:.1f}% "
-          f"(95% CI {best.ci[0]*100:.1f}-{best.ci[1]*100:.1f}, "
-          f"p={best.p_vs_coin:.3f} against a coinflip)")
-    print(f"  every family within {max(r.acc for r,_ in results[1:])*100 - min(r.acc for r,_ in results[1:])*100:.1f} "
-          f"points of every other — the choice of architecture does not matter here")
+    n_sig_bar = sum(1 for r, _ in results[1:] if r.p_vs_coin < 0.05)
+    n_sig_eff = sum(1 for r, _ in results[1:] if r.extra.get("significant_at_n_eff"))
+    n_sig_evt = sum(1 for r, _ in results[1:]
+                    if r.extra.get("per_event", {}).get("p_vs_coinflip", 1) < 0.05)
+    print(f"\n  best per-bar: {best.name} at {best.acc*100:.1f}% "
+          f"(p={best.p_vs_coin:.3f} at the nominal n)")
+    pe = best.extra.get("per_event")
+    if pe:
+        print(f"  the same model scored per event: {pe['accuracy']*100:.1f}% "
+              f"(n={pe['n']:,}, p={pe['p_vs_coinflip']:.3f})")
+    print(f"  significant at p<0.05 -- per-bar: {n_sig_bar}, "
+          f"at n_eff: {n_sig_eff}, per-event: {n_sig_evt}  (of {len(results)-1})")
 
     return {"index": name, "horizon": horizon, "bars": int(len(X)),
             "folds": len(splits), "base_up_rate": round(float(y.mean()), 4),

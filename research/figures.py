@@ -230,12 +230,15 @@ def fig_model_zoo():
 
         ax.axvline(0.5, color=INK3, lw=1.0)
         for y, m in zip(ys, models):
+            # The corrected interval is drawn behind and wider; the nominal one
+            # in front. The visual gap between them is the paper's subject.
+            ci_eff = m.get("ci_at_n_eff")
+            if ci_eff:
+                ax.plot(ci_eff, [y, y], color=ORANGE, lw=4, alpha=0.35,
+                        solid_capstyle="butt", zorder=1)
             lo, hi = m["ci95"]
             ax.plot([lo, hi], [y, y], color=BLUE, lw=1.6, solid_capstyle="round", zorder=2)
             ax.scatter([m["accuracy"]], [y], color=BLUE, s=22, zorder=3)
-            if m.get("shuffled_accuracy"):
-                ax.scatter([m["shuffled_accuracy"]], [y], marker="|",
-                           color=ORANGE, s=60, lw=1.5, zorder=3)
 
         ax.set_yticks(list(ys))
         ax.set_yticklabels([m["model"] for m in models], fontsize=6.5)
@@ -244,14 +247,14 @@ def fig_model_zoo():
         ax.set_xlabel("out-of-sample directional accuracy")
         ax.xaxis.set_major_formatter(PercentFormatter(1.0))
         ax.grid(axis="x")
-        ax.set_xlim(0.465, 0.535)
+        ax.set_xlim(0.455, 0.545)
 
     from matplotlib.lines import Line2D
     fig.legend(handles=[
         Line2D([], [], color=BLUE, marker="o", lw=1.6, markersize=4,
-               label="real labels, point estimate and 95% CI"),
-        Line2D([], [], color=ORANGE, marker="|", lw=0, markersize=8, mew=1.5,
-               label="shuffled-label control"),
+               label="nominal 95% CI at n (what a dashboard reports)"),
+        Line2D([], [], color=ORANGE, lw=4, alpha=0.35,
+               label="corrected 95% CI at effective sample size"),
     ], loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.02))
     fig.tight_layout(rect=(0, 0.05, 1, 1))
     _save(fig, "fig4_model_zoo")

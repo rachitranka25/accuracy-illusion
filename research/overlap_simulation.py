@@ -95,18 +95,6 @@ def measured_run_lengths(horizon):
     return bars, per_index
 
 
-def persistent_forecast(n, run_bars, rng):
-    """Zero-skill calls that persist: direction is a fair coin, held for a run
-    length drawn from the empirical distribution."""
-    out = np.empty(n, dtype=int)
-    i = 0
-    while i < n:
-        length = int(rng.choice(run_bars))
-        out[i:i + length] = rng.integers(0, 2)
-        i += length
-    return out
-
-
 # ── truth from real bars ───────────────────────────────────────────────
 def session_truth(name, k):
     """Per-session arrays of the real k-bar-ahead direction."""
@@ -129,7 +117,7 @@ def simulate(sessions, run_bars, rng, trials, stride=1):
     rates, sizes = [], []
     for t in sessions:
         for _ in range(trials):
-            pred = persistent_forecast(len(t), run_bars, rng)
+            pred = C.persistent_forecast(t, run_bars, rng, bias=0.5)
             idx = np.arange(0, len(t), stride)
             rates.append((pred[idx] == t[idx]).mean())
             sizes.append(len(idx))

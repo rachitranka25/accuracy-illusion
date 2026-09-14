@@ -66,8 +66,7 @@ from scipy import stats
 
 from oracle import paths
 from research import common as C
-from research.overlap_simulation import (measured_run_lengths, persistent_forecast,
-                                         session_truth)
+from research.overlap_simulation import measured_run_lengths, session_truth
 
 
 # ── the inflation factor ───────────────────────────────────────────────
@@ -203,29 +202,18 @@ def block_bootstrap_interval(h, z=0.95, n_boot=400, block=None, rng=None):
 
 
 # ── validation by coverage ─────────────────────────────────────────────
-def skilled_forecast(truth, run_bars, skill, rng):
-    """A forecaster of known skill whose calls persist.
+def coverage_study(name, k, run_bars, rng, biases, trials):
+    """Coverage against the rate the generative process actually produces.
 
-    Within each run the call is correct with probability `skill`, so the true
-    hit-rate is exactly `skill` by construction and coverage is well defined.
+    The target is measured, not assumed: with persistent calls the realised
+    hit-rate is not the tilt parameter, because a call anchored on one bar is
+    then held across others.
     """
-    n = len(truth)
-    out = np.empty(n, dtype=int)
-    i = 0
-    while i < n:
-        length = min(int(rng.choice(run_bars)), n - i)
-        correct = rng.random() < skill
-        seg = truth[i:i + length]
-        out[i:i + length] = seg if correct else 1 - seg
-        i += length
-    return out
-
-
-def coverage_study(name, k, run_bars, rng, skills, trials):
     sessions = session_truth(name, k)
     rows = []
 
-    for skill in skills:
+    for bias in biases:
+        skill = C.true_hit_rate(sessions[:40], run_bars, bias, rng, reps=60)
         nv_hit = hac_hit = bb_hit = rn_hit = 0
         nv_w, hac_w, bb_w, rn_w = [], [], [], []
         factors, n_effs, n_effs_r = [], [], []
@@ -233,7 +221,7 @@ def coverage_study(name, k, run_bars, rng, skills, trials):
 
         for t in sessions:
             for _ in range(trials):
-                pred = skilled_forecast(t, run_bars, skill, rng)
+                pred = C.persistent_forecast(t, run_bars, rng, bias)
                 h = (pred == t).astype(int)
 
                 _, (lo, hi), n = naive_interval(h)
@@ -252,7 +240,8 @@ def coverage_study(name, k, run_bars, rng, skills, trials):
                 total += 1
 
         rows.append({
-            "true_skill": skill,
+            "bias": bias,
+            "true_skill": round(skill, 4),
             "sessions": total,
             "naive_coverage": nv_hit / total,
             "hac_coverage": hac_hit / total,
@@ -296,7 +285,7 @@ def main():
     print(f"  Anything materially below that is an interval that lies.\n")
 
     for name in a.indices:
-        rows = coverage_study(name, k, run_bars, rng, (0.50, 0.55, 0.60), a.trials)
+        rows = coverage_study(name, k, run_bars, rng, (0.50, 0.60, 0.70), a.trials)
         out["indices"][name] = rows
 
         print(f"  {name}")
@@ -318,26 +307,25 @@ def main():
 
     first = out["indices"][a.indices[0]][0]
     print(f"{'='*78}\nVERDICT\n{'='*78}")
-    print(f"  Quoted at n = {first['nominal_n']}, a nominal 95% interval covers the "
-          f"truth {first['naive_coverage']*100:.0f}% of the time.")
-    print(f"  A HAC correction lifts that to {first['hac_coverage']*100:.0f}% and a "
-          f"block bootstrap to {first['bootstrap_coverage']*100:.0f}%.")
-    print(f"  Both fall short because both mis-estimate how long the dependence")
-    print(f"  actually runs: the automatic Bartlett bandwidth is around three")
-    print(f"  bars, while a real forecaster holds a call for forty.")
+    print(f"  Quoted at the nominal n = {first['nominal_n']}, a 95% interval covers")
+    print(f"  the truth {first['naive_coverage']*100:.0f}% of the time. It is not a 95% interval.")
     print()
-    print(f"  Taking the inflation directly from the run structure, "
-          f"E[L^2]/E[L], gives")
-    print(f"  n_eff = {first['mean_n_eff_run']:.1f} against a nominal "
-          f"{first['nominal_n']} and restores coverage to "
-          f"{first['run_coverage']*100:.0f}%.")
+    print(f"  HAC reaches {first['hac_coverage']*100:.0f}% and a block bootstrap "
+          f"{first['bootstrap_coverage']*100:.0f}%; both still under-cover.")
+    print(f"  The run-structure design effect reaches "
+          f"{first['run_coverage']*100:.0f}%, which OVER-covers: treating runs as")
+    print(f"  independent clusters ignores that consecutive runs are negatively")
+    print(f"  dependent, so it over-states the inflation. It is therefore a")
+    print(f"  conservative bound rather than an exact correction, and we report it")
+    print(f"  as one.")
     print()
-    print(f"  The number to take away is n_eff itself. A session that reports 69")
-    print(f"  forecasts carries about six independent observations, so an honest")
-    print(f"  interval on a session hit-rate is roughly "
-          f"+/-{first['run_width']*50:.0f} points wide.")
-    print(f"  A single session cannot support any claim about skill, and that")
-    print(f"  conclusion follows from the arithmetic rather than from taste.")
+    print(f"  The practical content is the size of n_eff, not which estimator wins.")
+    print(f"  A session advertising {first['nominal_n']} forecasts carries somewhere")
+    print(f"  between {first['mean_n_eff_run']:.0f} and "
+          f"{first['nominal_n'] * 0.25 / (first['naive_width']/3.92)**2 / first['nominal_n'] * first['nominal_n']:.0f}"
+          f" independent observations depending on the estimator,")
+    print(f"  against a nominal {first['nominal_n']}. Every one of those answers says the same thing:")
+    print(f"  a single session cannot support a claim about skill.")
 
     d = paths.ROOT / "results"; d.mkdir(exist_ok=True)
     f = d / f"effective_sample_{a.horizon}.json"
