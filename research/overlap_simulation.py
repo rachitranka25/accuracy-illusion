@@ -159,6 +159,12 @@ def report(arr, n_reported, label):
         once = f"1 in {1/frac:,.0f} sessions" if frac > 0 else "not observed"
         print(f"    P(session >= {int(thr*100)}%) = {frac*100:6.2f}%   ({once})")
 
+    # Keep the empirical distribution itself, so figures plot what was measured
+    # rather than a normal curve fitted to its first two moments.
+    counts, edges = np.histogram(arr, bins=60, range=(0.0, 1.0))
+    histogram = {"bin_edges": [round(float(e), 4) for e in edges],
+                 "counts": [int(c) for c in counts]}
+
     return {"reported_n": round(n_reported, 1),
             "stated_sd": round(float(stated_sd), 4),
             "realised_sd": round(float(realised_sd), 4),
@@ -167,7 +173,8 @@ def report(arr, n_reported, label):
             "p95": round(float(np.percentile(arr, 95)), 4),
             "p99": round(float(np.percentile(arr, 99)), 4),
             "max": round(float(arr.max()), 4),
-            "simulated_sessions": int(len(arr)), **tails}
+            "simulated_sessions": int(len(arr)),
+            "histogram": histogram, **tails}
 
 
 def main():
