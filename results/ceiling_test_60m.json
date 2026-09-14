@@ -1,0 +1,238 @@
+[
+  {
+    "index": "BANKNIFTY",
+    "horizon": "60m",
+    "bars": 21985,
+    "start": "2025-02-20",
+    "end": "2026-07-24",
+    "base_up_rate": 0.5023,
+    "real_vs_shuffled_gap_pts": 0.58,
+    "autocorrelation": {
+      "horizon_bars": 12,
+      "lags": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "overlapping": {
+        "acf": [
+          0.9209,
+          0.7638,
+          0.5353,
+          0.0515
+        ],
+        "ljung_box_p": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "n": 21973
+      },
+      "non_overlapping": {
+        "acf": [
+          0.0646,
+          0.0074,
+          -0.0091,
+          0.0036
+        ],
+        "ljung_box_p": [
+          0.0056,
+          0.051,
+          0.0318,
+          0.0033
+        ],
+        "n": 1832
+      }
+    },
+    "scores": [
+      {
+        "model": "over-capacity (real labels)",
+        "accuracy": 0.5096,
+        "ci95": [
+          0.5017,
+          0.5175
+        ],
+        "p_vs_coinflip": 0.0174,
+        "n": 15390,
+        "train_accuracy": 1.0
+      },
+      {
+        "model": "over-capacity (shuffled labels)",
+        "accuracy": 0.5038,
+        "ci95": [
+          0.4958,
+          0.5117
+        ],
+        "p_vs_coinflip": 0.3539,
+        "n": 15390,
+        "train_accuracy": 1.0
+      },
+      {
+        "model": "1-NN oracle",
+        "accuracy": 0.5025,
+        "ci95": [
+          0.4946,
+          0.5105
+        ],
+        "p_vs_coinflip": 0.5348,
+        "n": 15390,
+        "train_accuracy": null
+      },
+      {
+        "model": "positive control (s=0.10)",
+        "accuracy": 0.5255,
+        "ci95": [
+          0.5176,
+          0.5335
+        ],
+        "p_vs_coinflip": 0.0,
+        "n": 15390,
+        "train_accuracy": null,
+        "expected": 0.55
+      },
+      {
+        "model": "positive control (s=0.30)",
+        "accuracy": 0.6216,
+        "ci95": [
+          0.6139,
+          0.6293
+        ],
+        "p_vs_coinflip": 0.0,
+        "n": 15390,
+        "train_accuracy": null,
+        "expected": 0.65
+      },
+      {
+        "model": "majority-class baseline",
+        "accuracy": 0.4997,
+        "ci95": [
+          0.4917,
+          0.5076
+        ],
+        "p_vs_coinflip": 0.9422,
+        "n": 15390,
+        "train_accuracy": null
+      }
+    ]
+  },
+  {
+    "index": "NIFTY50",
+    "horizon": "60m",
+    "bars": 21985,
+    "start": "2025-02-20",
+    "end": "2026-07-24",
+    "base_up_rate": 0.5045,
+    "real_vs_shuffled_gap_pts": 0.92,
+    "autocorrelation": {
+      "horizon_bars": 12,
+      "lags": [
+        1,
+        3,
+        6,
+        12
+      ],
+      "overlapping": {
+        "acf": [
+          0.9177,
+          0.7567,
+          0.5243,
+          0.0321
+        ],
+        "ljung_box_p": [
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "n": 21973
+      },
+      "non_overlapping": {
+        "acf": [
+          0.0325,
+          0.0364,
+          0.0177,
+          0.0051
+        ],
+        "ljung_box_p": [
+          0.1636,
+          0.1776,
+          0.0001,
+          0.0007
+        ],
+        "n": 1832
+      }
+    },
+    "scores": [
+      {
+        "model": "over-capacity (real labels)",
+        "accuracy": 0.4893,
+        "ci95": [
+          0.4814,
+          0.4973
+        ],
+        "p_vs_coinflip": 0.0084,
+        "n": 15390,
+        "train_accuracy": 1.0
+      },
+      {
+        "model": "over-capacity (shuffled labels)",
+        "accuracy": 0.4985,
+        "ci95": [
+          0.4906,
+          0.5064
+        ],
+        "p_vs_coinflip": 0.7168,
+        "n": 15390,
+        "train_accuracy": 1.0
+      },
+      {
+        "model": "1-NN oracle",
+        "accuracy": 0.4955,
+        "ci95": [
+          0.4875,
+          0.5034
+        ],
+        "p_vs_coinflip": 0.2625,
+        "n": 15390,
+        "train_accuracy": null
+      },
+      {
+        "model": "positive control (s=0.10)",
+        "accuracy": 0.5175,
+        "ci95": [
+          0.5095,
+          0.5254
+        ],
+        "p_vs_coinflip": 0.0,
+        "n": 15390,
+        "train_accuracy": null,
+        "expected": 0.55
+      },
+      {
+        "model": "positive control (s=0.30)",
+        "accuracy": 0.6181,
+        "ci95": [
+          0.6104,
+          0.6258
+        ],
+        "p_vs_coinflip": 0.0,
+        "n": 15390,
+        "train_accuracy": null,
+        "expected": 0.65
+      },
+      {
+        "model": "majority-class baseline",
+        "accuracy": 0.5011,
+        "ci95": [
+          0.4932,
+          0.509
+        ],
+        "p_vs_coinflip": 0.7902,
+        "n": 15390,
+        "train_accuracy": null
+      }
+    ]
+  }
+]

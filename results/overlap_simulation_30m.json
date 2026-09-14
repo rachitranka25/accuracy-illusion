@@ -1,0 +1,87 @@
+{
+  "horizon": "30m",
+  "horizon_bars": 6,
+  "persistence_source": "measured from live forecast log",
+  "persistence_per_index": {
+    "BANKNIFTY": {
+      "forecasts": 1500,
+      "runs": 99,
+      "mean_run_min": 15.2,
+      "median_run_min": 4,
+      "max_run_min": 135
+    },
+    "NIFTY50": {
+      "forecasts": 1500,
+      "runs": 123,
+      "mean_run_min": 12.2,
+      "median_run_min": 4,
+      "max_run_min": 207
+    }
+  },
+  "mean_run_bars": 3.02,
+  "per_bar_BANKNIFTY": {
+    "reported_n": 69.0,
+    "stated_sd": 0.0602,
+    "realised_sd": 0.1,
+    "understatement_factor": 1.661,
+    "mean": 0.5007,
+    "p95": 0.6667,
+    "p99": 0.7246,
+    "max": 0.913,
+    "simulated_sessions": 70000,
+    "p_session_ge_60": 0.15923,
+    "p_session_ge_71": 0.01971,
+    "p_session_ge_80": 0.00056,
+    "p_session_ge_85": 0.00011
+  },
+  "per_bar_NIFTY50": {
+    "reported_n": 69.0,
+    "stated_sd": 0.0602,
+    "realised_sd": 0.1009,
+    "understatement_factor": 1.676,
+    "mean": 0.4999,
+    "p95": 0.6667,
+    "p99": 0.7246,
+    "max": 0.8696,
+    "simulated_sessions": 70000,
+    "p_session_ge_60": 0.16046,
+    "p_session_ge_71": 0.02194,
+    "p_session_ge_80": 0.00074,
+    "p_session_ge_85": 0.00011
+  },
+  "non_overlap_BANKNIFTY": {
+    "reported_n": 12.0,
+    "stated_sd": 0.1443,
+    "realised_sd": 0.143,
+    "understatement_factor": 0.99,
+    "mean": 0.5002,
+    "p95": 0.75,
+    "p99": 0.8333,
+    "max": 1.0,
+    "simulated_sessions": 70000,
+    "p_session_ge_60": 0.19039,
+    "p_session_ge_71": 0.07116,
+    "p_session_ge_80": 0.01897,
+    "p_session_ge_85": 0.00304
+  },
+  "non_overlap_NIFTY50": {
+    "reported_n": 12.0,
+    "stated_sd": 0.1443,
+    "realised_sd": 0.1442,
+    "understatement_factor": 0.999,
+    "mean": 0.5007,
+    "p95": 0.75,
+    "p99": 0.8333,
+    "max": 1.0,
+    "simulated_sessions": 70000,
+    "p_session_ge_60": 0.1956,
+    "p_session_ge_71": 0.07296,
+    "p_session_ge_80": 0.01977,
+    "p_session_ge_85": 0.00323
+  },
+  "multiplicity": {
+    "series_watched": 8,
+    "p_any_series_ge_71": 0.1472,
+    "sessions_between": 6.8
+  }
+}

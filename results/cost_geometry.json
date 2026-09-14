@@ -1,0 +1,158 @@
+[
+  {
+    "index": "BANKNIFTY",
+    "cost_bp": 4.0,
+    "horizons": [
+      {
+        "horizon": "5m",
+        "median_move_pts": 22.1,
+        "median_move_bp": 3.94,
+        "cost_over_move": 1.015,
+        "breakeven_accuracy": 1.0074,
+        "frac_bars_move_exceeds_cost": 0.4942,
+        "achieved_accuracy": null,
+        "n": 25914
+      },
+      {
+        "horizon": "15m",
+        "median_move_pts": 37.7,
+        "median_move_bp": 6.71,
+        "cost_over_move": 0.596,
+        "breakeven_accuracy": 0.798,
+        "frac_bars_move_exceeds_cost": 0.6815,
+        "achieved_accuracy": null,
+        "n": 25212
+      },
+      {
+        "horizon": "30m",
+        "median_move_pts": 52.3,
+        "median_move_bp": 9.29,
+        "cost_over_move": 0.43,
+        "breakeven_accuracy": 0.7152,
+        "frac_bars_move_exceeds_cost": 0.7601,
+        "achieved_accuracy": 0.5132,
+        "n": 24159
+      },
+      {
+        "horizon": "60m",
+        "median_move_pts": 72.9,
+        "median_move_bp": 12.98,
+        "cost_over_move": 0.308,
+        "breakeven_accuracy": 0.6541,
+        "frac_bars_move_exceeds_cost": 0.8236,
+        "achieved_accuracy": null,
+        "n": 22053
+      }
+    ],
+    "sensitivity": [
+      {
+        "cost_bp": 1.0,
+        "instrument": "exchange fees only, no slippage",
+        "breakeven_accuracy": 0.5538
+      },
+      {
+        "cost_bp": 2.0,
+        "instrument": "tight futures, minimal slippage",
+        "breakeven_accuracy": 0.6076
+      },
+      {
+        "cost_bp": 4.0,
+        "instrument": "realistic futures round trip",
+        "breakeven_accuracy": 0.7152
+      },
+      {
+        "cost_bp": 8.0,
+        "instrument": "futures with adverse slippage",
+        "breakeven_accuracy": 0.9304
+      },
+      {
+        "cost_bp": 20.0,
+        "instrument": "ATM options: spread + 30 min of theta",
+        "breakeven_accuracy": null
+      },
+      {
+        "cost_bp": 40.0,
+        "instrument": "OTM options or a wide book",
+        "breakeven_accuracy": null
+      }
+    ]
+  },
+  {
+    "index": "NIFTY50",
+    "cost_bp": 4.0,
+    "horizons": [
+      {
+        "horizon": "5m",
+        "median_move_pts": 8.1,
+        "median_move_bp": 3.27,
+        "cost_over_move": 1.224,
+        "breakeven_accuracy": 1.1118,
+        "frac_bars_move_exceeds_cost": 0.4221,
+        "achieved_accuracy": null,
+        "n": 25916
+      },
+      {
+        "horizon": "15m",
+        "median_move_pts": 14.1,
+        "median_move_bp": 5.73,
+        "cost_over_move": 0.698,
+        "breakeven_accuracy": 0.8488,
+        "frac_bars_move_exceeds_cost": 0.6314,
+        "achieved_accuracy": null,
+        "n": 25214
+      },
+      {
+        "horizon": "30m",
+        "median_move_pts": 19.7,
+        "median_move_bp": 7.98,
+        "cost_over_move": 0.501,
+        "breakeven_accuracy": 0.7505,
+        "frac_bars_move_exceeds_cost": 0.728,
+        "achieved_accuracy": 0.5014,
+        "n": 24161
+      },
+      {
+        "horizon": "60m",
+        "median_move_pts": 27.7,
+        "median_move_bp": 11.29,
+        "cost_over_move": 0.354,
+        "breakeven_accuracy": 0.6772,
+        "frac_bars_move_exceeds_cost": 0.7959,
+        "achieved_accuracy": null,
+        "n": 22055
+      }
+    ],
+    "sensitivity": [
+      {
+        "cost_bp": 1.0,
+        "instrument": "exchange fees only, no slippage",
+        "breakeven_accuracy": 0.5626
+      },
+      {
+        "cost_bp": 2.0,
+        "instrument": "tight futures, minimal slippage",
+        "breakeven_accuracy": 0.6253
+      },
+      {
+        "cost_bp": 4.0,
+        "instrument": "realistic futures round trip",
+        "breakeven_accuracy": 0.7505
+      },
+      {
+        "cost_bp": 8.0,
+        "instrument": "futures with adverse slippage",
+        "breakeven_accuracy": null
+      },
+      {
+        "cost_bp": 20.0,
+        "instrument": "ATM options: spread + 30 min of theta",
+        "breakeven_accuracy": null
+      },
+      {
+        "cost_bp": 40.0,
+        "instrument": "OTM options or a wide book",
+        "breakeven_accuracy": null
+      }
+    ]
+  }
+]
