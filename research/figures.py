@@ -21,6 +21,11 @@ from oracle import paths
 RESULTS = paths.ROOT / "results"
 OUT = paths.ROOT / "paper" / "figures"
 
+# IEEE two-column geometry, in inches. Figures are drawn at the exact size they
+# are placed, so LaTeX never rescales them and no font is silently shrunk.
+COL_W = 3.45          # one column
+FULL_W = 7.10         # both columns
+
 # Validated categorical slots 1-3 (all-pairs clean under CVD simulation).
 BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
 INK, INK2, INK3 = "#0b0b0b", "#52514e", "#8a8985"
@@ -30,15 +35,15 @@ GRID = "#e4e3df"
 def _style():
     plt.rcParams.update({
         "figure.dpi": 150, "savefig.dpi": 300,
-        "font.family": "DejaVu Sans", "font.size": 9,
+        "font.family": "DejaVu Sans", "font.size": 7,
         "axes.edgecolor": GRID, "axes.labelcolor": INK2,
-        "axes.titlesize": 10, "axes.titleweight": "bold", "axes.titlecolor": INK,
+        "axes.titlesize": 7.5, "axes.titleweight": "bold", "axes.titlecolor": INK,
         "axes.spines.top": False, "axes.spines.right": False,
         "xtick.color": INK2, "ytick.color": INK2,
-        "xtick.labelsize": 8, "ytick.labelsize": 8,
-        "legend.frameon": False, "legend.fontsize": 8,
+        "xtick.labelsize": 6.5, "ytick.labelsize": 6.5,
+        "legend.frameon": False, "legend.fontsize": 6.5,
         "grid.color": GRID, "grid.linewidth": 0.6,
-        "lines.linewidth": 2, "lines.markersize": 5,
+        "lines.linewidth": 1.4, "lines.markersize": 3.5,
         "figure.facecolor": "white", "axes.facecolor": "white",
     })
 
@@ -70,7 +75,7 @@ def fig_autocorrelation():
     if not panels:
         return
 
-    fig, axes = plt.subplots(1, len(panels), figsize=(4.2 * len(panels), 3.1), sharey=True)
+    fig, axes = plt.subplots(1, len(panels), figsize=(FULL_W, 2.15), sharey=True)
     axes = [axes] if len(panels) == 1 else list(axes)
 
     for ax, (horizon, blk) in zip(axes, panels):
@@ -79,17 +84,17 @@ def fig_autocorrelation():
 
         ax.axhline(0, color=INK3, lw=0.8)
         ax.axvline(k, color=INK3, lw=0.8, ls=(0, (4, 3)))
-        ax.plot(lags, ac["overlapping"]["acf"], "o-", color=ORANGE)
-        ax.plot(lags, ac["non_overlapping"]["acf"], "s-", color=BLUE)
+        ax.plot(lags, ac["overlapping"]["acf"], "o-", color=ORANGE, lw=1.6, ms=4)
+        ax.plot(lags, ac["non_overlapping"]["acf"], "s-", color=BLUE, lw=1.6, ms=4)
 
         ax.annotate("overlapping", (lags[0], ac["overlapping"]["acf"][0]),
                     xytext=(6, 4), textcoords="offset points",
-                    color=ORANGE, fontsize=8, fontweight="bold")
+                    color=ORANGE, fontsize=6.5, fontweight="bold")
         ax.annotate("non-overlapping", (lags[1], ac["non_overlapping"]["acf"][1]),
                     xytext=(6, -14), textcoords="offset points",
-                    color=BLUE, fontsize=8, fontweight="bold")
+                    color=BLUE, fontsize=6.5, fontweight="bold")
         ax.annotate(f"lag = k = {k}", (k, 0.93), xytext=(5, 0),
-                    textcoords="offset points", color=INK2, fontsize=7.5)
+                    textcoords="offset points", color=INK2, fontsize=6)
 
         ax.set_title(f"{horizon} horizon  (k = {k} bars)", loc="left")
         ax.set_xlabel("lag (bars)")
@@ -98,9 +103,7 @@ def fig_autocorrelation():
         ax.set_ylim(-0.12, 1.02)
 
     axes[0].set_ylabel("autocorrelation of forward return")
-    fig.suptitle("Overlap manufactures autocorrelation that vanishes at exactly the horizon",
-                 x=0.02, ha="left", fontsize=10.5, fontweight="bold", color=INK)
-    fig.tight_layout(rect=(0, 0, 1, 0.93))
+    fig.tight_layout()
     _save(fig, "fig1_autocorrelation")
 
 
@@ -114,7 +117,7 @@ def fig_zero_skill():
     blk, index = d[key], key.replace("per_bar_", "")
 
     import numpy as np
-    fig, ax = plt.subplots(figsize=(6.6, 3.5))
+    fig, ax = plt.subplots(figsize=(COL_W, 2.5))
 
     # The measured distribution itself, as simulated — not a curve fitted to it.
     h = blk["histogram"]
@@ -133,14 +136,15 @@ def fig_zero_skill():
     for i, (thr, label) in enumerate(((0.60, "60%"), (0.71, "71%"), (0.85, "85%"))):
         p = blk[f"p_session_ge_{int(thr*100)}"]
         ax.axvline(thr, color=ORANGE, lw=1.2, ls=(0, (4, 3)))
-        rate = f"1 in {1/p:,.0f} sessions" if p > 0 else "never seen"
-        y = top * (1.30 - 0.11 * i)          # stagger so labels never collide
-        ax.annotate(f"{label} · {rate}", (thr, y),
-                    xytext=(5, 0), textcoords="offset points",
-                    color=ORANGE, fontsize=7.5, fontweight="bold", va="top")
+        rate = f"1 in {1/p:,.0f}" if p > 0 else "n/a"
+        y = top * (1.31 - 0.13 * i)          # stagger so labels never collide
+        ax.annotate(f"{label}: {rate}", (thr, y),
+                    xytext=(3, 0), textcoords="offset points",
+                    color=ORANGE, fontsize=6, fontweight="bold", va="top")
 
-    ax.set_title(f"A forecaster with zero skill, scored every bar  ({index}, 30m, "
-                 f"{blk['simulated_sessions']:,} simulated sessions)", loc="left")
+    ax.set_title(f"Zero-skill forecaster, scored every bar\n"
+                 f"({index}, 30m, {blk['simulated_sessions']:,} simulated sessions)",
+                 loc="left", fontsize=7)
     ax.set_xlabel("session hit-rate")
     ax.set_ylabel("density")
     ax.xaxis.set_major_formatter(PercentFormatter(1.0))
@@ -149,16 +153,11 @@ def fig_zero_skill():
     ax.set_xlim(0.2, 0.9)
 
     ax.annotate(
-        f"stated 95% CI ±{1.96*blk['stated_sd']*100:.0f} pts   ·   "
-        f"realised spread ±{1.96*blk['realised_sd']*100:.0f} pts   ·   "
-        f"understated {blk['understatement_factor']:.2f}×",
-        (0.5, -0.22), xycoords="axes fraction", ha="center",
-        color=INK2, fontsize=8)
-    ax.annotate(
-        "the spikes are the small effective sample: ~12 independent decisions "
-        "per session, not the 69 reported",
-        (0.5, -0.32), xycoords="axes fraction", ha="center",
-        color=INK3, fontsize=7.5, style="italic")
+        f"stated 95% CI ±{1.96*blk['stated_sd']*100:.0f} pts  ·  "
+        f"realised ±{1.96*blk['realised_sd']*100:.0f} pts  ·  "
+        f"{blk['understatement_factor']:.2f}× too narrow",
+        (0.5, -0.30), xycoords="axes fraction", ha="center",
+        color=INK2, fontsize=6.5)
 
     fig.tight_layout()
     _save(fig, "fig2_zero_skill_distribution")
@@ -171,7 +170,7 @@ def fig_breakeven():
     if not d:
         return
 
-    fig, axes = plt.subplots(1, len(d), figsize=(4.3 * len(d), 3.3), sharey=True)
+    fig, axes = plt.subplots(1, len(d), figsize=(FULL_W, 2.25), sharey=True)
     axes = [axes] if len(d) == 1 else list(axes)
 
     for ax, blk in zip(axes, d):
@@ -182,16 +181,16 @@ def fig_breakeven():
 
         for y, r_req in zip(ys, req):
             ax.plot([0.5, r_req], [y, y], color=GRID, lw=3, solid_capstyle="round", zorder=1)
-        ax.scatter(req, ys, color=ORANGE, s=48, zorder=3, label="required to break even")
+        ax.scatter(req, ys, color=ORANGE, s=30, zorder=3, label="required to break even")
         got = [(a, y) for a, y in zip(ach, ys) if a]
         if got:
             ax.scatter([a for a, _ in got], [y for _, y in got],
-                       color=BLUE, s=48, zorder=3, label="best model achieved")
+                       color=BLUE, s=30, zorder=3, label="best model achieved")
 
         ax.axvline(1.0, color=INK3, lw=0.8, ls=(0, (2, 3)))
         for y, r in zip(ys, rows):
             if r["breakeven_accuracy"] > 1.0:
-                ax.annotate("impossible", (1.02, y), fontsize=7.5, va="center",
+                ax.annotate("impossible", (1.02, y), fontsize=6, va="center",
                             color=INK2, style="italic")
 
         ax.set_yticks(list(ys))
@@ -207,9 +206,7 @@ def fig_breakeven():
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=2,
                bbox_to_anchor=(0.5, -0.06))
-    fig.suptitle("The accuracy required to break even, against the accuracy any model reached",
-                 x=0.02, ha="left", fontsize=10.5, fontweight="bold", color=INK)
-    fig.tight_layout(rect=(0, 0.02, 1, 0.92))
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
     _save(fig, "fig3_breakeven_gap")
 
 
@@ -220,7 +217,7 @@ def fig_model_zoo():
     if not d:
         return
 
-    fig, axes = plt.subplots(1, len(d), figsize=(4.6 * len(d), 3.8), sharey=True)
+    fig, axes = plt.subplots(1, len(d), figsize=(FULL_W, 2.6), sharey=True)
     axes = [axes] if len(d) == 1 else list(axes)
 
     for ax, blk in zip(axes, d):
@@ -230,14 +227,14 @@ def fig_model_zoo():
         ax.axvline(0.5, color=INK3, lw=1.0)
         for y, m in zip(ys, models):
             lo, hi = m["ci95"]
-            ax.plot([lo, hi], [y, y], color=BLUE, lw=2, solid_capstyle="round", zorder=2)
-            ax.scatter([m["accuracy"]], [y], color=BLUE, s=34, zorder=3)
+            ax.plot([lo, hi], [y, y], color=BLUE, lw=1.6, solid_capstyle="round", zorder=2)
+            ax.scatter([m["accuracy"]], [y], color=BLUE, s=22, zorder=3)
             if m.get("shuffled_accuracy"):
                 ax.scatter([m["shuffled_accuracy"]], [y], marker="|",
-                           color=ORANGE, s=90, lw=1.8, zorder=3)
+                           color=ORANGE, s=60, lw=1.5, zorder=3)
 
         ax.set_yticks(list(ys))
-        ax.set_yticklabels([m["model"] for m in models], fontsize=7.5)
+        ax.set_yticklabels([m["model"] for m in models], fontsize=6.5)
         ax.set_title(f"{blk['index']}   ({blk['bars']:,} bars, {blk['folds']} purged folds)",
                      loc="left")
         ax.set_xlabel("out-of-sample directional accuracy")
@@ -247,14 +244,12 @@ def fig_model_zoo():
 
     from matplotlib.lines import Line2D
     fig.legend(handles=[
-        Line2D([], [], color=BLUE, marker="o", lw=2, markersize=6,
+        Line2D([], [], color=BLUE, marker="o", lw=1.6, markersize=4,
                label="real labels, point estimate and 95% CI"),
-        Line2D([], [], color=ORANGE, marker="|", lw=0, markersize=11, mew=1.8,
+        Line2D([], [], color=ORANGE, marker="|", lw=0, markersize=8, mew=1.5,
                label="shuffled-label control"),
-    ], loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.05))
-    fig.suptitle("Architecture does not matter: nine families, all within two points of chance",
-                 x=0.02, ha="left", fontsize=10.5, fontweight="bold", color=INK)
-    fig.tight_layout(rect=(0, 0.02, 1, 0.92))
+    ], loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(rect=(0, 0.05, 1, 1))
     _save(fig, "fig4_model_zoo")
 
 

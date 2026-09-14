@@ -1,0 +1,268 @@
+[
+  {
+    "index": "BANKNIFTY",
+    "horizon": "60m",
+    "bars": 21985,
+    "folds": 5,
+    "base_up_rate": 0.5023,
+    "models": [
+      {
+        "model": "majority-class baseline",
+        "accuracy": 0.4997,
+        "ci95": [
+          0.4917,
+          0.5076
+        ],
+        "p_vs_coinflip": 0.9422,
+        "n": 15390,
+        "train_accuracy": null,
+        "shuffled_accuracy": null
+      },
+      {
+        "model": "logistic regression",
+        "accuracy": 0.5058,
+        "ci95": [
+          0.4979,
+          0.5137
+        ],
+        "p_vs_coinflip": 0.1536,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 0.2,
+        "pt_p": 0.1501,
+        "shuffled_accuracy": 0.5056
+      },
+      {
+        "model": "gradient boosting",
+        "accuracy": 0.5062,
+        "ci95": [
+          0.4982,
+          0.5141
+        ],
+        "p_vs_coinflip": 0.1276,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 168.6,
+        "pt_p": 0.1257,
+        "shuffled_accuracy": 0.5012
+      },
+      {
+        "model": "LightGBM",
+        "accuracy": 0.5105,
+        "ci95": [
+          0.5025,
+          0.5184
+        ],
+        "p_vs_coinflip": 0.0097,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 3.4,
+        "pt_p": 0.0095,
+        "shuffled_accuracy": 0.5016
+      },
+      {
+        "model": "XGBoost",
+        "accuracy": 0.5084,
+        "ci95": [
+          0.5005,
+          0.5163
+        ],
+        "p_vs_coinflip": 0.0383,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 2.3,
+        "pt_p": 0.0376,
+        "shuffled_accuracy": 0.5023
+      },
+      {
+        "model": "k-nearest neighbours",
+        "accuracy": 0.4999,
+        "ci95": [
+          0.4919,
+          0.5078
+        ],
+        "p_vs_coinflip": 0.9807,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 3.9,
+        "pt_p": 0.9714,
+        "shuffled_accuracy": 0.4982
+      },
+      {
+        "model": "LSTM",
+        "accuracy": 0.5123,
+        "ci95": [
+          0.5044,
+          0.5203
+        ],
+        "p_vs_coinflip": 0.0022,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 74.4,
+        "pt_p": 0.0021,
+        "shuffled_accuracy": 0.5019
+      },
+      {
+        "model": "Transformer",
+        "accuracy": 0.5081,
+        "ci95": [
+          0.5001,
+          0.516
+        ],
+        "p_vs_coinflip": 0.0465,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 553.6,
+        "pt_p": 0.0453,
+        "shuffled_accuracy": 0.5018
+      },
+      {
+        "model": "Temporal Fusion Transformer",
+        "accuracy": 0.5082,
+        "ci95": [
+          0.5003,
+          0.5161
+        ],
+        "p_vs_coinflip": 0.043,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 264.2,
+        "pt_p": 0.0417,
+        "shuffled_accuracy": 0.4995
+      }
+    ]
+  },
+  {
+    "index": "NIFTY50",
+    "horizon": "60m",
+    "bars": 21985,
+    "folds": 5,
+    "base_up_rate": 0.5045,
+    "models": [
+      {
+        "model": "majority-class baseline",
+        "accuracy": 0.5011,
+        "ci95": [
+          0.4932,
+          0.509
+        ],
+        "p_vs_coinflip": 0.7902,
+        "n": 15390,
+        "train_accuracy": null,
+        "shuffled_accuracy": null
+      },
+      {
+        "model": "logistic regression",
+        "accuracy": 0.4903,
+        "ci95": [
+          0.4823,
+          0.4982
+        ],
+        "p_vs_coinflip": 0.0159,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 0.1,
+        "pt_p": 0.0143,
+        "shuffled_accuracy": 0.5013
+      },
+      {
+        "model": "gradient boosting",
+        "accuracy": 0.4919,
+        "ci95": [
+          0.484,
+          0.4999
+        ],
+        "p_vs_coinflip": 0.0465,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 117.9,
+        "pt_p": 0.04,
+        "shuffled_accuracy": 0.4968
+      },
+      {
+        "model": "LightGBM",
+        "accuracy": 0.4952,
+        "ci95": [
+          0.4873,
+          0.5031
+        ],
+        "p_vs_coinflip": 0.236,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 3.4,
+        "pt_p": 0.2222,
+        "shuffled_accuracy": 0.5019
+      },
+      {
+        "model": "XGBoost",
+        "accuracy": 0.4943,
+        "ci95": [
+          0.4864,
+          0.5022
+        ],
+        "p_vs_coinflip": 0.1583,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 2.3,
+        "pt_p": 0.1462,
+        "shuffled_accuracy": 0.4981
+      },
+      {
+        "model": "k-nearest neighbours",
+        "accuracy": 0.4999,
+        "ci95": [
+          0.492,
+          0.5079
+        ],
+        "p_vs_coinflip": 0.9936,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 4.1,
+        "pt_p": 0.9844,
+        "shuffled_accuracy": 0.5006
+      },
+      {
+        "model": "LSTM",
+        "accuracy": 0.4884,
+        "ci95": [
+          0.4805,
+          0.4964
+        ],
+        "p_vs_coinflip": 0.0042,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 75.3,
+        "pt_p": 0.0042,
+        "shuffled_accuracy": 0.4962
+      },
+      {
+        "model": "Transformer",
+        "accuracy": 0.4918,
+        "ci95": [
+          0.4839,
+          0.4997
+        ],
+        "p_vs_coinflip": 0.043,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 525.7,
+        "pt_p": 0.0421,
+        "shuffled_accuracy": 0.5037
+      },
+      {
+        "model": "Temporal Fusion Transformer",
+        "accuracy": 0.4892,
+        "ci95": [
+          0.4813,
+          0.4971
+        ],
+        "p_vs_coinflip": 0.0076,
+        "n": 15390,
+        "train_accuracy": null,
+        "seconds": 279.2,
+        "pt_p": 0.0078,
+        "shuffled_accuracy": 0.5021
+      }
+    ]
+  }
+]
