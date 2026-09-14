@@ -59,7 +59,8 @@ $\geq$\,71\,\% session once in 51, while reporting a confidence interval
 $\geq$\,71\,\% reading surfaces every seventh session. Under correct per-event
 scoring, nine model families spanning logistic regression to a Temporal Fusion
 Transformer, all trained on identical purged walk-forward splits, reach at most
-51.3\,\% out-of-sample. A sweep of 86 rule-based strategies yields a best Sharpe
+51.3\,\% out-of-sample, and a model-independent ceiling test replicates across
+five indices and two exchanges. A sweep of 86 rule-based strategies yields a best Sharpe
 \emph{below} what a circular block-bootstrap null produces from selection alone
 ($P = 0.658$). We give the closed form behind the distortion, showing the
 variance inflation is governed by the second moment of the run-length
@@ -248,7 +249,7 @@ exchange archives. Table~\ref{tab:data} summarises the corpus.
 \midrule
 BANKNIFTY 5-min bars & 2025-02 -- 2026-07 & 26\,265 \\
 NIFTY 50 5-min bars & 2025-02 -- 2026-07 & 26\,267 \\
-3 further indices, 5-min & 2025 -- 2026 & 9.6k--14k \\
+FINNIFTY / MIDCPNIFTY / SENSEX & 2025 -- 2026 & 9.6k--14k \\
 Option chain EOD + OI & 2024-07 -- 2026-07 & 1\,382\,738 \\
 Long-history option chain & 2016-05 -- 2026-05 & 2\,181 d \\
 Participant-wise OI & 2024-07 -- 2026-07 & 515 d \\
@@ -523,35 +524,48 @@ $n_{\text{eff}}$ alongside $n$ whenever forecasts overlap.
 \subsection{Is there anything to predict?}
 
 We first ask the question in a form independent of any model. An unconstrained
-random forest was fitted until it memorised the training data
+random forest was fitted until it memorised the training data, on five indices
+spanning large-cap, banking, financial-services, midcap and a second exchange
 (Table~\ref{tab:ceiling}).
 
 \begin{table}[!tb]
-\caption{Model-independent ceiling test, 30-minute horizon, $n = 16\,856$
-out-of-sample predictions per index.}
+\caption{Model-independent ceiling test at the 30-minute horizon, replicated
+across five indices. Every entry is an out-of-sample accuracy from the same
+purged walk-forward. $\Delta$ is the gap between real and shuffled labels; the
+positive controls have recoverable accuracies of approximately 55\,\% and
+65\,\% by construction.}
 \label{tab:ceiling}
 \centering
-\small
-\begin{tabular}{@{}lcc@{}}
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lrccccccc@{}}
 \toprule
-\textbf{Measurement} & \textbf{BANKNIFTY} & \textbf{NIFTY 50} \\
+\textbf{Index} & $\boldsymbol{n}$ & \textbf{Train} & \textbf{Real} &
+\textbf{Shuf.} & $\boldsymbol{\Delta}$ & \textbf{Maj.} &
+$\boldsymbol{s{=}.10}$ & $\boldsymbol{s{=}.30}$ \\
 \midrule
-Training accuracy & 100.0\,\% & 100.0\,\% \\
-Out-of-sample, real labels & 50.5\,\% & 50.0\,\% \\
-Out-of-sample, \textbf{shuffled labels} & \textbf{50.2\,\%} & \textbf{50.2\,\%} \\
-1-NN oracle & 48.8\,\% & 50.2\,\% \\
-Majority-class baseline & 49.3\,\% & 49.8\,\% \\
-\midrule
-Positive control, $s = 0.10$ & 52.4\,\% & 52.0\,\% \\
-Positive control, $s = 0.30$ & 63.5\,\% & 63.7\,\% \\
+BANKNIFTY  & 16\,856 & 100.0 & 50.5 & 50.2 & 0.3 & 49.3 & 52.4 & 63.5 \\
+NIFTY 50   & 16\,853 & 100.0 & 50.0 & 50.2 & 0.3 & 49.8 & 52.0 & 63.7 \\
+FINNIFTY   &  8\,988 & 100.0 & 50.2 & 50.5 & 0.3 & 49.4 & 52.4 & 62.5 \\
+MIDCPNIFTY &  8\,309 & 100.0 & 50.2 & 50.8 & 0.7 & 49.7 & 53.3 & 62.0 \\
+SENSEX     &  6\,144 & 100.0 & 49.7 & 50.1 & 0.5 & 49.0 & 52.5 & 62.1 \\
 \bottomrule
+\multicolumn{9}{@{}l@{}}{\scriptsize No real-label result is significant against
+0.5 ($p = 0.22$ to $0.91$); every} \\
+\multicolumn{9}{@{}l@{}}{\scriptsize positive control is, at $p < 0.001$.} \\
 \end{tabular}
 \end{table}
 
-The model memorises perfectly and generalises at chance. Permuting the labels
-changes out-of-sample accuracy by 0.3 points on both indices. The positive
-controls are recovered at $p < 0.001$, establishing that the pipeline detects
-signal when signal is present.
+The pattern is identical on all five. Each model memorises its training data
+completely and generalises at chance, and permuting the labels moves
+out-of-sample accuracy by between 0.3 and 0.7 points. No real-label result is
+distinguishable from a coinflip. Both positive controls are recovered on every
+index at $p < 0.001$, which establishes that the pipeline detects signal
+whenever signal is present and that the null is therefore a property of the
+data.
+
+Replication across five instruments, two exchanges and four capitalisation
+segments is what separates this from a single-market curiosity.
 
 \subsection{Nine model families}
 

@@ -21,6 +21,7 @@ result honest.
 | [09](09-data-assets.md) | What can a retail account actually obtain for free? | More than expected: a decade of option chains, 2 years of OI, real volume. |
 | [10](10-methodology.md) | The protocol that killed the mirages | Out-of-sample + both-halves stability + per-event scoring + costs. |
 | [11](11-multiple-testing.md) | 86 strategies, and what that does to the statistics | **The best of 86 is worse than a block-bootstrap null.** P(null ≥ observed) = 0.658. |
+| [12](12-corrected-estimator.md) | Can the inflation be corrected, not just diagnosed? | **Yes.** Run-structure estimator: 94% coverage vs 40% naive. n_eff = 6, not 69. |
 
 ## How to read the numbers
 
@@ -54,4 +55,5 @@ python3 -m research.model_zoo           # nine model families, identical splits
 python3 -m research.overlap_simulation  # how a coinflip posts a 71% session
 python3 -m research.strategy_sweep      # 86 strategies + multiple-testing correction
 python3 -m research.cost_geometry       # the accuracy that would actually be needed
+python3 -m research.effective_sample    # the correction, validated by coverage
 ```

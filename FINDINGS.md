@@ -22,6 +22,7 @@ Full write-ups: [`findings/`](findings/) · Method:
 | Does open interest know more than price? | **Marginally.** IC 0.04–0.06 over 2,181 days, stable, where price-only shows nothing. | [06](findings/06-open-interest.md) |
 | Do edges last? | **No.** The best went 74% → 38% in under two years. | [07](findings/07-edge-decay.md) |
 | Is the best of 86 strategies a finding? | **No.** A block-bootstrap null produces a *better* winner 66% of the time. | [11](findings/11-multiple-testing.md) |
+| Can the inflation be corrected? | **Yes.** A run-structure estimator covers at 94% where the standard one covers at 40%. | [12](findings/12-corrected-estimator.md) |
 
 ## The four numbers that matter
 
@@ -49,6 +50,26 @@ straddles over 349–509 trades at a 61% win rate. The only positive expectancy
 found in the entire investigation. The same structure on BANKNIFTY loses 7.3
 points per trade, because its tail is fatter: worst trade −2,002 versus NIFTY's
 −847.
+
+## The correction
+
+Diagnosing a biased statistic is half a contribution. The other half is the fix.
+
+The variance inflation has a closed form, and because the dependence is
+block-shaped it collapses to `n_eff = n·E[L]/E[L²]` over the runs of constant
+hit indicator — governed by the **second** moment of the run-length
+distribution, which is why a heavy tail matters far more than a long mean.
+
+Validated by coverage against a forecaster of known skill: the naive interval
+covers 40% of the time while claiming 95%, a textbook HAC correction reaches
+67%, a moving-block bootstrap 63%, and the run-structure estimator **94%**.
+
+Both standard corrections fail for the same reason, and finding it was the point:
+the conventional automatic Bartlett bandwidth is about three bars here, while
+the dependence runs to forty.
+
+The practical number is `n_eff ≈ 6` for a session that reports 69 forecasts. An
+honest interval is ±35 points wide. One session establishes nothing.
 
 ## Statistical significance is not economic significance
 

@@ -263,6 +263,25 @@ def evaluate(name, horizon, folds, quick):
                        for r, c in results]}
 
 
+
+def _merge_by_index(path, new_rows):
+    """Merge into an existing results file, keyed by index.
+
+    Running the script for a subset of indices should update those entries and
+    leave the rest alone. Overwriting silently discarded results that figures
+    and tables still referred to.
+    """
+    existing = []
+    if path.exists():
+        try:
+            existing = json.loads(path.read_text())
+        except Exception:
+            existing = []
+    by_index = {r.get("index"): r for r in existing if isinstance(r, dict)}
+    for r in new_rows:
+        by_index[r.get("index")] = r
+    return list(by_index.values())
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--horizon", default="30m", choices=list(C.HORIZON_BARS))
@@ -275,7 +294,7 @@ def main():
 
     d = paths.ROOT / "results"; d.mkdir(exist_ok=True)
     f = d / f"model_zoo_{a.horizon}.json"
-    f.write_text(json.dumps(out, indent=2))
+    f.write_text(json.dumps(_merge_by_index(f, out), indent=2))
     print(f"\nwritten: {f.relative_to(paths.ROOT)}")
 
 

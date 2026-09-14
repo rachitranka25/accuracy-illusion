@@ -70,8 +70,12 @@ def fig_autocorrelation():
     panels = []
     for horizon in ("30m", "60m"):
         d = _load(f"ceiling_test_{horizon}.json")
-        if d:
-            panels.append((horizon, d[0]))
+        if not d:
+            continue
+        # Name the index explicitly; taking whichever block happens to be first
+        # lets an unrelated re-run silently change the figure.
+        blk = next((b for b in d if b["index"] == "BANKNIFTY"), d[0])
+        panels.append((horizon, blk))
     if not panels:
         return
 
@@ -96,7 +100,7 @@ def fig_autocorrelation():
         ax.annotate(f"lag = k = {k}", (k, 0.93), xytext=(5, 0),
                     textcoords="offset points", color=INK2, fontsize=6)
 
-        ax.set_title(f"{horizon} horizon  (k = {k} bars)", loc="left")
+        ax.set_title(f"{blk['index']}, {horizon} horizon  (k = {k} bars)", loc="left")
         ax.set_xlabel("lag (bars)")
         ax.set_xticks(lags)
         ax.grid(axis="y")
