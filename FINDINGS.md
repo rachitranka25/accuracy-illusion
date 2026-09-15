@@ -18,7 +18,7 @@ Full write-ups: [`findings/`](findings/) · Method:
 | Then why did our screens show 60–85%? | A **zero-skill** forecaster posts ≥71% once every 7 sessions on a dashboard watching 8 series. | [02](findings/02-measurement-illusions.md) |
 | What accuracy would actually be needed? | **71.5%** on BANKNIFTY futures. At option costs, **no accuracy suffices**. | [03](findings/03-cost-geometry.md) |
 | Is **magnitude** predictable? | **Yes — 68–74% out-of-sample, stable.** The strongest real result. | [04](findings/04-volatility-predictability.md) |
-| Is anything actually profitable? | **One thing.** Short NIFTY ATM premium: +22.5 pts/trade after cost. Fat left tail. | [05](findings/05-variance-risk-premium.md) |
+| Is anything actually profitable? | **Nothing we can show.** Premium selling fails its own multiplicity correction. | [05](findings/05-variance-risk-premium.md) |
 | Does open interest know more than price? | **Marginally.** IC 0.04–0.06 over 2,181 days, stable, where price-only shows nothing. | [06](findings/06-open-interest.md) |
 | Do edges last? | **No.** The best went 74% → 38% in under two years. | [07](findings/07-edge-decay.md) |
 | Is the best of 86 strategies a finding? | **No.** A block-bootstrap null produces a *better* winner 66% of the time. | [11](findings/11-multiple-testing.md) |
@@ -45,11 +45,11 @@ assumed: a fair coin held for the engine's empirically observed run length
 hit-rate is **1.66× too narrow**; scored one observation per horizon it is
 correctly calibrated at 0.99×.
 
-**+22.5 points** — net per trade after 3% costs, selling NIFTY at-the-money
-straddles over 349–509 trades at a 61% win rate. The only positive expectancy
-found in the entire investigation. The same structure on BANKNIFTY loses 7.3
-points per trade, because its tail is fatter: worst trade −2,002 versus NIFTY's
-−847.
+**0 of 4** — premium-selling configurations that are significantly profitable,
+on either index, before or after Benjamini–Hochberg. Every bootstrap interval on
+the mean contains zero, and the best of four is *worse* than a recentred null
+typically produces (P = 0.68 and 0.62). The variance risk premium is real in the
+literature; our measurement of it as a tradeable edge is withdrawn.
 
 ## The correction
 
@@ -108,10 +108,12 @@ results were withdrawn after better tests:
    ~80% on BANKNIFTY, so the genuine *edge* is NIFTY 50 at 30–60 minutes
    (+9 to +13 points over baseline).
 
-2. **The variance risk premium is real and reachable.** Structural rather than
-   predictive, which is why it survived a protocol that killed everything
-   predictive. Also a short-volatility payoff: small regular gains, occasional
-   large losses. Defined-risk structures only.
+2. ~~**The variance risk premium is real and reachable.**~~ **Withdrawn.** It
+   failed the same multiplicity correction that killed the directional result.
+   The premium does exceed the subsequent move on average and the 61–68% win
+   rates are genuine, but a left-skewed payoff with a standard deviation forty
+   times its mean is not an edge — it is the shape that makes short volatility
+   dangerous. See [finding 05](findings/05-variance-risk-premium.md).
 
 3. **Option-chain residuals carry a little information.** Over a decade, four
    features survive after the price component is regressed out — and the

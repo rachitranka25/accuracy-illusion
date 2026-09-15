@@ -63,9 +63,11 @@ on simulated and on live sessions: a session advertising 69 forecasts carries
 about twelve independent observations. Applying the correction to our own
 results removes our one positive directional finding, XGBoost falling from
 51.3\,\% ($p = 0.001$) to 50.4\,\% ($p = 0.69$), with zero of nine model
-families surviving on either index. Applied to a volatility target on identical
-features it removes nothing (70.8\,\% to 71.3\,\%), evidence that it separates
-signal from artefact rather than flattening both. Break-even accuracy derived
+families surviving on either index. It also removes our
+best non-directional result, a premium-selling strategy that does not beat a
+recentred null over its own configuration grid. Applied to a volatility target
+on identical features it removes nothing (70.8\,\% to 71.3\,\%), so it
+distinguishes signal from artefact rather than flattening both. Break-even accuracy derived
 from measured move distributions is 71.5\,\% at thirty minutes and 86--93\,\% at
 five, against a best achieved figure near 50\,\%. Code, raw results and the
 free-data corpus are public.
@@ -1077,10 +1079,14 @@ The fifteen production features are all transforms of one price series;
 reshaping price cannot reveal what price does not contain. What follows comes
 from changing the target or the information source.
 
-These results have been through the harness of Section~\ref{sec:method}, and the
-outcome is the best argument for having built it: the correction that destroyed
-our directional result in Section~\ref{sec:predictability} leaves the volatility
-result standing.
+These results have been through the harness of Section~\ref{sec:method}, and
+what it leaves behind is narrow. Of the three positive findings this project
+reported, one survives: volatility prediction is unharmed by the correction that
+destroyed the directional result. The variance risk premium does not survive its
+own multiplicity correction, and we withdraw it below. That asymmetry is the
+best argument for having built the harness, since an instrument that flattened
+everything would be useless and one that spared its author's favourites would be
+worse.
 
 \subsection{Volatility}
 
@@ -1145,55 +1151,73 @@ that most of that structure is already in the previous half hour.
 
 \subsection{The variance risk premium}
 
-Short at-the-money straddles entered three trading days before expiry and held
-to expiry, priced on real end-of-day premiums from the F\&O archive, with a
-round-trip cost of 10\,\% of premium collected (Table~\ref{tab:vrp}).
+Short at-the-money straddles held to expiry, priced on real end-of-day premiums
+from the F\&O archive. The entry point is a choice, so all four entry points we
+tried are reported rather than the best one (Table~\ref{tab:vrp}).
 
 \begin{table}[!tb]
-\caption{Short ATM straddle, held to expiry, net of a 10\,\% round-trip cost on
-premium. DTE is the entry point in trading days before expiry.}
+\caption{Short ATM straddle held to expiry, net of a round-trip cost of 10\,\%
+of premium collected. DTE is entry in trading days before expiry. $p$ is
+one-sided for profitability; the interval is a 2\,000-sample bootstrap on the
+mean, which makes no normality assumption, and short-premium P\&L is sharply
+left-skewed.}
 \label{tab:vrp}
 \centering
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lrrrrr@{}}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrrrrrr@{}}
 \toprule
-& \textbf{Trades} & \textbf{Win} & \textbf{Net/trade} & \textbf{Worst} & \textbf{h1/h2} \\
+\textbf{DTE} & $\boldsymbol{n}$ & \textbf{Win} & \textbf{Net} & \textbf{s.d.} &
+$\boldsymbol{t}$ & $\boldsymbol{p}$ & \textbf{95\,\% CI} \\
 \midrule
-NIFTY, 3 DTE & 108 & 61\,\% & $+2.8$ & $-687$ & 61/63 \\
-NIFTY, 1 DTE & 108 & 62\,\% & $+3.2$ & $-439$ & 61/72 \\
-BANKNIFTY, 3 DTE & 39 & 64\,\% & $+14.2$ & $-881$ & 58/75 \\
-BANKNIFTY, 1 DTE & 40 & 68\,\% & $+59.3$ & $-936$ & 75/70 \\
+\multicolumn{8}{@{}l@{}}{\emph{NIFTY} (weekly expiries, median gap 7 days)} \\
+1 & 108 & 62\,\% & 3.2 & 123 & 0.27 & 0.394 & [$-$21, 26] \\
+2 & 108 & 62\,\% & 12.1 & 168 & 0.75 & 0.228 & [$-$20, 43] \\
+3 & 108 & 61\,\% & 2.8 & 214 & 0.14 & 0.446 & [$-$39, 43] \\
+5 & 107 & 48\,\% & $-$45.5 & 254 & $-$1.85 & 0.967 & [$-$93, 3] \\
+\midrule
+\multicolumn{8}{@{}l@{}}{\emph{BANKNIFTY} (monthly expiries, median gap 27 days)} \\
+1 & 40 & 68\,\% & 59.3 & 315 & 1.19 & 0.121 & [$-$43, 149] \\
+2 & 40 & 65\,\% & 58.1 & 553 & 0.66 & 0.255 & [$-$117, 214] \\
+3 & 39 & 64\,\% & 14.1 & 472 & 0.19 & 0.426 & [$-$124, 153] \\
+5 & 39 & 49\,\% & $-$209.2 & 624 & $-$2.09 & 0.979 & [$-$408, $-$15] \\
 \bottomrule
-\multicolumn{6}{@{}l@{}}{\footnotesize Net per trade and worst trade in index points.} \\
+\multicolumn{8}{@{}l@{}}{\scriptsize Net and s.d.\ in index points. \textbf{0 of 4}
+configurations are significantly profitable on either} \\
+\multicolumn{8}{@{}l@{}}{\scriptsize index, before or after Benjamini--Hochberg.
+Every interval contains zero.} \\
 \end{tabular}
 \end{table}
 
-The premium sold exceeds the subsequent move on average in every configuration,
-which is the variance risk premium doing what the literature says it
-does~\cite{carr2009,bakshi2003}. Being structural rather than predictive is why it survives a protocol that
-eliminated the predictive results.
+\textbf{It does not survive its own multiplicity correction.} No configuration
+is significantly profitable on either index, and every bootstrap interval
+contains zero. Recentring each configuration's P\&L to a zero mean and
+resampling gives the distribution of the best of four under a true null: on
+NIFTY the median null best is $17.8$ against an observed best of $12.1$
+($P = 0.68$), and on BANKNIFTY $75.1$ against $59.3$ ($P = 0.62$). As with the
+strategy sweep of Section~\ref{sec:predictability}-C, the winner is worse than
+what selection alone typically produces.
 
-This remains the weakest-evidenced claim in the paper, and four caveats belong
-with it. The sample is 39--108 expiries, not thousands. No dispersion statistic
-accompanies the mean, so the net figures carry no interval. No multiplicity
-correction is applied over the choice of strike, entry day and holding rule, and
-Table~\ref{tab:vrp} reports four such choices. And BANKNIFTY's 39 expiries
-against NIFTY's 108 reflect NSE moving BANKNIFTY options from weekly to monthly
-expiry partway through the sample, so the two rows are not a like-for-like
-comparison and the BANKNIFTY figures cover a shorter, differently structured
-period.
+\textbf{The two indices were never comparable.} NSE moved BANKNIFTY options from
+weekly to monthly expiry during the sample, which changes the holding period and
+the decay profile of the trade being tested. Splitting BANKNIFTY on expiry
+spacing, the weekly sub-sample returns $-67.5$ points per trade and the monthly
+$+57.5$: the positive headline is entirely the monthly regime, on 21 expiries.
+NIFTY has no monthly sub-sample to compare against.
 
-We note also that an earlier version of this work reported $+22.5$ points per
-trade for NIFTY and a \emph{loss} of $7.3$ points for BANKNIFTY. Neither
-reproduces from the committed script; the correct figures are above. That error
-is precisely the failure mode this paper argues against, and it survived until
-the analysis was re-run rather than remembered.
+\textbf{The cost assumption is load-bearing.} At 5\,\% of premium, NIFTY returns
+$+17.0$ and BANKNIFTY $+50.9$ per trade; at 20\,\%, $-25.6$ and $-59.4$. The
+sign of the result is set by an assumption, not by the data.
 
-Most importantly, the payoff is short-volatility: a 61--68\,\% win rate on small
-credits against occasional losses of 400--900 points. A high win rate here is a
-statement about tail exposure, not about skill, and the structure must be
-implemented with defined risk.
+We therefore withdraw the claim, made in an earlier version of this work and
+repeated in our public research record, that premium selling is the one
+measurable edge this project found. The variance risk premium is real and
+well documented~\cite{carr2009,bakshi2003}; what we can show is that our
+measurement of it does not survive the standard this paper argues for. Mean
+premium does exceed mean subsequent move in most configurations, and the win
+rates of 61--68\,\% are genuine, but a 61\,\% win rate on a left-skewed payoff
+with a standard deviation forty times the mean is not evidence of an edge. It is
+the shape that makes short-volatility strategies dangerous.
 
 \subsection{Option-chain positioning}
 
@@ -1252,12 +1276,12 @@ survive every control sits twenty percentage points below its own break-even
 threshold. On the instruments and horizons most retail participants use, that
 threshold exceeds 100\,\%.
 
-What remains is not direction. Magnitude is forecastable and, tellingly,
-unharmed by the same correction that removed the directional effect, though most
-of its apparent accuracy is volatility clustering that a persistence rule
-already captures. The variance risk premium is real and structural. Order-flow
-data, which we could not obtain, is where the literature locates the remaining
-short-horizon alpha.
+What remains is a single positive result, and a modest one. Magnitude is
+forecastable, and tellingly it is unharmed by the correction that removed both
+of our other findings, though most of its apparent accuracy is volatility
+clustering that a persistence rule already captures. Everything else we believed
+we had found dissolved under our own standard. Order-flow data, which we could
+not obtain, is where the literature locates the remaining short-horizon alpha.
 
 Reporting practice should change to match, and the change is cheap.
 Section~\ref{sec:estimator} gives an estimator that errs toward caution where

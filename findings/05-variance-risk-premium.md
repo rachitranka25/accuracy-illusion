@@ -1,122 +1,103 @@
-# 05 — The variance risk premium
+# 05 — The variance risk premium: withdrawn as an edge
 
-**Claim tested.** That there exists at least one edge on this data that is both
-measurable and reachable from a retail account.
+**Claim tested.** That selling at-the-money premium is the one measurable,
+retail-reachable edge this project found.
 
-**Verdict.** Yes — selling at-the-money premium — but the numbers previously
-recorded here were wrong, and the corrected ones are smaller and point the other
-way on BANKNIFTY.
+**Verdict.** **Withdrawn.** It does not survive its own multiplicity correction.
+No entry configuration is significantly profitable on either index, every
+bootstrap interval on the mean contains zero, and the best of four
+configurations is *worse* than what a recentred null typically produces.
 
-Re-run from the committed script (short ATM straddle, entered *D* trading days
-before expiry, held to expiry, net of 10% of premium as round-trip cost):
-
-| | Trades | Win | Net/trade | Worst | h1 / h2 |
-|---|---|---|---|---|---|
-| NIFTY, 3 DTE | 108 | 61% | **+2.8** | −687 | 61 / 63 |
-| NIFTY, 1 DTE | 108 | 62% | **+3.2** | −439 | 61 / 72 |
-| BANKNIFTY, 3 DTE | 39 | 64% | **+14.2** | −881 | 58 / 75 |
-| BANKNIFTY, 1 DTE | 40 | 68% | **+59.3** | −936 | 75 / 70 |
-
-> **Retraction.** This document previously reported +22.5 points per trade for
-> NIFTY and a *loss* of 7.3 points for BANKNIFTY, over "349–509 trades". None of
-> that reproduces. The trade counts are 39–108, NIFTY nets low single digits,
-> and **BANKNIFTY is positive, not negative**. The old figures came from memory
-> of an earlier run rather than from the script, which is exactly the failure
-> mode this project documents.
-
-> Status: **REPRODUCIBLE** — `research/archive/vrp_straddle_test.py`.
+> Status: **REPRODUCIBLE** — `research/vrp_test.py`,
+> [`results/vrp_test.json`](../results/vrp_test.json).
 
 ---
 
-## What is still missing
+## The numbers, with dispersion this time
 
-Four things, and until they are done this is a lead rather than a result:
+Short ATM straddle held to expiry, cost 10% of premium collected. Every entry
+point tried is shown, not the best one.
 
-1. **Sample size.** 39–108 expiries, not thousands. No interval accompanies any
-   mean.
-2. **No multiplicity correction** over the choice of strike, entry day and
-   holding rule — and the table above reports four such choices.
-3. **BANKNIFTY is not like-for-like.** Its 39 expiries against NIFTY's 108
-   reflect NSE moving BANKNIFTY options from weekly to monthly expiry partway
-   through the sample. Different holding period, different decay profile.
-4. **The 10% cost assumption is load-bearing** and is not calibrated per
-   instrument.
+### NIFTY (weekly expiries, median gap 7 days)
 
-## Why it works
+| DTE | n | Win | Net/trade | s.d. | t | p | 95% CI |
+|---|---|---|---|---|---|---|---|
+| 1 | 108 | 62% | 3.2 | 123 | 0.27 | 0.394 | [−21, 26] |
+| 2 | 108 | 62% | 12.1 | 168 | 0.75 | 0.228 | [−20, 43] |
+| 3 | 108 | 61% | 2.8 | 214 | 0.14 | 0.446 | [−39, 43] |
+| 5 | 107 | 48% | **−45.5** | 254 | −1.85 | 0.967 | [−93, 3] |
 
-Implied volatility is persistently priced above subsequently realised
-volatility. Option sellers are paid for carrying risk that buyers want to shed,
-and that spread is the variance risk premium — one of the most durable
-documented anomalies in derivatives markets, and structural rather than
-informational. It does not depend on predicting anything.
+### BANKNIFTY (monthly expiries, median gap 27 days)
 
-That is precisely why it survived a test protocol that killed every predictive
-signal in this project. It is not a prediction.
+| DTE | n | Win | Net/trade | s.d. | t | p | 95% CI |
+|---|---|---|---|---|---|---|---|
+| 1 | 40 | 68% | 59.3 | 315 | 1.19 | 0.121 | [−43, 149] |
+| 2 | 40 | 65% | 58.1 | 553 | 0.66 | 0.255 | [−117, 214] |
+| 3 | 39 | 64% | 14.1 | 472 | 0.19 | 0.426 | [−124, 153] |
+| 5 | 39 | 49% | **−209.2** | 624 | −2.09 | 0.979 | [−408, −15] |
 
-## On the index comparison
+**0 of 4 significantly profitable** on either index, raw or after
+Benjamini–Hochberg.
 
-An earlier version of this document explained at length why BANKNIFTY "does not
-work", on the basis of a −7.3 figure that does not reproduce. BANKNIFTY is in
-fact the stronger of the two in this test. What remains true is that its tail is
-heavier in absolute points (worst −936 against NIFTY's −687 on comparable
-entries), and that its sample is both smaller and structurally different because
-of the expiry change.
+## The null beats the winner
 
-## The counter-intuitive result
+Recentre each configuration's P&L to a zero mean, resample, and record the best
+of four. That is the distribution of "best backtest of N" when there is no edge:
 
-The obvious improvement is to sell premium only on days the volatility model
-([finding 04](04-volatility-predictability.md)) predicts QUIET. It was tested.
-**It makes profitability worse:**
+| | Observed best | Null best (median) | Null best (95th) | P(null ≥ obs) |
+|---|---|---|---|---|
+| NIFTY | 12.1 | **17.8** | 43.0 | **0.679** |
+| BANKNIFTY | 59.3 | **75.1** | 181.8 | **0.620** |
 
-| Filter | Net per trade |
-|---|---|
-| Unfiltered | positive |
-| Only the quietest 33% of predicted days | **worse** |
+Same pattern as the 86-strategy sweep in [finding 11](11-multiple-testing.md):
+selecting the best of a handful of choices produces a better-looking result than
+the one we actually found.
 
-> These are **RECORDED** from a run whose script was not kept, and the
-> magnitudes should not be quoted — the unfiltered baseline they were measured
-> against is the +22.5 figure now retracted above. The *direction* of the effect
-> is what survives, and it has a clear mechanism.
+## The two indices were never comparable
 
-The reason is that premium is richest exactly when the model predicts a big
-move, because high predicted volatility means high implied volatility means a
-larger credit. Filtering to quiet days filters out the paid days.
+NSE moved BANKNIFTY options from weekly to monthly expiry partway through the
+sample. Split on expiry spacing (3 DTE entry):
 
-What the filter *does* buy is tail protection — a smaller worst trade and a
-smaller maximum drawdown, at the cost of most of the return. So the volatility model's correct role here is a **risk dial, not alpha**.
-Turning it on halves the tail and halves the return. That is a position-sizing
-decision, not a signal.
+| BANKNIFTY | n | Net/trade |
+|---|---|---|
+| Weekly sub-sample | 17 | **−67.5** |
+| Monthly sub-sample | 21 | **+57.5** |
 
-## The shape of the risk
+The positive headline is entirely the monthly regime, on 21 expiries. NIFTY has
+no monthly sub-sample to compare against. An external auditor flagged this
+before we tested it.
 
-A 61% win rate on small regular credits against occasional large debits is the
-classic short-volatility profile. Stated plainly:
+## The cost assumption sets the sign
 
-- The strategy makes money most expiries.
-- A single bad week can erase months of it.
-- A high win rate here is a **warning about hidden tail risk**, not evidence of
-  skill.
+| Cost (% of premium) | NIFTY | BANKNIFTY |
+|---|---|---|
+| 5% | +17.0 | +50.9 |
+| 10% | +2.8 | +14.1 |
+| 20% | **−25.6** | **−59.4** |
 
-Implications, none of them optional:
+The sign of the result is chosen by an assumption, not by the data.
 
-1. **Never naked.** Defined-risk structures only — iron condor, credit spread.
-   `oracle/strategy/options.py` builds condors for this reason.
-2. **Size for the tail, not the average.** The worst historical trade, not the
-   mean, sets position size.
-3. **The backtest holds to expiry.** Real positions face margin expansion on the
-   path, which the backtest does not model. Margin is a real constraint that can
-   force an exit at the worst moment.
-4. **Costs were assumed at 10% of premium.** Retail option spreads on non-index
-   strikes can be wider, and the net edge is small enough that the cost
-   assumption is load-bearing.
+## What survives
 
-## Status in the project
+The variance risk premium itself is real and well documented (Carr & Wu 2009;
+Bakshi & Kapadia 2003). Mean premium does exceed mean subsequent move in most
+configurations here, and the 61–68% win rates are genuine.
 
-This is documented as the one measurable, reachable edge found. It is **not**
-implemented as an automated strategy and it has **not** been traded. The gap
-between "positive in a hold-to-expiry EOD backtest" and "survivable in a live
-account with margin, spreads and path risk" is exactly where short-volatility
-strategies historically fail.
+What does not survive is **our measurement of it as an edge**. A 61% win rate on
+a left-skewed payoff whose standard deviation is forty times its mean is not
+evidence of profitability. It is the shape that makes short-volatility
+strategies dangerous, and it is exactly the "high win rate as a warning" pattern
+this record has flagged elsewhere while failing to apply it here.
 
-The next honest step is a defined-risk condor advisor validated on real premiums
-with margin modelling — not an execution engine.
+## Retraction history
+
+This document has now been corrected twice:
+
+1. First it reported **+22.5 pts/trade (NIFTY)** and **−7.3 (BANKNIFTY)** over
+   "349–509 trades". None of that reproduced; the real counts are 39–108 and
+   BANKNIFTY was *positive*.
+2. Now the corrected figures themselves fail multiplicity correction, so the
+   **claim of an edge is withdrawn entirely.**
+
+Both corrections came from running the code rather than re-reading the notes.
+See [finding 10](10-methodology.md).
