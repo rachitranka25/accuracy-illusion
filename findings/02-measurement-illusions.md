@@ -111,14 +111,19 @@ horizon, one trending Friday.
 
 ## Case study: the 71%
 
-Traced to source, it was:
+Traced to source, it was **NIFTY 50, 30-minute horizon, on one day** — a
+trending Friday in July 2026.
 
-- **NIFTY 50, 30-minute horizon, on one day** — Friday 24 July 2026 — where
-  202 of 285 per-minute forecasts were scored as hits.
-- The *same* configuration scored **56%** the following Monday.
-- Reproduced properly (train strictly before 24 July, score 24 July
-  out-of-sample, one observation per 5-minute bar): **51%**.
-- The older "legacy" engine believed responsible: **48%** on the same scoring.
+> **The precise figures are withdrawn.** This document previously quoted
+> "202 of 285 forecasts", 56% the following Monday and 51% on re-scoring. The
+> portion of the log holding that session was lost before the current analysis,
+> so none of it can be reproduced. A record that demands reproducibility cannot
+> keep numbers it cannot produce.
+
+The surviving log holds a close analogue, fully analysed in
+[finding 12](12-corrected-estimator.md): a NIFTY 50 session reporting **69.6%
+over 335 per-minute forecasts**, whose naive interval excludes 50% comfortably
+and whose corrected interval [50.0, 89.1] barely does.
 
 A head-to-head logger was built to settle the engine comparison live. Over a
 full session the apparent morning lead reversed completely by the close — noise

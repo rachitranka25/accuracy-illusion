@@ -278,16 +278,15 @@ Index futures (real volume) & 2024-01 -- 2026-07 & 639 d \\
 
 Three observations about this corpus are of independent practical value.
 
-\textbf{Index spot carries no volume.} The cash index prints zero volume, so any
-feature computed as a ``VWAP'' on index spot is in fact an unweighted expanding
-mean of typical price. This was live in our own feature set for weeks before it
-was identified. Real volume exists only on the futures contract.
+\textbf{Index spot carries no volume.} The cash index prints zero volume, so a
+feature computed as a ``VWAP'' on index spot is an unweighted expanding mean of
+typical price. This sat in our own feature set for weeks. Real volume exists
+only on the futures contract.
 
-\textbf{The static exchange archive is not geo-restricted.} The exchange's
-\emph{live} option-chain API returns HTTP 403/404 from outside India, but the
-static end-of-day derivatives archive downloads normally. This distinction
-converted an assumed hard constraint into a two-year, and subsequently
-ten-year, dataset.
+\textbf{The static exchange archive is not geo-restricted.} The \emph{live}
+option-chain API returns HTTP 403/404 from outside India; the static end-of-day
+archive downloads normally. That distinction turned an assumed hard constraint
+into a ten-year dataset.
 
 \textbf{TOTP authentication is location-independent.} Brokers authenticating by
 locally computed one-time passwords permit collection from any jurisdiction,
@@ -450,9 +449,9 @@ context.
 Everything above runs on 5-minute bars, where a 30-minute horizon is $k = 6$ and
 a session yields 69 forecasts. The production system does not work that way: it
 emits a forecast every minute, so the horizon is $k = 30$ and a session yields
-about 314 scored forecasts. The number this paper exists to explain, 202 of 285,
-was counted at that density. Explaining a per-minute figure with a per-bar model
-would be a gap, so we close it (Table~\ref{tab:perminute}).
+about 314 scored forecasts, and the headline figures this paper exists to
+explain were counted at that density. Explaining a per-minute figure with a
+per-bar model would be a gap, so we close it (Table~\ref{tab:perminute}).
 
 The outcome series here is not simulated. It is taken from the production log,
 which recorded the direction called each minute and the move that followed, so
@@ -506,10 +505,13 @@ forecaster's hits are close to independent across them. Either way the figure is
 about one session in seven, so a headline 71\,\% arrives within the first weeks
 of live operation with no edge whatsoever.
 
-Our own 71\,\% was exactly this. Traced to source it was NIFTY~50, 30-minute
-horizon, on a single trending Friday: 202 of 285 per-minute forecasts scored as
-hits. The identical configuration scored 56\,\% the following Monday, and
-51\,\% when re-evaluated out-of-sample at one observation per bar.
+Our own headline figure was exactly this: one index, one horizon, one trending
+Friday, read as skill. That session cannot be audited, since the portion of the
+log holding it was lost before this analysis began, and we will not quote
+figures we cannot reproduce in a paper arguing against the practice. The
+surviving log holds a close analogue which Section~\ref{sec:estimator}-C takes
+apart in full: 69.6\,\% over 335 per-minute NIFTY~50 forecasts, whose naive
+interval excludes 50\,\% comfortably and whose corrected interval barely does.
 
 \section{A Corrected Estimator}
 \label{sec:estimator}
