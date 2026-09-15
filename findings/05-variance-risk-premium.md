@@ -70,21 +70,20 @@ The obvious improvement is to sell premium only on days the volatility model
 
 | Filter | Net per trade |
 |---|---|
-| Unfiltered | +22.5 pts |
-| Only the quietest 33% of predicted days | **+2.4 pts** |
+| Unfiltered | positive |
+| Only the quietest 33% of predicted days | **worse** |
+
+> These are **RECORDED** from a run whose script was not kept, and the
+> magnitudes should not be quoted — the unfiltered baseline they were measured
+> against is the +22.5 figure now retracted above. The *direction* of the effect
+> is what survives, and it has a clear mechanism.
 
 The reason is that premium is richest exactly when the model predicts a big
 move, because high predicted volatility means high implied volatility means a
 larger credit. Filtering to quiet days filters out the paid days.
 
-What the filter *does* buy is tail protection:
-
-| | Unfiltered | Quiet-filtered |
-|---|---|---|
-| Worst trade | −847 | **−538** |
-| Max drawdown | −5,405 | **−2,605** |
-
-So the volatility model's correct role here is a **risk dial, not alpha**.
+What the filter *does* buy is tail protection — a smaller worst trade and a
+smaller maximum drawdown, at the cost of most of the return. So the volatility model's correct role here is a **risk dial, not alpha**.
 Turning it on halves the tail and halves the return. That is a position-sizing
 decision, not a signal.
 
@@ -93,7 +92,7 @@ decision, not a signal.
 A 61% win rate on small regular credits against occasional large debits is the
 classic short-volatility profile. Stated plainly:
 
-- The strategy makes money most weeks.
+- The strategy makes money most expiries.
 - A single bad week can erase months of it.
 - A high win rate here is a **warning about hidden tail risk**, not evidence of
   skill.
@@ -107,8 +106,9 @@ Implications, none of them optional:
 3. **The backtest holds to expiry.** Real positions face margin expansion on the
    path, which the backtest does not model. Margin is a real constraint that can
    force an exit at the worst moment.
-4. **Costs were assumed at 3%.** Retail option spreads on non-index strikes can
-   be wider. The edge is +22.5 points; the cost assumption is load-bearing.
+4. **Costs were assumed at 10% of premium.** Retail option spreads on non-index
+   strikes can be wider, and the net edge is small enough that the cost
+   assumption is load-bearing.
 
 ## Status in the project
 

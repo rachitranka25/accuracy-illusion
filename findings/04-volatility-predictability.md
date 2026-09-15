@@ -49,10 +49,12 @@ than flattening everything it touches.
 The shuffled-label control tells the same story: for volatility the gap between
 real and shuffled labels is ~18 points; for direction it was under 2.
 
-## Earlier numbers
+## Earlier numbers, and how they compare
 
-Binary target: will realised volatility over the next *k* bars exceed the
-training-set median?
+The production LSTM and an earlier gradient-boosted version are below. They are
+consistent with the harness run in direction and magnitude, but were scored
+per-bar without a persistence baseline, so their headline figures overstate what
+is attributable to the model.
 
 ### LSTM (the shipped model)
 
@@ -79,12 +81,13 @@ training-set median?
 ## The caveat that matters most
 
 **High raw accuracy is not the same as edge.** Because volatility clusters, a
-naive rule — "tomorrow looks like today" — already scores around 80% on
-BANKNIFTY. Against that baseline the model adds almost nothing there. The real
-result is NIFTY 50 at 30 and 60 minutes, where the model beats persistence by
-9–13 points.
+persistence rule already scores 67–68% at the 30-minute horizon in the harness
+run, so the model's genuine contribution is the +3.3 to +3.7 points on top —
+and at n_eff even that is not separated from the baseline.
 
-Reporting the 82% without the baseline would be the same error this project
+The earlier "+9.3 / +12.6 points over baseline" figures used a different
+persistence definition and a 90-day window; the harness numbers above supersede
+them. Reporting a 72% without the baseline would be the same error this project
 spent months finding in other people's numbers, and in its own.
 
 This was a genuinely useful correction and it arrived from three independent
@@ -142,10 +145,12 @@ different problems.
 
 ## The honest framing
 
-Volatility prediction at 68–74% is real, verified, and stable. It is also:
+Volatility prediction at 71–72% is real and verified, and it survives the
+correction that removed the directional result. It is also:
 
 - **not directional** — it never says up or down;
-- **partly baseline** — persistence gets most of the way there on BANKNIFTY;
+- **mostly baseline** — persistence reaches 67–68%, and the model's margin over
+  it is not established at the effective sample size;
 - **not yet a validated trade** — the options layer built on it is untested on
   real premiums.
 
