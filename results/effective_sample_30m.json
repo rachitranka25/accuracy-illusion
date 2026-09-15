@@ -109,5 +109,41 @@
         "nominal_n": 69
       }
     ]
+  },
+  "sensitivity": {
+    "BANKNIFTY": {
+      "reference_inflation": 6.256,
+      "reference_n_eff": 11.0,
+      "single_session_n_eff": {
+        "mean": 12.3,
+        "median": 12.1,
+        "p05": 7.1,
+        "p95": 18.4,
+        "min": 3.1,
+        "max": 32.0
+      },
+      "ratio_p05_p95": [
+        0.65,
+        1.67
+      ],
+      "samples": 14000
+    },
+    "NIFTY50": {
+      "reference_inflation": 6.332,
+      "reference_n_eff": 10.9,
+      "single_session_n_eff": {
+        "mean": 12.2,
+        "median": 12.0,
+        "p05": 7.0,
+        "p95": 18.2,
+        "min": 2.6,
+        "max": 29.6
+      },
+      "ratio_p05_p95": [
+        0.64,
+        1.67
+      ],
+      "samples": 14000
+    }
   }
 }

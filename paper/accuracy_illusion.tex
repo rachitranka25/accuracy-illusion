@@ -443,6 +443,51 @@ false precision, not the figure itself, that misleads. The calibration column is
 therefore the diagnostic throughout this paper, and the frequency columns are
 context.
 
+\subsection{At the granularity it is actually reported}
+
+Everything above runs on 5-minute bars, where a 30-minute horizon is $k = 6$ and
+a session yields 69 forecasts. The production system does not work that way: it
+emits a forecast every minute, so the horizon is $k = 30$ and a session yields
+about 314 scored forecasts. The number this paper exists to explain, 202 of 285,
+was counted at that density. Explaining a per-minute figure with a per-bar model
+would be a gap, so we close it (Table~\ref{tab:perminute}).
+
+The outcome series here is not simulated. It is taken from the production log,
+which recorded the direction called each minute and the move that followed, so
+the truth carries its real per-minute autocorrelation rather than an assumed
+one. Only the forecaster is synthetic, and it has zero skill by construction.
+
+\begin{table}[!tb]
+\caption{The same zero-skill forecaster at both granularities, 30-minute
+horizon. Per-minute outcome series are taken from the production log; run
+lengths are the measured per-minute runs (mean 13.5, longest 207).}
+\label{tab:perminute}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+& \textbf{per 5-min bar} & \textbf{per minute} \\
+\midrule
+Forecasts per session & 69 & 314 \\
+Effective sample & 12.4 & 16.5 \\
+Stated s.d. & 6.02\,\% & 2.82\,\% \\
+Realised s.d. & 10.00\,\% & 8.76\,\% \\
+\textbf{Understatement factor} & \textbf{1.66$\times$} & \textbf{3.11$\times$} \\
+$P(\text{session} \geq 71\,\%)$ & 2.0\,\% & 0.6--1.3\,\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two things follow, and they point the same way as
+Section~\ref{sec:mechanism}-C. The stated interval is \emph{worse} calibrated at
+the real granularity, $3.11\times$ too narrow against $1.66\times$: the nominal
+count rises roughly fivefold while the information does not. But extreme
+sessions become slightly \emph{rarer}, not commoner. Per-minute scoring does not
+manufacture more 71\,\% readings; it manufactures more confidence in the ones it
+produces. Every 5-minute-bar figure elsewhere in this paper therefore understates
+the artefact rather than exaggerating it.
+
 \subsection{Panel multiplicity}
 
 A dashboard does not monitor one number. The system studied here displays two
@@ -637,6 +682,40 @@ same BANKNIFTY session reports between 53.6\,\% and 62.5\,\% and the same
 NIFTY~50 session between 66.1\,\% and 73.2\,\%, a spread of 7 to 12 points. An
 analyst free to choose the offset is free to choose the result, which is the
 problem this paper is about reappearing in the remedy.
+
+\subsection{How reliably is $n_{\text{eff}}$ itself estimated?}
+
+Equation~\eqref{eq:neff} depends on $\mathbb{E}[L^2]$, and a second moment
+driven by the tail is exactly what a short sample estimates worst. A single
+session contains only a few dozen runs. An estimator nobody can sanity-check is
+not practical, so we measure the error directly: the reference is the inflation
+computed on hit sequences pooled across many sessions, and the comparison is
+what each single session reports on its own.
+
+\begin{center}
+\footnotesize
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& \textbf{pooled} & \textbf{median} & \textbf{5th} & \textbf{95th} \\
+\midrule
+BANKNIFTY & 11.0 & 12.1 & 7.1 & 18.4 \\
+NIFTY 50 & 10.9 & 12.0 & 7.0 & 18.2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A single session's $n_{\text{eff}}$ lands between $0.65\times$ and $1.67\times$
+the pooled value nine times in ten, with a slight upward bias. That is a real
+limitation and it carries a practical instruction: estimate $n_{\text{eff}}$
+from a run of sessions rather than from the one being reported. Estimated from a
+single session it is trustworthy as an order of magnitude, single or low double
+digits against a nominal count in the hundreds, and not as a precise divisor.
+
+We note that this uncertainty is small next to the quantity it is correcting.
+Mis-estimating $n_{\text{eff}}$ by a factor of $1.7$ widens or narrows an
+interval by $\sqrt{1.7} \approx 1.3\times$; using $n$ instead of
+$n_{\text{eff}}$ narrows it by $3.1\times$ at the granularity the system
+actually reports.
 
 \subsection{What the corrected number says}
 

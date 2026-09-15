@@ -68,6 +68,33 @@ The tail is where the damage shows:
 | ≥ 80% | 0.06% |
 | ≥ 85% | 0.01% |
 
+## At the granularity it is actually reported
+
+Everything above is on 5-minute bars, where a 30-minute horizon is k=6 and a
+session holds 69 forecasts. The live system emits a forecast **every minute**, so
+k=30 and a session holds ~314 — and the 202/285 that started this project was
+counted at that density. Re-run there, with the outcome series taken from the
+production log rather than simulated:
+
+| | per 5-min bar | **per minute** |
+|---|---|---|
+| Forecasts per session | 69 | **314** |
+| Effective sample | 12.4 | 16.5 |
+| Stated s.d. | 6.02% | 2.82% |
+| Realised s.d. | 10.00% | 8.76% |
+| **Understatement factor** | **1.66×** | **3.11×** |
+| P(session ≥ 71%) | 2.0% | 0.6–1.3% |
+
+Two things, and they agree with the reframing above. The interval is **worse**
+calibrated at the real granularity — 3.11× too narrow — because the nominal
+count rises fivefold while the information does not. But extreme sessions become
+slightly **rarer**, not commoner. Per-minute scoring does not manufacture more
+71% readings; it manufactures more confidence in them.
+
+Every 5-minute-bar figure in this record therefore **understates** the artefact.
+
+> Status: **REPRODUCIBLE** — `research/per_minute.py`.
+
 ## Multiplicity: why 71% arrives within a fortnight
 
 A dashboard does not watch one number. This one displays **2 indices × 4

@@ -1,0 +1,30 @@
+{
+  "horizon": "30m",
+  "outcome_window_min": 30,
+  "run_mean_min": 13.5,
+  "run_max_min": 207,
+  "indices": {
+    "BANKNIFTY": {
+      "sessions": 4,
+      "n": 314.0,
+      "n_eff": 16.5,
+      "stated_sd": 0.02822,
+      "realised_sd": 0.08764,
+      "understatement_factor": 3.106,
+      "p_session_ge_71": 0.00625,
+      "mean": 0.5028,
+      "max": 0.756
+    },
+    "NIFTY50": {
+      "sessions": 4,
+      "n": 312.8,
+      "n_eff": 15.9,
+      "stated_sd": 0.02827,
+      "realised_sd": 0.09253,
+      "understatement_factor": 3.273,
+      "p_session_ge_71": 0.01312,
+      "mean": 0.5034,
+      "max": 0.8006
+    }
+  }
+}

@@ -94,6 +94,29 @@ precisely when a miss begins — so the formula overstates the dependence. It is
 therefore a conservative bound, and should be reported as one rather than
 tuned until it hits 95 %.
 
+## How reliably is n_eff itself estimated?
+
+The estimator depends on `E[L²]`, and a tail-driven second moment is what a
+short sample estimates worst. A session holds only a few dozen runs, so the
+honest question is how wrong a single-session estimate gets.
+
+| | pooled | single: median | 5th | 95th |
+|---|---|---|---|---|
+| BANKNIFTY | 11.0 | 12.1 | 7.1 | 18.4 |
+| NIFTY 50 | 10.9 | 12.0 | 7.0 | 18.2 |
+
+A single session's n_eff lands between **0.65× and 1.67×** the pooled value nine
+times in ten, with a slight upward bias.
+
+**Practical instruction:** estimate n_eff from a *run* of sessions, not from the
+one being reported. From a single session it is trustworthy as an order of
+magnitude — single or low double digits against a nominal count in the hundreds
+— and not as a precise divisor.
+
+For perspective: mis-estimating n_eff by 1.7× moves an interval by √1.7 ≈ 1.3×.
+Using n instead of n_eff narrows it by **3.1×** at the granularity the system
+actually reports.
+
 ## What the corrected number says
 
 `n_eff ≈ 12` against a nominal 69 is the practical content. An honest interval

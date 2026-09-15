@@ -259,6 +259,54 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
     return rows
 
 
+def sensitivity_study(name, k, run_bars, rng, trials=40):
+    """How badly is n_eff estimated from a single session?
+
+    The estimator depends on E[L^2], which is driven by the tail of the
+    run-length distribution. A tail is exactly what a short sample estimates
+    worst, and a single session contains only a handful of runs. Nobody should
+    believe this estimator is practical until someone shows how wrong it gets,
+    so that is measured here.
+
+    The reference is the inflation computed on hit sequences pooled across many
+    sessions; the comparison is the inflation each single session reports on its
+    own.
+    """
+    sessions = session_truth(name, k)
+
+    pooled = []
+    for t in sessions:
+        for _ in range(8):
+            pred = C.persistent_forecast(t, run_bars, rng, bias=0.5)
+            pooled.append((pred == t).astype(int))
+    big = np.concatenate(pooled)
+    ref_inflation = run_inflation(big)
+
+    singles = []
+    for t in sessions:
+        for _ in range(trials):
+            pred = C.persistent_forecast(t, run_bars, rng, bias=0.5)
+            singles.append(run_inflation((pred == t).astype(int)))
+    singles = np.array(singles)
+
+    n = float(np.mean([len(t) for t in sessions]))
+    ref_neff = n / ref_inflation
+    est_neff = n / singles
+
+    return {"reference_inflation": round(float(ref_inflation), 3),
+            "reference_n_eff": round(float(ref_neff), 1),
+            "single_session_n_eff": {
+                "mean": round(float(est_neff.mean()), 1),
+                "median": round(float(np.median(est_neff)), 1),
+                "p05": round(float(np.percentile(est_neff, 5)), 1),
+                "p95": round(float(np.percentile(est_neff, 95)), 1),
+                "min": round(float(est_neff.min()), 1),
+                "max": round(float(est_neff.max()), 1)},
+            "ratio_p05_p95": [round(float(np.percentile(est_neff, 5) / ref_neff), 2),
+                              round(float(np.percentile(est_neff, 95) / ref_neff), 2)],
+            "samples": int(len(singles))}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--horizon", default="30m", choices=list(C.HORIZON_BARS))
@@ -326,6 +374,37 @@ def main():
           f" independent observations depending on the estimator,")
     print(f"  against a nominal {first['nominal_n']}. Every one of those answers says the same thing:")
     print(f"  a single session cannot support a claim about skill.")
+
+    # ── how reliable is n_eff itself, estimated from one session? ──
+    print(f"\n{'='*78}")
+    print("SENSITIVITY — n_eff ESTIMATED FROM A SINGLE SESSION")
+    print(f"{'='*78}")
+    print("  The estimator depends on E[L^2], which is tail-driven, and a tail is")
+    print("  what a short sample estimates worst. A session holds a few dozen runs.")
+    print()
+    print(f"  {'index':<12}{'pooled n_eff':>14}{'single: median':>16}"
+          f"{'5th':>8}{'95th':>8}{'ratio to pooled':>18}")
+    print("  " + "-" * 76)
+    sens = {}
+    for name in a.indices:
+        r = sensitivity_study(name, k, run_bars, rng)
+        sens[name] = r
+        ss = r["single_session_n_eff"]
+        lo, hi = r["ratio_p05_p95"]
+        print(f"  {name:<12}{r['reference_n_eff']:>14.1f}{ss['median']:>16.1f}"
+              f"{ss['p05']:>8.1f}{ss['p95']:>8.1f}"
+              f"{f'{lo:.2f}x to {hi:.2f}x':>18}")
+    out["sensitivity"] = sens
+
+    ex = sens[a.indices[0]]
+    lo, hi = ex["ratio_p05_p95"]
+    print(f"\n  A single session's n_eff lands between {lo:.2f}x and {hi:.2f}x the")
+    print(f"  pooled value 90% of the time. That is a real limitation and it has a")
+    print(f"  practical consequence: n_eff should be estimated from a run of")
+    print(f"  sessions, not from the one being reported. Estimated from a single")
+    print(f"  session it is usable as an order of magnitude -- single or low double")
+    print(f"  digits against a nominal count in the hundreds -- and not as a")
+    print(f"  precise divisor.")
 
     d = paths.ROOT / "results"; d.mkdir(exist_ok=True)
     f = d / f"effective_sample_{a.horizon}.json"
