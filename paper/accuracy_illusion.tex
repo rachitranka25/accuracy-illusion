@@ -1056,14 +1056,19 @@ labelled on \emph{points per minute} rather than on target-hit. The label choice
 matters: training on target-hit raises the hit-rate from 42\,\% to 53\,\% while
 making the money worse, because the model learns to prefer small, easy targets.
 
-Out-of-sample over 106 unseen days on BANKNIFTY, the filter cut trades from 2.3
-to 1.0 per day and raised gross quality from $+1.44$ to $+1.82$ points per
-minute of exposure, holding in both halves of the test. The cumulative total
-\emph{after} costs moved from $-3777$ to $-981$ index points. Gross quality per
-minute and net cumulative points are different quantities: the filter improved
-the first and reduced, but did not reverse, the damage in the second. A working filter applied to a system with no edge converts a large loss
-into a small one. It cannot manufacture a profit that is not in the underlying
-signal.
+Re-run from the committed script on BANKNIFTY, the filter trains on 2\,085
+setups and is tested on 1\,168 it has never seen. Keeping the best 30\,\% raises
+gross quality from $+0.78$ to $+1.29$ points per minute of exposure, an
+improvement of roughly 65\,\%.
+
+The filter therefore does what it was built to do, on the label it was given.
+What we cannot show from the committed code is the cumulative cost-aware
+profit and loss. An earlier version of this paper reported that total moving
+from $-3777$ to $-981$ index points; those figures do not reproduce and are
+withdrawn. The verified claim is narrower and still worth making: selecting the
+best third of setups substantially improves per-minute quality on a primary
+signal that Section~\ref{sec:predictability} shows has no directional edge.
+Concentrating a null does not create one.
 
 \section{What Is Predictable Instead}
 \label{sec:elsewhere}
@@ -1194,15 +1199,23 @@ implemented with defined risk.
 
 \subsection{Edges decay}
 
-The single cost-positive signal we found was a contrarian
-rule on put--call ratio extremes: 204 trades, profit factor 1.11 over two years.
-It was already dead when we discovered it. Directional accuracy of 74\,\% in
-2024 fell to 36\,\%, with a profit factor of 0.74, over the final six months. This is
-the mechanism Timmermann and Granger describe~\cite{timmermann2004}, whereby
-discovered patterns self-destruct. It also bears on sustained-accuracy claims:
-a genuinely real edge in this data died inside two years, so a claim of stable
-accuracy over 76 trading days carries no information even if every number in it
-is true.
+The strongest next-day signal in an end-of-day options screen is a contrarian
+rule on put--call ratio extremes. Re-run from the committed script over 489 days
+of NIFTY data it scores 58\,\% on the 196 days that trigger it, and splits
+62\,\% across the first half of the sample against 53\,\% across the second. The
+same rule on BANKNIFTY scores 49\,\% and is not stable at all.
+
+A sharper decay profile appeared in our research log, quoting 74\,\% in 2024
+against 36\,\% and a profit factor of 0.74 in the final six months. Those figures
+come from a robustness script that was not retained, they do not reproduce from
+what is committed, and they are withdrawn. The half-sample split above is what
+we can show, and the finding survives it: a rule that looks strong over one half
+of a sample can be nine points weaker over the next. This is the mechanism
+Timmermann and Granger describe~\cite{timmermann2004}, whereby discovered
+patterns self-destruct, and it bears directly on sustained-accuracy claims. If
+an apparent edge can lose that much between halves of a two-year sample, a claim
+of stable accuracy over 76 trading days carries little information even when
+every number in it is true.
 
 \section{Limitations}
 
