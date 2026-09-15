@@ -144,8 +144,8 @@ the observation that the exchange's static archive is not geo-restricted while
 its live API is (Section~\ref{sec:data}).
 \end{enumerate}
 
-All experiments are reproducible from public code and committed raw
-results.\footnote{\url{https://github.com/rachitranka25/accuracy-illusion}}
+All experiments are reproducible from public code and committed raw results;
+the repository is given in the Reproducibility note at the end.
 
 \section{Related Work}
 
@@ -259,8 +259,8 @@ exchange archives. Table~\ref{tab:data} summarises the corpus.
 \caption{Free-data corpus. All collectors are public.}
 \label{tab:data}
 \centering
-\footnotesize
-\setlength{\tabcolsep}{4pt}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}llr@{}}
 \toprule
 \textbf{Asset} & \textbf{Period} & \textbf{Size} \\
@@ -1160,33 +1160,35 @@ tried are reported rather than the best one (Table~\ref{tab:vrp}).
 \caption{Short ATM straddle held to expiry, net of a round-trip cost of 10\,\%
 of premium collected. DTE is entry in trading days before expiry. $p$ is
 one-sided for profitability; the interval is a 2\,000-sample bootstrap on the
-mean, which makes no normality assumption, and short-premium P\&L is sharply
+mean, which assumes no distributional shape, and short-premium P\&L is sharply
 left-skewed.}
 \label{tab:vrp}
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lrrrrrrr@{}}
+\begin{tabular}{@{}rrrrrr@{}}
 \toprule
-\textbf{DTE} & $\boldsymbol{n}$ & \textbf{Win} & \textbf{Net} & \textbf{s.d.} &
-$\boldsymbol{t}$ & $\boldsymbol{p}$ & \textbf{95\,\% CI} \\
+\textbf{DTE} & $\boldsymbol{n}$ & \textbf{Win} & \textbf{Net} &
+$\boldsymbol{p}$ & \textbf{95\,\% CI} \\
 \midrule
-\multicolumn{8}{@{}l@{}}{\emph{NIFTY} (weekly expiries, median gap 7 days)} \\
-1 & 108 & 62\,\% & 3.2 & 123 & 0.27 & 0.394 & [$-$21, 26] \\
-2 & 108 & 62\,\% & 12.1 & 168 & 0.75 & 0.228 & [$-$20, 43] \\
-3 & 108 & 61\,\% & 2.8 & 214 & 0.14 & 0.446 & [$-$39, 43] \\
-5 & 107 & 48\,\% & $-$45.5 & 254 & $-$1.85 & 0.967 & [$-$93, 3] \\
+\multicolumn{6}{@{}l@{}}{\emph{NIFTY} (weekly expiries, median gap 7 days)} \\
+1 & 108 & 62\,\% & 3.2 & 0.394 & [$-$21, 26] \\
+2 & 108 & 62\,\% & 12.1 & 0.228 & [$-$20, 43] \\
+3 & 108 & 61\,\% & 2.8 & 0.446 & [$-$39, 43] \\
+5 & 107 & 48\,\% & $-$45.5 & 0.967 & [$-$93, 3] \\
 \midrule
-\multicolumn{8}{@{}l@{}}{\emph{BANKNIFTY} (monthly expiries, median gap 27 days)} \\
-1 & 40 & 68\,\% & 59.3 & 315 & 1.19 & 0.121 & [$-$43, 149] \\
-2 & 40 & 65\,\% & 58.1 & 553 & 0.66 & 0.255 & [$-$117, 214] \\
-3 & 39 & 64\,\% & 14.1 & 472 & 0.19 & 0.426 & [$-$124, 153] \\
-5 & 39 & 49\,\% & $-$209.2 & 624 & $-$2.09 & 0.979 & [$-$408, $-$15] \\
+\multicolumn{6}{@{}l@{}}{\emph{BANKNIFTY} (monthly, median gap 27 days)} \\
+1 & 40 & 68\,\% & 59.3 & 0.121 & [$-$43, 149] \\
+2 & 40 & 65\,\% & 58.1 & 0.255 & [$-$117, 214] \\
+3 & 39 & 64\,\% & 14.1 & 0.426 & [$-$124, 153] \\
+5 & 39 & 49\,\% & $-$209.2 & 0.979 & [$-$408, $-$15] \\
 \bottomrule
-\multicolumn{8}{@{}l@{}}{\scriptsize Net and s.d.\ in index points. \textbf{0 of 4}
-configurations are significantly profitable on either} \\
-\multicolumn{8}{@{}l@{}}{\scriptsize index, before or after Benjamini--Hochberg.
-Every interval contains zero.} \\
+\multicolumn{6}{@{}l@{}}{\scriptsize Net in index points. \textbf{0 of 4}
+configurations are significantly} \\
+\multicolumn{6}{@{}l@{}}{\scriptsize profitable on either index, before or after
+Benjamini--Hochberg;} \\
+\multicolumn{6}{@{}l@{}}{\scriptsize every interval contains zero. Standard
+deviations run 123--624.} \\
 \end{tabular}
 \end{table}
 
@@ -1221,6 +1223,63 @@ with a standard deviation forty times the mean is not evidence of an edge. It is
 the shape that makes short-volatility strategies dangerous.
 
 \subsection{Option-chain positioning}
+
+The production features are transforms of one price series, so the natural place
+to look for something else is what participants have actually committed money
+to. Open interest is free in the end-of-day archive, and a decade of it is on
+disk.
+
+The first screen on 350 days found distance-from-max-pain predicting next-day
+open-to-close at roughly 60\,\%. It also found that feature correlated 0.818
+with the plain 10-day return, and that the 10-day return alone did the job
+slightly better: an apparent options edge that was price mean-reversion wearing
+an options costume. The corrected procedure is to regress out the price
+component and test the residual, which is what Table~\ref{tab:oc} reports over
+2\,181 trading days.
+
+\begin{table}[!tb]
+\caption{Option-chain features against next-day open-to-close, BANKNIFTY,
+2\,181 days (May 2016 -- May 2026), after the price component is regressed out.
+H1 and H2 are the information coefficient in each half of the sample; a feature
+is only retained if the sign holds in both.}
+\label{tab:oc}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+\textbf{Feature (residual)} & \textbf{IC} & $\boldsymbol{p}$ & \textbf{hit} &
+\textbf{H1} & \textbf{H2} \\
+\midrule
+$\Delta$ put--call ratio, OI & 0.059 & 0.006 & 51.3 & 0.052 & 0.068 \\
+Put--call ratio, OI & 0.044 & 0.041 & 51.9 & 0.062 & 0.045 \\
+Put--call ratio, volume & 0.043 & 0.043 & 51.9 & 0.055 & 0.040 \\
+Distance from max pain & $-$0.045 & 0.036 & 52.5 & $-$0.034 & $-$0.050 \\
+\midrule
+\multicolumn{6}{@{}l@{}}{\emph{Price-only features on the same days}} \\
+Returns over 1--20 days & $-$0.014 to 0.001 & 0.51--0.97 & 48--53 & --- & --- \\
+20-day volatility & $-$0.030 & 0.160 & 50.6 & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Four residual features survive with consistent sign across both halves of a
+decade, on days where nothing in the price-only set survives at all. An
+information coefficient of 0.05 over 2\,181 days is $t \approx 2.4$: marginal
+rather than decisive, and corresponding to roughly a 52\,\% hit-rate, which by
+\eqref{eq:breakeven} is not tradeable alone.
+
+The strongest is the \emph{change} in put--call ratio rather than its level, and
+it is the only one that strengthens in the second half. Flow beats position,
+which is consistent with the rest of this study: what participants did today
+carries more than what they are holding.
+
+Two caveats keep this a lead rather than a result. We report four survivors
+without the denominator of features screened and without false-discovery control
+across them, which by the standard of Section~\ref{sec:predictability}-C is not
+enough. And an information coefficient is not a trading result; converting one
+into a strategy would reintroduce every cost question of
+Section~\ref{sec:economic}.
 
 \subsection{Edges decay}
 
@@ -1267,7 +1326,7 @@ message-level history is not sold to retail accounts.
 The headline metric of intraday directional forecasting is not merely noisy. It
 is systematically biased upward by the way it is computed, and the bias is large
 enough to manufacture exactly the figures used in marketing: a forecaster with
-zero skill posts a $\geq$\,71\,\% session once in 51, and once every seven
+zero skill posts a $\geq$\,71\,\% session once in 50, and once every seven
 sessions across a modest panel, while reporting a confidence interval
 1.66$\times$ too narrow.
 
@@ -1300,9 +1359,7 @@ fixed seed and single-threaded native pools.
 
 \balance
 
-% IEEEtran fixes the bibliography font itself; override it and tighten the
-% inter-entry spacing so 38 references fit the reference page.
-\setlength{\IEEEbibitemsep}{0pt plus 0.3pt}
+% IEEEtran fixes the bibliography font itself; override it so the references fit.
 \let\oldthebibliography\thebibliography
 \renewcommand{\thebibliography}[1]{\oldthebibliography{#1}\scriptsize}
 \begin{thebibliography}{00}

@@ -91,12 +91,6 @@ def fig_autocorrelation():
         ax.plot(lags, ac["overlapping"]["acf"], "o-", color=ORANGE, lw=1.6, ms=4)
         ax.plot(lags, ac["non_overlapping"]["acf"], "s-", color=BLUE, lw=1.6, ms=4)
 
-        ax.annotate("overlapping", (lags[0], ac["overlapping"]["acf"][0]),
-                    xytext=(6, 4), textcoords="offset points",
-                    color=ORANGE, fontsize=6.5, fontweight="bold")
-        ax.annotate("non-overlapping", (lags[1], ac["non_overlapping"]["acf"][1]),
-                    xytext=(6, -14), textcoords="offset points",
-                    color=BLUE, fontsize=6.5, fontweight="bold")
         ax.annotate(f"lag = k = {k}", (k, 0.93), xytext=(5, 0),
                     textcoords="offset points", color=INK2, fontsize=6)
 
@@ -107,7 +101,14 @@ def fig_autocorrelation():
         ax.set_ylim(-0.12, 1.02)
 
     axes[0].set_ylabel("autocorrelation of forward return")
-    fig.tight_layout()
+    from matplotlib.lines import Line2D
+    fig.legend(handles=[
+        Line2D([], [], color=ORANGE, marker="o", lw=1.6, markersize=4,
+               label="overlapping (one forecast per bar)"),
+        Line2D([], [], color=BLUE, marker="s", lw=1.6, markersize=4,
+               label="non-overlapping (one per k bars)"),
+    ], loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.03))
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
     _save(fig, "fig1_autocorrelation")
 
 
@@ -136,15 +137,19 @@ def fig_zero_skill():
     ax.bar(centres, counts, width=width * 0.9, color=BLUE, alpha=0.55, lw=0)
 
     top = counts.max()
-    ax.set_ylim(0, top * 1.34)
+    # Reserve a band above the distribution for the threshold labels and stop
+    # each rule short of it, so no label sits on its own line or a neighbour.
+    ax.set_ylim(0, top * 1.72)
+    def _short(x):
+        return f"{x/1000:.0f}k" if x >= 10000 else f"{x:,.0f}"
     for i, (thr, label) in enumerate(((0.60, "60%"), (0.71, "71%"), (0.85, "85%"))):
-        p = blk[f"p_session_ge_{int(thr*100)}"]
-        ax.axvline(thr, color=ORANGE, lw=1.2, ls=(0, (4, 3)))
-        rate = f"1 in {1/p:,.0f}" if p > 0 else "n/a"
-        y = top * (1.31 - 0.13 * i)          # stagger so labels never collide
-        ax.annotate(f"{label}: {rate}", (thr, y),
-                    xytext=(3, 0), textcoords="offset points",
-                    color=ORANGE, fontsize=6, fontweight="bold", va="top")
+        pr = blk[f"p_session_ge_{int(thr*100)}"]
+        ax.axvline(thr, color=ORANGE, lw=1.1, ls=(0, (4, 3)), ymax=0.58)
+        rate = f"1 in {_short(1/pr)}" if pr > 0 else "not seen"
+        ax.annotate(f"{label} \u00b7 {rate}", (thr, top * (1.63 - 0.17 * i)),
+                    ha="center", va="center", color=ORANGE,
+                    fontsize=6, fontweight="bold",
+                    bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="none"))
 
     ax.set_title(f"Zero-skill forecaster, scored every bar\n"
                  f"({index}, 30m, {blk['simulated_sessions']:,} simulated sessions)",
@@ -154,7 +159,7 @@ def fig_zero_skill():
     ax.xaxis.set_major_formatter(PercentFormatter(1.0))
     ax.set_yticks([])
     ax.grid(axis="x")
-    ax.set_xlim(0.2, 0.9)
+    ax.set_xlim(0.17, 0.97)
 
     ax.annotate(
         f"stated 95% CI ±{1.96*blk['stated_sd']*100:.0f} pts  ·  "
@@ -192,10 +197,13 @@ def fig_breakeven():
                        color=BLUE, s=30, zorder=3, label="best model achieved")
 
         ax.axvline(1.0, color=INK3, lw=0.8, ls=(0, (2, 3)))
-        for y, r in zip(ys, rows):
+        for y, r, x in zip(ys, rows, req):
             if r["breakeven_accuracy"] > 1.0:
-                ax.annotate("impossible", (1.02, y), fontsize=6, va="center",
-                            color=INK2, style="italic")
+                # sit the label above its own marker; placing it at a fixed x
+                # put it underneath the marker whenever p* ran past 110%
+                ax.annotate("impossible", (x, y), xytext=(0, 7),
+                            textcoords="offset points", ha="center",
+                            fontsize=6, color=INK2, style="italic")
 
         ax.set_yticks(list(ys))
         ax.set_yticklabels([r["horizon"] for r in rows])
