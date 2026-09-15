@@ -14,7 +14,7 @@ Full write-ups: [`findings/`](findings/) · Method:
 
 | Question | Answer | Evidence |
 |---|---|---|
-| Can intraday **direction** be predicted from free data? | A real edge of **~1 point** exists on BANKNIFTY and is statistically solid. It is economically worthless. | [01](findings/01-directional-ceiling.md) |
+| Can intraday **direction** be predicted from free data? | **No.** The one apparent edge dissolved under our own correction: 51.3% (p=0.001) per bar becomes 50.4% (p=0.69) per event. | [01](findings/01-directional-ceiling.md) |
 | Then why did our screens show 60–85%? | A **zero-skill** forecaster posts ≥71% once every 7 sessions on a dashboard watching 8 series. | [02](findings/02-measurement-illusions.md) |
 | What accuracy would actually be needed? | **71.5%** on BANKNIFTY futures. At option costs, **no accuracy suffices**. | [03](findings/03-cost-geometry.md) |
 | Is **magnitude** predictable? | **Yes — 68–74% out-of-sample, stable.** The strongest real result. | [04](findings/04-volatility-predictability.md) |
@@ -26,11 +26,11 @@ Full write-ups: [`findings/`](findings/) · Method:
 
 ## The four numbers that matter
 
-**51.3%** — the best out-of-sample directional accuracy from nine model
-families on identical purged walk-forward splits (XGBoost, BANKNIFTY, 30-minute
-horizon, n = 16,856, p = 0.001, shuffled-label control 49.7%). This is a genuine
-effect that survives Bonferroni correction across all 18 model-index tests. It
-does not replicate on NIFTY 50.
+**0 of 8** — model families significant at p<0.05 once scored correctly, on
+either index. Scored per bar the count is 3 of 8 on BANKNIFTY, with XGBoost at
+51.3% and p=0.001. Re-scored one observation per 6 bars, so no two observations
+share an outcome bar, that becomes 50.4% and p=0.69. An earlier version of this
+record called the 51.3% genuine and Bonferroni-robust. It was our own artefact.
 
 **71.5%** — the accuracy required to break even on the same instrument and
 horizon at 4 bp round-trip cost. The gap between what is achievable and what is
@@ -71,17 +71,22 @@ the dependence runs to forty.
 The practical number is `n_eff ≈ 6` for a session that reports 69 forecasts. An
 honest interval is ±35 points wide. One session establishes nothing.
 
-## Statistical significance is not economic significance
+## The correction applied to ourselves
 
-This is the result the project turns on, and it took fourteen months to reach.
+The project's one surviving positive directional result did not survive the
+project's own correction. That is the single most useful thing in this record.
 
-The models do find something. XGBoost's 1.6-point edge over its shuffled control
-is real at n = 16,856. Every instinct trained on machine-learning benchmarks
-reads p = 0.001 as success.
+Scored the way a dashboard scores, XGBoost on BANKNIFTY reached 51.3% at
+p = 0.001 — three of eight models cleared p<0.05. Widening every interval to its
+effective sample size puts 50% inside all of them. Re-scoring per event drops
+XGBoost to 50.4% (p = 0.69). Across both indices the count of significant models
+goes **4 → 0**.
 
-It loses money on every trade, because 51.3% against a 71.5% requirement is not
-close. An effect can be simultaneously well-established and worthless, and in
-this domain that is the normal case rather than the exception.
+It was economically irrelevant even while it stood: 51.3% against a 71.5%
+requirement loses on every trade. So the correction changed the statistical
+verdict without changing the practical one — which is the more general lesson,
+since the achievable-versus-required gap is roughly twenty points and no scoring
+dispute moves anything like that far.
 
 ## What was retracted
 

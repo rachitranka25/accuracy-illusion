@@ -4,13 +4,20 @@
 [finding 02](02-measurement-illusions.md) can be corrected, rather than only
 diagnosed.
 
-**Verdict.** It can, but not by either standard method. Both the textbook HAC
-correction and a moving-block bootstrap under-cover badly. Estimating the
-inflation from the run structure directly restores a nominal 95 % interval to
-**94 % coverage**, against **40 %** for the conventional one.
+**Verdict.** Partly. A nominal 95 % interval on a session hit-rate actually
+covers **75 %** of the time. HAC and a moving-block bootstrap each reach ~87 %.
+The run-structure design effect **over**-covers at 99.5 %, so it is a
+conservative bound rather than an exact correction, and we report it as one.
 
-The number that matters: a session reporting 69 forecasts carries about **six**
-independent observations.
+The number that matters is the size of n_eff: a session reporting 69 forecasts
+carries roughly **12** independent observations, not 69.
+
+> An earlier version of this finding reported 40 % naive coverage and 94 % for
+> the corrected estimator. Those came from a synthetic forecaster whose *hits*
+> were constant within a run, which is not how a real forecaster behaves — the
+> call persists, the market does not. Both simulations now share one generative
+> model ([`research/common.py`](../research/common.py)), and the numbers above
+> are from it. The discrepancy was found by external audit, not by us.
 
 > Status: **REPRODUCIBLE** — `research/effective_sample.py`,
 > [`results/effective_sample_30m.json`](../results/effective_sample_30m.json).

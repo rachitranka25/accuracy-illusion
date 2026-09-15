@@ -588,8 +588,10 @@
     "p_session_ge_85": 0.00287
   },
   "multiplicity": {
-    "series_watched": 8,
-    "p_any_series_ge_71": 0.1506,
-    "sessions_between": 6.6
+    "series": 8,
+    "sessions": 8750,
+    "p_single_series": 0.02043,
+    "p_any_measured": 0.15051,
+    "p_any_if_independent": 0.15221
   }
 }

@@ -124,6 +124,52 @@ def simulate(sessions, run_bars, rng, trials, stride=1):
     return np.array(rates), float(np.mean(sizes))
 
 
+def measured_panel(run_bars, rng, trials, horizons=None):
+    """P(at least one panel series reports >= 71%) measured, not assumed.
+
+    Treating the eight index-by-horizon series as independent gives an upper
+    bound: the two indices are highly correlated intraday and the four horizons
+    nest, so the same trending afternoon drives all eight at once. Here the whole
+    panel is simulated on the SAME session, with each horizon's own k and its own
+    forecast stream, and the joint probability is counted directly.
+    """
+    horizons = horizons or list(C.HORIZON_BARS)
+    per_index = {}
+    for name in C.INDICES:
+        close = C.load_bars(name)["Close"]
+        day = close.index.normalize()
+        per_h = {}
+        for h in horizons:
+            kk = C.HORIZON_BARS[h]
+            fwd = close.shift(-kk) / close - 1
+            same = day.values == np.roll(day.values, -kk)
+            t = (fwd > 0).astype(float).where(fwd.notna() & same)
+            per_h[h] = {d: g.dropna().values.astype(int)
+                        for d, g in t.groupby(day) if len(g.dropna()) >= 40}
+        per_index[name] = per_h
+
+    days = sorted(set.intersection(*[set(per_index[n][h])
+                                     for n in C.INDICES for h in horizons]))
+    any_hit = ind_hit = total = 0
+    for d in days:
+        for _ in range(trials):
+            hits = []
+            for name in C.INDICES:
+                for h in horizons:
+                    t = per_index[name][h][d]
+                    pred = C.persistent_forecast(t, run_bars, rng, bias=0.5)
+                    hits.append((pred == t).mean() >= 0.71)
+            any_hit += int(any(hits))
+            ind_hit += sum(hits)
+            total += 1
+    n_series = len(C.INDICES) * len(horizons)
+    p_single = ind_hit / (total * n_series)
+    return {"series": n_series, "sessions": total,
+            "p_single_series": round(p_single, 5),
+            "p_any_measured": round(any_hit / total, 5),
+            "p_any_if_independent": round(1 - (1 - p_single) ** n_series, 5)}
+
+
 def report(arr, n_reported, label):
     """Realised spread versus the interval the reported n implies."""
     stated_sd = np.sqrt(0.25 / n_reported)
@@ -220,20 +266,21 @@ def main():
     print(f"\n  Scored once per {k} bars, the same forecaster's stated interval is")
     print(f"  {nv['understatement_factor']:.2f}x the realised spread — correctly calibrated.")
 
-    # Multiplicity: a dashboard does not watch one number, it watches a grid.
-    n_series = len(C.INDICES) * len(C.HORIZON_BARS)
-    p71 = bn["p_session_ge_71"]
-    any71 = 1 - (1 - p71) ** n_series
+    # Multiplicity, measured on the joint panel rather than assumed independent.
+    mp = measured_panel(run_bars, rng, max(20, a.trials // 8))
+    out["multiplicity"] = mp
     print(f"\n  MULTIPLICITY. A dashboard does not watch one number. This one shows")
-    print(f"  {len(C.INDICES)} indices x {len(C.HORIZON_BARS)} horizons = {n_series} hit-rates every session.")
-    print(f"    P(at least one >=71% today) = {any71*100:.1f}%  "
-          f"-> about once every {1/any71:.0f} sessions")
-    print(f"  So a headline 71% arrives in the first fortnight of live operation")
-    print(f"  with no edge whatsoever. This project's own 71% was exactly this:")
-    print(f"  one index, one horizon, one trending Friday.")
-    out["multiplicity"] = {"series_watched": n_series,
-                           "p_any_series_ge_71": round(float(any71), 4),
-                           "sessions_between": round(float(1 / any71), 1)}
+    print(f"  {len(C.INDICES)} indices x {len(C.HORIZON_BARS)} horizons = {mp['series']} hit-rates every session.")
+    print(f"    per-series P(>=71%)                 = {mp['p_single_series']*100:.2f}%")
+    print(f"    P(any >=71%) if series independent  = {mp['p_any_if_independent']*100:.1f}%"
+          f"   (1 in {1/max(mp['p_any_if_independent'],1e-9):.0f})")
+    print(f"    P(any >=71%) MEASURED on the panel  = {mp['p_any_measured']*100:.1f}%"
+          f"   (1 in {1/max(mp['p_any_measured'],1e-9):.0f})")
+    print(f"  The indices are highly correlated intraday and the horizons nest, so")
+    print(f"  independence overstates the panel. The measured figure is the one to")
+    print(f"  quote; it still puts a headline 71% within the first weeks of live")
+    print(f"  operation with no edge whatsoever. This project's own 71% was exactly")
+    print(f"  that: one index, one horizon, one trending Friday.")
 
     print(f"\n  The difference between a discovery and an artefact here is not the")
     print(f"  model. It is the denominator.")

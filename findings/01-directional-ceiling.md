@@ -104,9 +104,31 @@ Transformer (variable-selection network, GRN gating, interpretable multi-head
 attention over an LSTM encoder — the components that define the architecture,
 without static covariates or a quantile head, which this task does not have).
 
-The result is that architecture choice does not matter on this problem: every
-family lands within a couple of points of 50%, and each one scores the same on
-shuffled labels as on real ones.
+Every family is reported three ways: **per bar** (what a dashboard reports),
+at its **effective sample size**, and **per event** (one observation every k
+bars, so no two share an outcome bar).
+
+| | BANKNIFTY | NIFTY 50 |
+|---|---|---|
+| Significant at p<0.05, **per bar** | 3 of 8 | 1 of 8 |
+| Significant at **n_eff** | **0 of 8** | **0 of 8** |
+| Significant **per event** | **0 of 8** | **0 of 8** |
+
+The best per-bar result, XGBoost on BANKNIFTY at 51.3% (p = 0.001), becomes
+**50.4% (p = 0.692)** when scored per event. n_eff comes out near 2,800 against a
+nominal 16,856 — the horizon length, as expected.
+
+An earlier version of this document called that effect genuine and
+Bonferroni-robust. It was the artefact described in
+[finding 02](02-measurement-illusions.md), inside our own results table. See
+[finding 12](12-corrected-estimator.md) for the correction that removed it.
+
+There is a second diagnostic hiding in the same table. The NIFTY 50 Transformer
+sits at 48.3% with p < 0.001 — **4.4 standard errors below chance** at the
+nominal n. Under a correctly specified null the largest |z| across eighteen
+tests should land near 2.6–2.9. Observing 4.4 is not a broken model; it is the
+variance inflation surfacing. At n_eff its interval is [46.3, 50.4] and the
+anomaly disappears.
 
 XGBoost is worth a separate note. It was included because a widely circulated
 paper reports ~71% directional accuracy with it. Reproduced on NSE index data it
