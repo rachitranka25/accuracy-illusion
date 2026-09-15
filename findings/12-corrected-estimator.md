@@ -54,52 +54,55 @@ n_eff = n / ( Σ_i L_i² / n )  →  n · E[L] / E[L²]
 **The inflation is governed by `E[L²]`, not `E[L]`.** A heavy-tailed run-length
 distribution inflates the variance far past what its mean suggests — and that is
 exactly the regime a real forecaster occupies. Our production log has a mean run
-of 15.2 minutes and a longest run of 135.
+of 15.2 minutes (3.0 bars) and a longest run of 205 minutes (41 bars).
+
+This is the classical **design effect** (Kish; Moulton 1990) with clusters given
+by the runs. Nothing about the statistic is new; what is new is noticing that a
+forecast stream has exactly this structure and that nobody reports it.
 
 ## Validation by coverage
 
-An interval is judged by whether it covers. We generate a forecaster whose true
-skill is fixed by construction, with calls persisting per the measured
-run-length distribution, and count how often a nominal 95 % interval contains
-that known truth.
+An interval is judged by whether it covers. A forecaster's calls persist per the
+measured run-length distribution while the market does not, so the hit sequence
+is only partly block-structured. Its true long-run hit-rate is measured rather
+than assumed, and we count how often a nominal 95 % interval contains it.
 
-BANKNIFTY, 30-minute horizon, nominal n = 69. NIFTY 50 agrees within 1 point on
-every entry.
+BANKNIFTY, 30-minute horizon, nominal n = 69. NIFTY 50 agrees within 1 point.
 
-| Estimator | 50 % | 55 % | 60 % | Width | n_eff |
+| Estimator | 50 % | 55 % | 59 % | Width | n_eff |
 |---|---|---|---|---|---|
-| Naive binomial at *n* | 39.6 | 39.5 | 38.9 | 21.4 pts | 69 |
-| HAC (Bartlett, automatic bandwidth) | 66.6 | 66.6 | 66.1 | 33.8 pts | 21 |
-| Moving-block bootstrap | 63.1 | 63.0 | 63.0 | 29.6 pts | — |
-| **Run-structure** | **94.0** | **94.1** | **94.2** | 70.8 pts | **5.6** |
+| Naive binomial at *n* | 75.5 | 74.8 | 74.0 | 23.1 pts | 69 |
+| HAC (Bartlett, automatic bandwidth) | 87.0 | 86.6 | 85.6 | — | 21 |
+| Moving-block bootstrap | 86.6 | 86.4 | 85.2 | — | — |
+| **Run-structure design effect** | **99.5** | **99.6** | **99.6** | 56.0 pts | **12.4** |
 
-## Why the standard corrections fail
+None is exactly calibrated. The naive interval under-covers by twenty points,
+the two standard corrections by eight, and the design effect over-covers.
 
-This was the useful part of the exercise. Both HAC and the block bootstrap are
-the obvious tools, both are large improvements on the naive interval, and both
-still under-cover by roughly thirty points.
+## Why each one misses
 
-They fail for the same reason: **they mis-estimate how far the dependence
-runs.** The conventional automatic Bartlett bandwidth is `4(n/100)^(2/9)`, which
-evaluates to about **three bars** at these sample sizes. The dependence in a
-real forecast stream runs to **forty**. Truncating the kernel at three discards
-most of the covariance the formula is trying to sum.
+**HAC and the bootstrap under-cover** for the same reason, and it follows from
+the formula. The conventional automatic Bartlett bandwidth `4(n/100)^(2/9)`
+evaluates to **3.7 bars** at n = 69 — almost exactly the *mean* run of 3.0 bars.
+But the inflation is driven by `E[L²]`, so it is the **tail** that matters, and
+the tail reaches 41 bars. A kernel truncated near the mean has summed almost
+none of the covariance the long runs contribute.
 
-A first version of this analysis used the automatic bandwidth, reported 57 %
-coverage, and would have shipped a correction that does not correct. The failure
-was only visible because coverage was measured rather than assumed — which is
-the same discipline that produced every other finding here.
+**The design effect over-covers** because it treats runs as independent
+clusters. Consecutive runs are negatively dependent — a run of hits ends
+precisely when a miss begins — so the formula overstates the dependence. It is
+therefore a conservative bound, and should be reported as one rather than
+tuned until it hits 95 %.
 
 ## What the corrected number says
 
-`n_eff ≈ 6` is the practical content. An honest interval on a session hit-rate
-is roughly **±35 points wide**, spanning everything from incompetence to
-apparent mastery. That is the correct description of what a single session of a
-per-minute forecast stream can establish about skill: essentially nothing.
+`n_eff ≈ 12` against a nominal 69 is the practical content. An honest interval
+on a session hit-rate is **±25 to ±28 points wide**, spanning everything from
+incompetence to apparent mastery. That is the correct description of what one
+session of a per-minute forecast stream can establish about skill: essentially
+nothing.
 
-The correction changes no point estimate. Only the interval moves. What it buys
-is an interval that means what it claims, and the discipline of reporting
-`n_eff` alongside `n` whenever forecasts overlap.
+The correction changes no point estimate. Only the interval moves.
 
 ## Practical rule
 
@@ -107,8 +110,10 @@ When reporting a hit-rate from overlapping forecasts:
 
 1. Compute the runs of constant hit indicator.
 2. Report `n_eff = n / (Σ L_i² / n)` beside the raw `n`.
-3. Build the interval at `n_eff`.
-4. If `n_eff` is in single digits, say so, and do not draw a conclusion.
+3. Build the interval at `n_eff`, and treat the design effect as a conservative
+   bound rather than an exact correction.
+5. If `n_eff` is in low double digits or below, say so, and do not draw a
+   conclusion from a single session.
 
 See [finding 02](02-measurement-illusions.md) for the artefact this corrects,
 and [finding 10](10-methodology.md) for where it sits in the wider protocol.
