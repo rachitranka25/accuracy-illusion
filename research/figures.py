@@ -221,7 +221,7 @@ def fig_model_zoo():
     if not d:
         return
 
-    fig, axes = plt.subplots(1, len(d), figsize=(FULL_W, 2.6), sharey=True)
+    fig, axes = plt.subplots(1, len(d), figsize=(FULL_W, 2.35), sharey=True)
     axes = [axes] if len(d) == 1 else list(axes)
 
     for ax, blk in zip(axes, d):

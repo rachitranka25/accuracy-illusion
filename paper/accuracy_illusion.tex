@@ -119,10 +119,9 @@ forecast log, then quantify the resulting distribution, its calibration error
 and its panel multiplicity (Section~\ref{sec:mechanism}).
 
 \item \textbf{A complete control set for a negative result.} Shuffled-label
-controls on every model, injected synthetic signals of known strength as a
-positive control, nine architectures under identical purged splits, and a
-block-bootstrap null for the strategy sweep (Section~\ref{sec:predictability}).
-The positive control is essential. Without it, ``we found nothing'' cannot be
+controls on every model, injected synthetic signals of known strength, nine
+architectures under identical purged splits, and a block-bootstrap null for the
+strategy sweep. Without the positive control, ``we found nothing'' cannot be
 distinguished from ``our pipeline is broken.''
 
 \item \textbf{A closed form and a corrected estimator.} We derive the
@@ -139,10 +138,10 @@ threshold \emph{no} accuracy is sufficient, which reframes high-accuracy claims
 as either artefacts or as far less valuable than they appear
 (Section~\ref{sec:economic}).
 
-\item \textbf{A reusable free-data corpus} for NSE index derivatives, including
-a decade of end-of-day option chains and two years of participant-wise open
-interest, with the observation that the exchange's static archive is not
-geo-restricted while its live API is (Section~\ref{sec:data}).
+\item \textbf{A reusable free-data corpus} for NSE index derivatives: a decade
+of end-of-day option chains, two years of participant-wise open interest, and
+the observation that the exchange's static archive is not geo-restricted while
+its live API is (Section~\ref{sec:data}).
 \end{enumerate}
 
 All experiments are reproducible from public code and committed raw
@@ -290,10 +289,10 @@ static end-of-day derivatives archive downloads normally. This distinction
 converted an assumed hard constraint into a two-year, and subsequently
 ten-year, dataset.
 
-\textbf{Time-based one-time-password authentication is location-independent.}
-Brokers authenticating by locally computed TOTP permit data collection from any
-jurisdiction, whereas SMS-based flows do not. This is a deciding practical
-constraint on reproducibility, and it is not documented prominently anywhere.
+\textbf{TOTP authentication is location-independent.} Brokers authenticating by
+locally computed one-time passwords permit collection from any jurisdiction,
+whereas SMS-based flows do not. That is a deciding constraint on
+reproducibility and it is documented nowhere prominent.
 
 \section{Methodology}
 \label{sec:method}
@@ -1245,8 +1244,8 @@ every number in it is true.
 
 We state these plainly because the paper's argument is about honest reporting.
 
-Two indices carry the primary intraday analysis, over the seventeen months of
-5-minute history available to us, in one market. The break-even model~\eqref{eq:breakeven} assumes a symmetric bracket;
+Two indices carry the primary intraday analysis, over seventeen months, in one
+market. The break-even model~\eqref{eq:breakeven} assumes a symmetric bracket;
 asymmetric payoffs lower the required hit-rate while also lowering the achieved
 one, and we did not sweep that trade-off. Our Temporal Fusion Transformer is a
 compact variant retaining variable selection, gated residual networks and
@@ -1292,10 +1291,10 @@ to an accuracy figure. Without them the figure does not mean anything.
 
 \section*{Reproducibility}
 
-Code, the experiment harness, raw results, figure generation and the full
-research record, including six formally retracted claims, are available at
+Code, the harness, raw results, figure generation and the full research record,
+including every retracted claim, are at
 \url{https://github.com/rachitranka25/accuracy-illusion}. Experiments use a
-fixed seed and pin native thread pools to one thread.
+fixed seed and single-threaded native pools.
 
 \balance
 
