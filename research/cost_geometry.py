@@ -56,6 +56,8 @@ def move_distribution(name, horizon):
 
     a_pts, a_bp = fwd_pts.abs(), fwd_bp.abs()
     return {
+        "mean_move_bp": float(a_bp.mean()),
+        "skew": float(a_bp.skew()),
         "price": float(close.mean()),
         "median_move_pts": float(a_pts.median()),
         "mean_move_pts": float(a_pts.mean()),
@@ -74,32 +76,75 @@ def breakeven(cost_bp, move_bp):
     return 0.5 + cost_bp / (2 * move_bp)
 
 
+def breakeven_hold(cost_bp, mean_signed_gain_bp):
+    """Break-even for the no-bracket alternative: hold to the horizon.
+
+    Many live implementations set no target and no stop and simply exit at the
+    horizon. Then E = p*E|move| - (1-p)*E|move| - c and
+
+        p* = 1/2 + c / (2 E|move|),
+
+    which is the same formula evaluated at the MEAN absolute move rather than
+    the median. Because intraday move distributions are strongly right-skewed,
+    the mean is materially larger than the median and the requirement is
+    correspondingly lower. Reporting only the median overstates p*, and the
+    5-minute "impossible" verdict is exactly where that matters, so both are
+    given.
+    """
+    if mean_signed_gain_bp <= 0:
+        return float("nan")
+    return 0.5 + cost_bp / (2 * mean_signed_gain_bp)
+
+
 def run(name, cost_bp, achieved):
     print(f"\n{'='*80}\n{name} — cost geometry\n{'='*80}")
     print(f"  round-trip cost assumed: {cost_bp:.1f} bp")
     print(f"\n{'horizon':<10}{'median move':>13}{'cost/move':>11}"
-          f"{'break-even acc':>16}{'move>cost':>11}{'achieved':>10}")
-    print("-" * 80)
+          f"{'p* (median)':>15}{'p* (mean)':>15}{'move>cost':>11}{'achieved':>10}")
+    print("-" * 95)
 
     rows = []
     for horizon in C.HORIZON_BARS:
         d = move_distribution(name, horizon)
-        m_bp = d["median_move_bp"]
+        m_bp, mu_bp = d["median_move_bp"], d["mean_move_bp"]
         ratio = cost_bp / m_bp
         p_star = breakeven(cost_bp, m_bp)
+        p_star_mean = breakeven_hold(cost_bp, mu_bp)
         clears = float((d["_abs_bp"] > cost_bp).mean())
         ach = achieved.get(horizon)
 
+        def fmt(x):
+            return f"{x*100:.1f}%" if x == x and x <= 1.0 else "impossible"
+
         print(f"{horizon:<10}{d['median_move_pts']:>8.1f} pts"
-              f"{ratio:>11.2f}{p_star*100:>15.1f}%{clears*100:>10.0f}%"
-              f"{(f'{ach*100:.1f}%' if ach else '—'):>10}")
+              f"{ratio:>11.2f}{fmt(p_star):>15}{fmt(p_star_mean):>15}"
+              f"{clears*100:>10.0f}%{(f'{ach*100:.1f}%' if ach else '—'):>10}")
 
         rows.append({"horizon": horizon, "median_move_pts": round(d["median_move_pts"], 1),
                      "median_move_bp": round(m_bp, 2),
+                     "mean_move_bp": round(mu_bp, 2),
+                     "move_skew": round(d["skew"], 2),
                      "cost_over_move": round(ratio, 3),
                      "breakeven_accuracy": round(p_star, 4),
+                     "breakeven_accuracy_mean_move": round(p_star_mean, 4),
                      "frac_bars_move_exceeds_cost": round(clears, 4),
                      "achieved_accuracy": ach, "n": d["n"]})
+
+    p5 = next(r for r in rows if r["horizon"] == "5m")
+    print(f"\n  Move distributions are right-skewed (5m skew "
+          f"{p5['move_skew']:.1f}), so the mean absolute move exceeds the median "
+          f"and\n  p* computed on the mean is the more forgiving, and more "
+          f"realistic, figure for a\n  hold-to-horizon rule with no bracket.")
+    if p5["breakeven_accuracy"] > 1.0 and p5["breakeven_accuracy_mean_move"] > 1.0:
+        print(f"  The 5-minute verdict is unreachable under BOTH: "
+              f"{p5['breakeven_accuracy']*100:.0f}% on the median and "
+              f"{p5['breakeven_accuracy_mean_move']*100:.0f}% on the mean.")
+    else:
+        print(f"  NOTE: the 5-minute requirement is "
+              f"{p5['breakeven_accuracy']*100:.0f}% on the median but "
+              f"{p5['breakeven_accuracy_mean_move']*100:.0f}% on the mean, so the "
+              f"'impossible'\n  verdict holds only under the symmetric-bracket "
+              f"model and must be stated that way.")
 
     p30 = next(r for r in rows if r["horizon"] == "30m")
     ach30 = p30["achieved_accuracy"]

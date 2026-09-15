@@ -46,35 +46,28 @@ aadityasaini899@gmail.com}
 
 \begin{abstract}
 Intraday forecasting systems routinely report directional hit-rates between
-60\,\% and 85\,\%, and those figures move real capital. This paper shows that
-they are not valid estimates of predictive skill, and measures precisely how
-they arise. When a $k$-bar-ahead forecast is issued every bar, consecutive
-forecasts share $k{-}1$ of their $k$ outcome bars. If the model's own calls also
-persist, and on a live production system we measure a mean run of 15.2 minutes,
-the reported hit-rate acquires a variance far larger than its nominal sample
-size implies. We simulate a forecaster with \emph{exactly zero skill} against
-real NSE index bars. It posts a $\geq$\,60\,\% session once in six and a
-$\geq$\,71\,\% session once in 51, while reporting a confidence interval
-1.66$\times$ too narrow. Across a panel of two indices and four horizons, a
-$\geq$\,71\,\% reading surfaces every seventh session. Under correct per-event
-scoring, nine model families spanning logistic regression to a Temporal Fusion
-Transformer, all trained on identical purged walk-forward splits, reach at most
-51.3\,\% out-of-sample when scored per bar, and \emph{none} remains significant
-once scored per event or at its effective sample size; a model-independent
-ceiling test replicates across five indices and two exchanges. A sweep of 86 rule-based strategies yields a best Sharpe
-\emph{below} what a circular block-bootstrap null produces from selection alone
-($P = 0.658$). We give the closed form behind the distortion, showing the
-variance inflation is governed by the second moment of the run-length
-distribution, and an estimator built on it lifts the coverage of a nominal
-95\,\% interval from 40\,\% to 94\,\%; the corrected effective sample size of a
-69-forecast session is six. We then quantify what would actually be required. Break-even
-accuracy derived from measured move distributions is 71.5\,\% at the 30-minute
-horizon, and it exceeds 100\,\% at shorter horizons and at option-level costs.
-The correction is applied to our own results and removes the one positive
-directional effect we had found: XGBoost falls from 51.3\,\% ($p = 0.001$) to
-50.4\,\% ($p = 0.69$). Applied to a volatility target on identical features it
-removes nothing (70.8\,\% to 71.3\,\%), which is evidence that the correction
-separates signal from artefact rather than flattening both. All code, raw results and the
+60\,\% and 85\,\%, and those figures move real capital. We show they are not
+valid estimates of skill, and measure why. A $k$-bar-ahead forecast issued every
+bar shares $k{-}1$ of its $k$ outcome bars with its neighbour; when the model's
+calls also persist, as they do on a live system we instrument, the reported
+hit-rate acquires a variance far larger than its nominal sample size implies.
+The reading is not biased upward. Its stated precision is. A forecaster with
+\emph{exactly zero skill}, simulated against real NSE index bars, posts a
+$\geq$\,71\,\% session once in 50 while reporting an interval $1.66\times$ too
+narrow, and on a two-index four-horizon panel such a reading appears every
+seventh session.
+
+We give the closed form behind this, the classical design effect with clusters
+given by runs of identical calls, and validate corrected intervals by coverage
+on simulated and on live sessions: a session advertising 69 forecasts carries
+about twelve independent observations. Applying the correction to our own
+results removes our one positive directional finding, XGBoost falling from
+51.3\,\% ($p = 0.001$) to 50.4\,\% ($p = 0.69$), with zero of nine model
+families surviving on either index. Applied to a volatility target on identical
+features it removes nothing (70.8\,\% to 71.3\,\%), evidence that it separates
+signal from artefact rather than flattening both. Break-even accuracy derived
+from measured move distributions is 71.5\,\% at thirty minutes and 86--93\,\% at
+five, against a best achieved figure near 50\,\%. Code, raw results and the
 free-data corpus are public.
 \end{abstract}
 
@@ -100,8 +93,8 @@ This paper began as an attempt to build such a system. Over fourteen months we
 built and ran a live multi-horizon forecasting platform for Indian index
 derivatives, and it reported a headline accuracy of 71\,\%. That number was
 wrong. Tracing it to source revealed no bug in the model. The defect lay in the
-\emph{denominator}, in how a per-minute forecast stream is scored. Four further
-positive results from the same project were later retracted for related reasons.
+\emph{denominator}, in how a per-minute forecast stream is scored. Five further positive results from the same project have since been
+retracted, one of them in this paper.
 
 The econometrics of overlapping observations is not
 new~\cite{hansen1980,richardson1991}. Hansen and Hodrick~\cite{hansen1980}
@@ -133,8 +126,10 @@ distinguished from ``our pipeline is broken.''
 \item \textbf{A closed form and a corrected estimator.} We derive the
 effective sample size of an overlapping, persistent forecast stream and show it
 is governed by $\mathbb{E}[L^2]/\mathbb{E}[L]$ over the run lengths. An interval
-built on it covers at 94\,\% where the naive interval covers at 40\,\% and a
-standard HAC correction at 67\,\% (Section~\ref{sec:estimator}).
+built on it is conservative where the conventional interval is badly
+anti-conservative: on a session hit-rate the naive interval covers at 75\,\%
+against a nominal 95\,\%, HAC and a block bootstrap at 86--87\,\%, and the design
+effect at 99.5\,\% (Section~\ref{sec:estimator}).
 
 \item \textbf{The required-versus-achieved framing.} We derive break-even
 accuracy from measured move distributions and show that below a horizon
@@ -227,7 +222,6 @@ Krauss \emph{et al.}~\cite{krauss2017} & S\&P 500 & Daily bars & Per day, non-ov
 Gu \emph{et al.}~\cite{gu2020} & US equities & Monthly & Per month & partial & --- & partial & partial \\
 Zhang \emph{et al.}~\cite{zhang2019} & LSE & Message-level LOB & Per event & --- & --- & --- & partial \\
 Kolm \emph{et al.}~\cite{kolm2023} & Nasdaq & Message-level LOB & Per horizon & --- & --- & discussed & --- \\
-Applied index studies (typical) & NSE, global & Daily / intraday bars & Often per bar & --- & --- & --- & rare \\
 \midrule
 \textbf{This work} & NSE index & 5-min bars, EOD chains & \textbf{Per event ($k$-bar)} &
 \checkmark & \checkmark & \checkmark & \checkmark \\
@@ -236,9 +230,11 @@ Applied index studies (typical) & NSE, global & Daily / intraday bars & Often pe
 
 \vspace{2pt}
 \footnotesize
-This work applies Bonferroni, Benjamini--Hochberg, the Deflated Sharpe Ratio and PBO/CSCV (MT);
-shuffled-label controls on every model plus injected positive controls (NC); explicit round-trip
-costs, and inverts them into a required-accuracy threshold (C).
+MT here means Bonferroni and Benjamini--Hochberg, which applied cleanly, plus
+the Deflated Sharpe Ratio and PBO/CSCV, which we ran and found inapplicable and
+degenerate respectively (Section~\ref{sec:predictability}-C). We omit a row for
+``typical applied studies'': characterising that population would require citing
+specific papers as negative examples, and the argument does not need it.
 \end{table*}
 
 \subsection{What is predictable}
@@ -327,6 +323,12 @@ to report a null.
 \textbf{Per-event scoring and costs.} Strategy returns are evaluated on
 non-overlapping $k$-bar holds with explicit round-trip costs, and costs are
 treated as part of the hypothesis rather than as a subsequent adjustment.
+
+\textbf{Sample sizes.} Three counts appear for the same experiment and are
+distinguished here once. BANKNIFTY has 26\,265 raw 5-minute bars; 24\,080 survive
+feature warm-up and the removal of bars whose $k$-ahead label would cross a
+session boundary; and 16\,856 of those fall in a test fold under the expanding
+walk-forward, which is the $n$ every accuracy is computed on.
 
 \textbf{Units.} One conversion is used throughout and is stated here once to
 avoid ambiguity later. All analysis is on 5-minute bars, so the 30-minute
@@ -519,25 +521,32 @@ that known truth. Table~\ref{tab:coverage} reports four estimators.
 
 \begin{table}[!tb]
 \caption{Coverage of a nominal 95\,\% interval on a session hit-rate, against a
-forecaster of known skill with realistic persistence. BANKNIFTY, 30-minute
-horizon, nominal $n = 69$; NIFTY 50 agrees within 1 point throughout.}
+forecaster of known skill whose calls persist per the measured run-length
+distribution. BANKNIFTY, 30-minute horizon, nominal $n = 69$; NIFTY 50 agrees
+within 1 point throughout. The true skill is measured from the generative
+process rather than assumed, since a call anchored on one bar and held across
+others does not realise its anchor rate.}
 \label{tab:coverage}
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lcccrr@{}}
 \toprule
-\textbf{Estimator} & \multicolumn{3}{c}{\textbf{Coverage at skill}} &
+\textbf{Estimator} & \multicolumn{3}{c}{\textbf{Coverage at true skill}} &
 \textbf{Width} & $\boldsymbol{n_{\text{eff}}}$ \\
 \cmidrule(lr){2-4}
- & 50\,\% & 55\,\% & 60\,\% & (pts) & \\
+ & 50\,\% & 55\,\% & 59\,\% & (pts) & \\
 \midrule
-Naive binomial & 39.6 & 39.5 & 38.9 & 21.4 & 69 \\
-HAC (Bartlett) & 66.6 & 66.6 & 66.1 & 33.8 & 21 \\
-Block bootstrap & 63.1 & 63.0 & 63.0 & 29.6 & --- \\
-\textbf{Run-structure} & \textbf{94.0} & \textbf{94.1} & \textbf{94.2}
- & 70.8 & \textbf{5.6} \\
+Naive binomial & 75.5 & 74.8 & 74.0 & 23.1 & 69 \\
+HAC (Bartlett) & 87.0 & 86.6 & 85.6 & 32.8 & 39 \\
+Block bootstrap & 86.6 & 86.4 & 85.2 & 32.1 & --- \\
+\textbf{Run-structure} & \textbf{99.5} & \textbf{99.6} & \textbf{99.6}
+ & 56.0 & \textbf{12.4} \\
 \bottomrule
+\multicolumn{6}{@{}l@{}}{\scriptsize None is exactly calibrated: the naive
+interval under-covers by 20 points, the two} \\
+\multicolumn{6}{@{}l@{}}{\scriptsize standard corrections by 8, and the design
+effect over-covers.} \\
 \end{tabular}
 \end{table}
 
@@ -551,17 +560,92 @@ bars. A kernel truncated near the mean has summed almost none of the covariance
 that the long runs contribute.
 
 Estimating the inflation from the observed run structure removes that failure
-mode. It over-corrects in the other direction, because treating runs as
-independent clusters ignores that consecutive runs are negatively dependent, so
-we report it as a conservative bound rather than as an exact correction.
+mode, and over-corrects in the other direction: treating runs as independent
+clusters ignores that consecutive runs are negatively dependent, since a run of
+hits ends precisely when a miss begins.
+
+The two figures can be reconciled, and should be. The realised spread in
+Table~\ref{tab:zero} implies a true effective sample of about 25 for a
+69-forecast session, while \eqref{eq:neff} estimates 12. The estimator is
+therefore roughly a factor of two conservative, which is exactly why it covers
+at 99.5\,\% rather than 95\,\%. We report it as a conservative bound rather than
+an exact correction, and we prefer that direction of error: an interval that is
+too wide understates what a session proves, while the conventional one
+overstates it.
+
+\subsection{A real session}
+
+Everything above is simulated. Table~\ref{tab:live} applies the four estimators
+to sessions taken directly from the production log: the forecast stream the
+dashboard actually wrote, scored against the moves that actually followed.
+
+\begin{table}[!tb]
+\caption{Four intervals on the two best sessions in the production log,
+30-minute horizon. The final row is the range of hit-rates obtained from the
+$k = 6$ possible per-event subsamples of the same session.}
+\label{tab:live}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Estimator} & \textbf{95\,\% interval} & \textbf{Width} & $\boldsymbol{n_{\text{eff}}}$ \\
+\midrule
+\multicolumn{4}{@{}l@{}}{\emph{BANKNIFTY, 3 Aug: 336 forecasts, 57.1\,\%}} \\
+Naive binomial at $n$ & [51.9, 62.4] & 10.6 & 336 \\
+HAC (Bartlett) & [41.8, 72.4] & 30.6 & 40 \\
+Block bootstrap & [41.7, 69.3] & 27.7 & --- \\
+\textbf{Run-structure} & \textbf{[34.4, 79.9]} & 45.5 & \textbf{18} \\
+Per-event, 6 subsamples & 53.6 to 62.5 & 8.9 & 56 \\
+\midrule
+\multicolumn{4}{@{}l@{}}{\emph{NIFTY 50, 3 Aug: 335 forecasts, 69.6\,\%}} \\
+Naive binomial at $n$ & [64.6, 74.5] & 9.9 & 335 \\
+HAC (Bartlett) & [54.8, 84.3] & 29.6 & 37 \\
+Block bootstrap & [57.9, 79.4] & 21.5 & --- \\
+\textbf{Run-structure} & \textbf{[50.0, 89.1]} & 39.1 & \textbf{21} \\
+Per-event, 6 subsamples & 66.1 to 73.2 & 7.1 & 55 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The BANKNIFTY session reports 57.1\,\% with a naive interval that excludes
+50\,\%, and would be read as evidence of skill. At $n_{\text{eff}} = 18$ the
+interval runs from 34\,\% to 80\,\% and supports nothing. The NIFTY~50 session
+at 69.6\,\% is the nearest surviving analogue to the 71\,\% that started this
+project; its corrected interval is $[50.0, 89.1]$, which excludes 50\,\% by a
+margin too small to celebrate but which we report as excluding it, because it
+does.
+
+\subsection{Why not simply score per event}
+
+Per-event scoring is unbiased, requires no estimator, and is correctly
+calibrated at $0.99\times$ (Table~\ref{tab:zero}). It is what we use for every
+backtest in this paper. It is nonetheless not sufficient for a live stream, and
+the last row of Table~\ref{tab:live} shows why.
+
+\textbf{A dashboard must print a number every bar.} It cannot wait $k$ bars
+before reporting, and it cannot discard $k-1$ of every $k$ forecasts it has
+already made and already shown.
+
+\textbf{Subsampling discards information.} Keeping one observation in six
+throws away 83\,\% of the data, so the per-event interval is wider than the
+evidence requires. The corrected estimator uses the whole stream.
+
+\textbf{The choice of subsample is arbitrary, and it moves the answer.} There
+are $k$ valid per-event subsamples of any session. Across the six offsets, the
+same BANKNIFTY session reports between 53.6\,\% and 62.5\,\% and the same
+NIFTY~50 session between 66.1\,\% and 73.2\,\%, a spread of 7 to 12 points. An
+analyst free to choose the offset is free to choose the result, which is the
+problem this paper is about reappearing in the remedy.
 
 \subsection{What the corrected number says}
 
 The practical content is $n_{\text{eff}}$ itself. A session that reports 69
-forecasts carries roughly \emph{six} independent observations, and an honest
-interval on its hit-rate is about $\pm$35 points wide. Such an interval spans
-everything from incompetence to apparent mastery, which is the correct
-description of what one session of a per-minute forecast stream can establish.
+forecasts carries roughly a \emph{dozen} independent observations, and an honest
+interval on its hit-rate is $\pm$12 to $\pm$28 points wide depending on the
+estimator. Even the narrowest of those spans a range within which incompetence
+and competence are indistinguishable, which is the correct description of what
+one session of a per-minute forecast stream can establish.
 
 The correction changes no point estimate. Only the interval moves. What it buys
 is an interval that means what it claims, and the discipline of reporting
@@ -654,8 +738,11 @@ Temporal Fusion Transformer & 49.4 & 0.101 & [47.2, 51.5] & 49.0 & 0.299 & 50.1 
                                    \textbf{1/8} & & \textbf{0/8} & \textbf{0/8} & \\
 \bottomrule
 \multicolumn{11}{@{}l@{}}{\footnotesize $n_{\text{eff}} \approx 2\,100$--$3\,000$
-against a nominal $16\,856$; per-event $n = 2\,810$. Shuffled-label controls span
-49.5--50.3\,\% on every model and both indices.} \\
+against a nominal $16\,856$; per-event $n = 2\,810$. Shuffled controls span
+49.5--50.3\,\% throughout. Pesaran--Timmermann $p$-values} \\
+\multicolumn{11}{@{}l@{}}{\footnotesize track the per-bar column to within 0.042
+on every row (e.g.\ XGBoost 0.001, TFT 0.104) and are omitted for space; full
+values in the results file.} \\
 \end{tabular}
 \end{table*}
 
@@ -724,7 +811,7 @@ Surviving Benjamini--Hochberg, FDR 5\,\% & 0 \\
 Positive \emph{and} stable in both halves & 1 \\
 \midrule
 Best observed Sharpe & 0.21 \\
-Bootstrap null, best-of-86, median & 0.44 \\
+Bootstrap null (500 resamples), median & 0.44 \\
 Bootstrap null, best-of-86, 95th pct. & 1.31 \\
 $\boldsymbol{P(\text{null} \geq \text{observed})}$ & \textbf{0.658} \\
 \bottomrule
@@ -777,28 +864,36 @@ distributions.
 
 \begin{table}[!tb]
 \caption{Break-even accuracy from measured move distributions at 4\,bp
-round-trip cost. ``Achieved'' is the best of the nine model families, scored per event.}
+round-trip cost. $p^{\ast}_{\text{med}}$ uses the median move and a symmetric
+bracket; $p^{\ast}_{\text{mean}}$ uses the mean absolute move, which is the
+requirement for a hold-to-horizon rule with no bracket. ``Achieved'' is the best
+of the nine model families, scored per event.}
 \label{tab:breakeven}
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lrrrr@{}}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-\textbf{Horizon} & \textbf{Med.\ move} & $c/m$ & $\boldsymbol{p^{\ast}}$ & \textbf{Achieved} \\
+\textbf{Horizon} & \textbf{Med.} & \textbf{Mean} &
+$\boldsymbol{p^{\ast}_{\text{med}}}$ & $\boldsymbol{p^{\ast}_{\text{mean}}}$ &
+\textbf{Achieved} \\
 \midrule
-\multicolumn{5}{@{}l@{}}{\emph{BANKNIFTY}} \\
-5\,min & 22.1 & 1.01 & \textbf{100.7\,\%} & --- \\
-15\,min & 37.7 & 0.60 & 79.8\,\% & --- \\
-30\,min & 52.3 & 0.43 & \textbf{71.5\,\%} & \textbf{50.4\,\%} \\
-60\,min & 72.9 & 0.31 & 65.4\,\% & 51.2\,\% \\
+\multicolumn{6}{@{}l@{}}{\emph{BANKNIFTY} (5-min move skew 2.6)} \\
+5\,min & 22.1 & --- & \textbf{$>$100\,\%} & \textbf{86.4\,\%} & --- \\
+15\,min & 37.7 & --- & 79.8\,\% & 71.3\,\% & 50.7\,\% \\
+30\,min & 52.3 & --- & \textbf{71.5\,\%} & 65.3\,\% & \textbf{50.4\,\%} \\
+60\,min & 72.9 & --- & 65.4\,\% & 60.8\,\% & 51.2\,\% \\
 \midrule
-\multicolumn{5}{@{}l@{}}{\emph{NIFTY 50}} \\
-5\,min & 8.1 & 1.22 & \textbf{111.2\,\%} & --- \\
-15\,min & 14.1 & 0.70 & 84.9\,\% & --- \\
-30\,min & 19.7 & 0.50 & \textbf{75.1\,\%} & \textbf{49.8\,\%} \\
-60\,min & 27.7 & 0.35 & 67.7\,\% & --- \\
+\multicolumn{6}{@{}l@{}}{\emph{NIFTY 50} (5-min move skew 2.9)} \\
+5\,min & 8.1 & --- & \textbf{$>$100\,\%} & \textbf{93.0\,\%} & --- \\
+15\,min & 14.1 & --- & 84.9\,\% & 74.9\,\% & 50.5\,\% \\
+30\,min & 19.7 & --- & \textbf{75.1\,\%} & 67.8\,\% & \textbf{49.8\,\%} \\
+60\,min & 27.7 & --- & 67.7\,\% & 62.7\,\% & 50.0\,\% \\
 \bottomrule
-\multicolumn{5}{@{}l@{}}{\scriptsize Median move in index points.} \\
+\multicolumn{6}{@{}l@{}}{\footnotesize Median move in index points. Mean column
+omitted for space; the ratio is} \\
+\multicolumn{6}{@{}l@{}}{\footnotesize recoverable from
+$p^{\ast}_{\text{mean}}$ via \eqref{eq:breakeven}.} \\
 \end{tabular}
 \end{table}
 
@@ -813,11 +908,17 @@ which no directional accuracy is sufficient.}
 
 Two consequences follow immediately.
 
-\textbf{At the shortest horizon the requirement exceeds 100\,\% on both
-indices.} The median five-minute move is smaller than the round trip. There
-exists no accuracy, whether 90\,\% or 100\,\%, at which five-minute signal
-trading on these instruments is profitable at retail cost. The shorter the
-horizon, the more certainly it fails, which inverts the usual marketing of
+\textbf{At the shortest horizon the requirement is out of reach, and under one
+model it is unreachable in principle.} The median five-minute move is smaller
+than the round trip, so under a symmetric bracket $p^{\ast}$ exceeds 100\,\% and
+no accuracy suffices. That conclusion is specific to the bracket. Intraday move
+distributions are strongly right-skewed (skew 2.6--2.9 at five minutes), so the
+mean absolute move is considerably larger than the median, and a hold-to-horizon
+rule with no bracket requires 86\,\% on BANKNIFTY and 93\,\% on NIFTY~50
+instead. Those are not impossible, merely far beyond anything in this paper or
+in the literature. We report both because quoting only the median would
+overstate the case, and the point survives either way: the shorter the horizon,
+the more certainly it fails, which inverts the usual marketing of
 high-frequency retail strategies.
 
 \textbf{Instrument choice can make the requirement unreachable.}
@@ -880,8 +981,11 @@ matters: training on target-hit raises the hit-rate from 42\,\% to 53\,\% while
 making the money worse, because the model learns to prefer small, easy targets.
 
 Out-of-sample over 106 unseen days on BANKNIFTY, the filter cut trades from 2.3
-to 1.0 per day and raised quality from $+1.44$ to $+1.82$ points per minute,
-holding in both halves of the test. The total moved from $-3777$ to $-981$. A working filter applied to a system with no edge converts a large loss
+to 1.0 per day and raised gross quality from $+1.44$ to $+1.82$ points per
+minute of exposure, holding in both halves of the test. The cumulative total
+\emph{after} costs moved from $-3777$ to $-981$ index points. Gross quality per
+minute and net cumulative points are different quantities: the filter improved
+the first and reduced, but did not reverse, the damage in the second. A working filter applied to a system with no edge converts a large loss
 into a small one. It cannot manufacture a profit that is not in the underlying
 signal.
 
@@ -1067,8 +1171,8 @@ data, which we could not obtain, is where the literature locates the remaining
 short-horizon alpha.
 
 Reporting practice should change to match, and the change is cheap.
-Section~\ref{sec:estimator} gives an estimator whose interval covers at 94\,\%
-where the conventional one covers at 40\,\%, at no cost to the point estimate.
+Section~\ref{sec:estimator} gives an estimator that errs toward caution where
+the conventional one errs toward confidence, at no cost to the point estimate.
 Scoring unit, effective sample size, multiple-testing correction, a
 shuffled-label control and an explicit cost model are not optional refinements
 to an accuracy figure. Without them the figure does not mean anything.
@@ -1076,7 +1180,7 @@ to an accuracy figure. Without them the figure does not mean anything.
 \section*{Reproducibility}
 
 Code, the experiment harness, raw results, figure generation and the full
-research record, including five formally retracted claims, are available at
+research record, including six formally retracted claims, are available at
 \url{https://github.com/rachitranka25/accuracy-illusion}. Experiments use a
 fixed seed and pin native thread pools to one thread.
 
