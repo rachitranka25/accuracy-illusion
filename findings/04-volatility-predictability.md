@@ -3,9 +3,21 @@
 **Claim tested.** That the *magnitude* of the next move is more forecastable
 than its sign.
 
-**Verdict.** Confirmed, and by a wide margin. This is the strongest genuine
-result in the project: **68–74% out-of-sample, stable across both test halves**,
-against ~50% for direction on the identical data and features.
+**Verdict.** Confirmed, and it is the strongest genuine result in the project —
+but the honest version is narrower than the headline.
+
+Through the same harness applied to direction: **70.8% (BANKNIFTY) / 72.0%
+(NIFTY 50)** per bar, and **71.3% / 72.1%** per event. Shuffled-label controls
+sit at 52–54%.
+
+The decisive comparison is not against a coinflip, though. Volatility clusters,
+so a persistence rule — "the next 30 minutes look like the last 30" — already
+scores **67.4% / 67.4%**. The model's edge over that is **+3.3 / +3.7 points**
+per event, and at n_eff the model and baseline intervals **overlap**. The edge
+over persistence is real-looking but not established.
+
+> Status: **REPRODUCIBLE** — `research/volatility_test.py`,
+> [`results/volatility_test_30m.json`](../results/volatility_test_30m.json).
 
 ---
 
@@ -20,7 +32,24 @@ through midday, and rising again into the close.
 Neither of these says anything about direction. Both are strongly present in the
 data we already have.
 
-## Result
+## The result that matters most
+
+**Volatility survives per-event scoring; direction does not.**
+
+| | per bar | per event |
+|---|---|---|
+| Direction (XGBoost, BANKNIFTY) | 51.3% | **50.4%** |
+| Volatility (LightGBM, BANKNIFTY) | 70.8% | **71.3%** |
+
+The same correction, on the same features and splits, removes one and leaves the
+other untouched. That is the strongest available evidence that the correction in
+[finding 12](12-corrected-estimator.md) separates signal from artefact rather
+than flattening everything it touches.
+
+The shuffled-label control tells the same story: for volatility the gap between
+real and shuffled labels is ~18 points; for direction it was under 2.
+
+## Earlier numbers
 
 Binary target: will realised volatility over the next *k* bars exceed the
 training-set median?

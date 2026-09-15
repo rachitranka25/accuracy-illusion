@@ -1,0 +1,52 @@
+[
+  {
+    "index": "BANKNIFTY",
+    "horizon": "30m",
+    "bars": 24090,
+    "folds": 5,
+    "model_per_bar": 0.7082,
+    "model_per_event": 0.7135,
+    "persistence_per_bar": 0.6744,
+    "persistence_per_event": 0.6801,
+    "shuffled": 0.5414,
+    "n_eff": 976.2,
+    "model_ci_at_n_eff": [
+      0.6797,
+      0.7368
+    ],
+    "persistence_ci_at_n_eff": [
+      0.645,
+      0.7038
+    ],
+    "edge_over_persistence_per_bar": 3.38,
+    "edge_over_persistence_per_event": 3.34,
+    "intervals_overlap": true,
+    "n_per_bar": 16863,
+    "n_per_event": 2813
+  },
+  {
+    "index": "NIFTY50",
+    "horizon": "30m",
+    "bars": 24092,
+    "folds": 5,
+    "model_per_bar": 0.7201,
+    "model_per_event": 0.7215,
+    "persistence_per_bar": 0.6742,
+    "persistence_per_event": 0.6849,
+    "shuffled": 0.5219,
+    "n_eff": 909.8,
+    "model_ci_at_n_eff": [
+      0.6909,
+      0.7492
+    ],
+    "persistence_ci_at_n_eff": [
+      0.6437,
+      0.7046
+    ],
+    "edge_over_persistence_per_bar": 4.59,
+    "edge_over_persistence_per_event": 3.66,
+    "intervals_overlap": true,
+    "n_per_bar": 16865,
+    "n_per_event": 2815
+  }
+]

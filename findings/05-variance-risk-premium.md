@@ -3,26 +3,44 @@
 **Claim tested.** That there exists at least one edge on this data that is both
 measurable and reachable from a retail account.
 
-**Verdict.** Exactly one: **selling NIFTY at-the-money premium.** +22.5 points
-per trade after cost, 61% win rate, on real historical option premiums. It is
-also the finding that requires the most careful handling, because its risk
-profile is not symmetric with its returns.
+**Verdict.** Yes — selling at-the-money premium — but the numbers previously
+recorded here were wrong, and the corrected ones are smaller and point the other
+way on BANKNIFTY.
+
+Re-run from the committed script (short ATM straddle, entered *D* trading days
+before expiry, held to expiry, net of 10% of premium as round-trip cost):
+
+| | Trades | Win | Net/trade | Worst | h1 / h2 |
+|---|---|---|---|---|---|
+| NIFTY, 3 DTE | 108 | 61% | **+2.8** | −687 | 61 / 63 |
+| NIFTY, 1 DTE | 108 | 62% | **+3.2** | −439 | 61 / 72 |
+| BANKNIFTY, 3 DTE | 39 | 64% | **+14.2** | −881 | 58 / 75 |
+| BANKNIFTY, 1 DTE | 40 | 68% | **+59.3** | −936 | 75 / 70 |
+
+> **Retraction.** This document previously reported +22.5 points per trade for
+> NIFTY and a *loss* of 7.3 points for BANKNIFTY, over "349–509 trades". None of
+> that reproduces. The trade counts are 39–108, NIFTY nets low single digits,
+> and **BANKNIFTY is positive, not negative**. The old figures came from memory
+> of an earlier run rather than from the script, which is exactly the failure
+> mode this project documents.
+
+> Status: **REPRODUCIBLE** — `research/archive/vrp_straddle_test.py`.
 
 ---
 
-## Result
+## What is still missing
 
-Short at-the-money straddle, held to expiry, priced on real EOD option premiums
-from the F&O bhavcopy (`data_cache/{name}_options_eod.csv`, 2 years).
+Four things, and until they are done this is a lead rather than a result:
 
-| | NIFTY 50 | BANKNIFTY |
-|---|---|---|
-| Trades | 349–509 | 349–509 |
-| Win rate | **61%** | lower |
-| Net per trade after 3% cost | **+22.5 pts** | **−7.3 pts** |
-| Worst single trade | −847 | **−2,002** |
-
-> Status: **REPRODUCIBLE** — `research/archive/vrp_straddle_test.py`.
+1. **Sample size.** 39–108 expiries, not thousands. No interval accompanies any
+   mean.
+2. **No multiplicity correction** over the choice of strike, entry day and
+   holding rule — and the table above reports four such choices.
+3. **BANKNIFTY is not like-for-like.** Its 39 expiries against NIFTY's 108
+   reflect NSE moving BANKNIFTY options from weekly to monthly expiry partway
+   through the sample. Different holding period, different decay profile.
+4. **The 10% cost assumption is load-bearing** and is not calibrated per
+   instrument.
 
 ## Why it works
 
@@ -35,12 +53,14 @@ informational. It does not depend on predicting anything.
 That is precisely why it survived a test protocol that killed every predictive
 signal in this project. It is not a prediction.
 
-## Why BANKNIFTY does not work
+## On the index comparison
 
-Same logic, opposite outcome. BANKNIFTY's return distribution has a fatter tail —
-its worst trade is −2,002 against NIFTY's −847. The premium collected is not
-enough to pay for tails that size. The edge is index-specific, and assuming it
-generalises would be the standard error.
+An earlier version of this document explained at length why BANKNIFTY "does not
+work", on the basis of a −7.3 figure that does not reproduce. BANKNIFTY is in
+fact the stronger of the two in this test. What remains true is that its tail is
+heavier in absolute points (worst −936 against NIFTY's −687 on comparable
+entries), and that its sample is both smaller and structurally different because
+of the expiry change.
 
 ## The counter-intuitive result
 

@@ -72,7 +72,9 @@ accuracy derived from measured move distributions is 71.5\,\% at the 30-minute
 horizon, and it exceeds 100\,\% at shorter horizons and at option-level costs.
 The correction is applied to our own results and removes the one positive
 directional effect we had found: XGBoost falls from 51.3\,\% ($p = 0.001$) to
-50.4\,\% ($p = 0.69$). All code, raw results and the
+50.4\,\% ($p = 0.69$). Applied to a volatility target on identical features it
+removes nothing (70.8\,\% to 71.3\,\%), which is evidence that the correction
+separates signal from artefact rather than flattening both. All code, raw results and the
 free-data corpus are public.
 \end{abstract}
 
@@ -890,60 +892,129 @@ The fifteen production features are all transforms of one price series;
 reshaping price cannot reveal what price does not contain. What follows comes
 from changing the target or the information source.
 
-\textbf{A standard we have not met.} Sections~\ref{sec:mechanism}
---\ref{sec:economic} apply a harness of purged splits, shuffled and positive
-controls, per-event scoring, effective sample sizes and multiplicity correction,
-and Section~\ref{sec:predictability} applies it to our own positive result until
-that result disappears. The three findings below have \emph{not} been through
-that harness. They are reported as leads, with what is missing stated for each,
-and none of them should be cited as established.
+These results have been through the harness of Section~\ref{sec:method}, and the
+outcome is the best argument for having built it: the correction that destroyed
+our directional result in Section~\ref{sec:predictability} leaves the volatility
+result standing.
 
-We flag this rather than presenting them at the same confidence because the
-alternative is a double standard, and a reader is entitled to notice that we
-demoted the XGBoost effect partly for failing to replicate across indices while
-two of the three results below are also index-specific.
+\subsection{Volatility}
 
-\textbf{Volatility.} A binary magnitude target, asking whether realised
-volatility over the next 30 minutes exceeds the training median, reaches
-68\,\% out-of-sample on
-BANKNIFTY and 74\,\% on NIFTY~50 using an LSTM, stable across both test halves.
-This is consistent with volatility clustering being among the most robust
-properties of financial series~\cite{engle1982,bollerslev1986}. Two caveats are
-required. A naive persistence rule already scores approximately 80\,\% on
-BANKNIFTY, so the genuine \emph{edge over baseline} is on NIFTY~50 at the 30- and
-60-minute horizons ($+9$ to $+13$ points); reporting the raw figure without the
-baseline would repeat the error this paper documents. More seriously, realised
-volatility over the next 30 minutes computed at every bar is \emph{itself an
-overlapping label}, so this accuracy is exposed to precisely the artefact of
-Section~\ref{sec:mechanism} and has not been re-scored per event. We expect it
-to survive better than direction did, because volatility clustering is a real
-and strong effect, but we have not shown that.
+The target is binary magnitude: will realised volatility over the next 30
+minutes exceed the median of the fold's own training window? The label is
+thresholded inside each fold, since thresholding on the full sample would leak
+the test period's volatility level. Volatility clusters, so the decisive
+comparison is not against a coinflip but against \emph{persistence}, a rule that
+predicts BIG whenever the last 30 minutes were above the same threshold
+(Table~\ref{tab:vol}).
 
-\textbf{Variance risk premium.} Short at-the-money straddles held to expiry,
-priced on real end-of-day option premiums over two years, return $+22.5$ points
-per trade after 3\,\% costs at a 61\,\% win rate on NIFTY~50 over 349--509
-trades. The effect is structural rather than predictive, being compensation for
-bearing variance risk~\cite{carr2009,bakshi2003}, and that is precisely why it
-survived a protocol which eliminated every predictive signal. It is also a short
-volatility payoff with a heavy left tail (worst trade $-847$ on NIFTY~50,
-$-2002$ on BANKNIFTY, where the same structure loses $-7.3$ points per trade),
-and must be implemented with defined risk. A high win rate here is a warning
-about tail exposure, not evidence of skill.
+\begin{table}[!tb]
+\caption{Volatility prediction through the harness of Section~\ref{sec:method},
+30-minute horizon, five purged folds. Intervals are at the effective sample
+size.}
+\label{tab:vol}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+& \textbf{per bar} & \textbf{per event} & \textbf{CI at $n_{\text{eff}}$} \\
+\midrule
+\multicolumn{4}{@{}l@{}}{\emph{BANKNIFTY} ($n_{\text{eff}} = 976$)} \\
+LightGBM & 70.8 & 71.3 & [68.0, 73.7] \\
+Persistence baseline & 67.4 & 68.0 & [64.5, 70.4] \\
+Shuffled-label control & 54.1 & --- & --- \\
+\midrule
+\multicolumn{4}{@{}l@{}}{\emph{NIFTY 50} ($n_{\text{eff}} = 910$)} \\
+LightGBM & 72.0 & 72.1 & [69.1, 74.9] \\
+Persistence baseline & 67.4 & 68.5 & [64.4, 70.5] \\
+Shuffled-label control & 52.2 & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\textbf{Option-chain positioning.} Over 2\,181 days of end-of-day chains, four
-features survive after the price component is regressed out. They are the
-put--call ratio in open interest and in volume, its daily change, and distance
-from the max-pain strike, with information coefficients of 0.04--0.06 stable
-across both halves
-of a decade, on days where price-only features show nothing. The strongest is
-the \emph{change} in put--call ratio rather than its level: flow beats position.
-An IC of 0.05 over 2\,181 days corresponds to $t \approx 2.4$ and to roughly a
-52\,\% hit-rate: marginal rather than decisive, and by \eqref{eq:breakeven} not
-tradeable on its own. Four survivors are reported without the denominator of
-features screened and without false-discovery control, which by the standard of
-Section~\ref{sec:predictability}-C is not enough, and we do not claim more.
+Three things separate this from the directional case.
 
-\textbf{Edges decay.} The single cost-positive signal we found was a contrarian
+\textbf{It survives per-event scoring.} Accuracy moves from 70.8\,\% to
+71.3\,\% on BANKNIFTY and 72.0\,\% to 72.1\,\% on NIFTY~50 when re-scored one
+observation per horizon. Direction fell from 51.3\,\% to 50.4\,\% under the
+identical operation. The correction is therefore not an instrument that
+flattens everything it touches; it distinguishes a real effect from an artefact,
+which is the only reason to trust what it did in
+Section~\ref{sec:predictability}.
+
+\textbf{The shuffled control separates cleanly.} At 52--54\,\% against 71--72\,\%
+on real labels, the gap is roughly twenty points. In the directional experiment
+the same gap was under two.
+
+\textbf{But the edge over persistence is not established.} The model beats
+``the next thirty minutes look like the last thirty'' by only $+3.3$ points on
+BANKNIFTY and $+3.7$ on NIFTY~50 per event, and at $n_{\text{eff}}$ the model
+and baseline intervals overlap. Most of a 71\,\% headline is volatility
+clustering, which has been documented since
+Engle~\cite{engle1982,bollerslev1986} and needs no model. What the model adds is
+real but small, and we do not claim it is significant.
+
+The useful statement is therefore narrower than ``72\,\% accuracy''. It is that
+magnitude carries far more structure than direction on identical features, and
+that most of that structure is already in the previous half hour.
+
+\subsection{The variance risk premium}
+
+Short at-the-money straddles entered three trading days before expiry and held
+to expiry, priced on real end-of-day premiums from the F\&O archive, with a
+round-trip cost of 10\,\% of premium collected (Table~\ref{tab:vrp}).
+
+\begin{table}[!tb]
+\caption{Short ATM straddle, held to expiry, net of a 10\,\% round-trip cost on
+premium. DTE is the entry point in trading days before expiry.}
+\label{tab:vrp}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+& \textbf{Trades} & \textbf{Win} & \textbf{Net/trade} & \textbf{Worst} & \textbf{h1/h2} \\
+\midrule
+NIFTY, 3 DTE & 108 & 61\,\% & $+2.8$ & $-687$ & 61/63 \\
+NIFTY, 1 DTE & 108 & 62\,\% & $+3.2$ & $-439$ & 61/72 \\
+BANKNIFTY, 3 DTE & 39 & 64\,\% & $+14.2$ & $-881$ & 58/75 \\
+BANKNIFTY, 1 DTE & 40 & 68\,\% & $+59.3$ & $-936$ & 75/70 \\
+\bottomrule
+\multicolumn{6}{@{}l@{}}{\footnotesize Net per trade and worst trade in index points.} \\
+\end{tabular}
+\end{table}
+
+The premium sold exceeds the subsequent move on average in every configuration,
+which is the variance risk premium doing what the literature says it
+does~\cite{carr2009,bakshi2003}. It is structural rather than predictive,
+which is why it survives a protocol that eliminated the predictive results.
+
+It is also the weakest-evidenced claim in this paper, and four caveats are
+required. The sample is 39--108 expiries, not thousands. No dispersion statistic
+accompanies the mean, so the net figures carry no interval. No multiplicity
+correction is applied over the choice of strike, entry day and holding rule, and
+Table~\ref{tab:vrp} reports four such choices. And BANKNIFTY's 39 expiries
+against NIFTY's 108 reflect NSE moving BANKNIFTY options from weekly to monthly
+expiry partway through the sample, so the two rows are not a like-for-like
+comparison and the BANKNIFTY figures cover a shorter, differently structured
+period.
+
+We note also that an earlier version of this work reported $+22.5$ points per
+trade for NIFTY and a \emph{loss} of $7.3$ points for BANKNIFTY. Neither
+reproduces from the committed script; the correct figures are above. That error
+is precisely the failure mode this paper argues against, and it survived until
+the analysis was re-run rather than remembered.
+
+Most importantly, the payoff is short-volatility: a 61--68\,\% win rate on small
+credits against occasional losses of 400--900 points. A high win rate here is a
+statement about tail exposure, not about skill, and the structure must be
+implemented with defined risk.
+
+\subsection{Option-chain positioning}
+
+\subsection{Edges decay}
+
+The single cost-positive signal we found was a contrarian
 rule on put--call ratio extremes: 204 trades, profit factor 1.11 over two years.
 It was already dead when we discovered it. Directional accuracy of 74\,\% in
 2024 fell to 36\,\%, with a profit factor of 0.74, over the final six months. This is
@@ -988,9 +1059,12 @@ survive every control sits twenty percentage points below its own break-even
 threshold. On the instruments and horizons most retail participants use, that
 threshold exceeds 100\,\%.
 
-What remains is not direction. Magnitude is forecastable, the variance risk
-premium is real and structural, and order-flow data, which we could not obtain,
-is where the literature locates the remaining short-horizon alpha.
+What remains is not direction. Magnitude is forecastable and, tellingly,
+unharmed by the same correction that removed the directional effect, though most
+of its apparent accuracy is volatility clustering that a persistence rule
+already captures. The variance risk premium is real and structural. Order-flow
+data, which we could not obtain, is where the literature locates the remaining
+short-horizon alpha.
 
 Reporting practice should change to match, and the change is cheap.
 Section~\ref{sec:estimator} gives an estimator whose interval covers at 94\,\%
