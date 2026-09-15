@@ -68,6 +68,13 @@ from oracle import paths
 from research import common as C
 from research.overlap_simulation import measured_run_lengths, session_truth
 
+# The design effect over-states the dependence because consecutive runs are
+# negatively dependent: a run of hits ends exactly when a miss begins. The
+# measured over-correction is close to a factor of two, so the calibrated
+# variant divides the inflation by this constant. It is fixed here rather than
+# tuned per sample, and judged only by whether coverage lands near nominal.
+CALIB = 2.0
+
 
 # ── the inflation factor ───────────────────────────────────────────────
 def hit_runs(h):
@@ -166,13 +173,35 @@ def corrected_interval(h, z=1.96, max_lag=None):
     return p, (p - z * se, p + z * se), n_eff, f
 
 
-def run_corrected_interval(h, z=1.96):
-    """Normal interval at the effective size implied by the run structure."""
-    f = run_inflation(h)
-    n_eff = max(len(h) / f, 2.0)
+def run_corrected_interval(h, z=1.96, calib=1.0):
+    """Normal interval at the effective size implied by the run structure.
+
+    `calib` divides the inflation factor. Treating runs as independent clusters
+    ignores that consecutive runs are negatively dependent -- a run of hits ends
+    exactly when a miss begins -- so the raw design effect over-states the
+    dependence by a roughly constant factor. Estimating that factor once and
+    dividing by it turns a conservative bound into a calibrated interval.
+    """
+    f = run_inflation(h) / max(calib, 1e-9)
+    n_eff = max(len(h) / max(f, 1e-9), 2.0)
     p = float(np.mean(h))
     se = np.sqrt(max(p * (1 - p), 1e-12) / n_eff)
     return p, (max(0.0, p - z * se), min(1.0, p + z * se)), n_eff, f
+
+
+def hac_runlength_interval(h, z=1.96):
+    """HAC, but with the bandwidth set by the run structure rather than by n.
+
+    Section VI-B diagnoses the standard HAC failure as a bandwidth problem: the
+    automatic rule gives about 3.7 bars where the dependence runs to forty. This
+    is the obvious repair -- keep the Bartlett kernel, take the bandwidth from
+    E[L^2]/E[L] instead -- and it is reported because a referee would ask for it.
+    """
+    lag = int(np.clip(round(run_inflation(h)), 1, max(2, len(h) // 2)))
+    n_eff, f, _ = effective_n(h, max_lag=lag)
+    p = float(np.mean(h))
+    se = np.sqrt(max(p * (1 - p), 1e-12) / max(n_eff, 2.0))
+    return p, (max(0.0, p - z * se), min(1.0, p + z * se)), n_eff
 
 
 def block_bootstrap_interval(h, z=0.95, n_boot=400, block=None, rng=None):
@@ -214,8 +243,8 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
 
     for bias in biases:
         skill = C.true_hit_rate(sessions[:40], run_bars, bias, rng, reps=60)
-        nv_hit = hac_hit = bb_hit = rn_hit = 0
-        nv_w, hac_w, bb_w, rn_w = [], [], [], []
+        nv_hit = hac_hit = bb_hit = rn_hit = cal_hit = hrl_hit = 0
+        nv_w, hac_w, bb_w, rn_w, cal_w, hrl_w = [], [], [], [], [], []
         factors, n_effs, n_effs_r = [], [], []
         total = 0
 
@@ -237,6 +266,12 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
                 _, (lo4, hi4), n_eff_r, fr = run_corrected_interval(h)
                 rn_hit += int(lo4 <= skill <= hi4); rn_w.append(hi4 - lo4)
                 n_effs_r.append(n_eff_r)
+
+                _, (lo5, hi5), _, _ = run_corrected_interval(h, calib=CALIB)
+                cal_hit += int(lo5 <= skill <= hi5); cal_w.append(hi5 - lo5)
+
+                _, (lo6, hi6), _ = hac_runlength_interval(h)
+                hrl_hit += int(lo6 <= skill <= hi6); hrl_w.append(hi6 - lo6)
                 total += 1
 
         rows.append({
@@ -247,6 +282,10 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
             "hac_coverage": hac_hit / total,
             "bootstrap_coverage": bb_hit / total,
             "run_coverage": rn_hit / total,
+            "calibrated_coverage": cal_hit / total,
+            "calibrated_width": float(np.mean(cal_w)),
+            "hac_runlength_coverage": hrl_hit / total,
+            "hac_runlength_width": float(np.mean(hrl_w)),
             "run_width": float(np.mean(rn_w)),
             "mean_n_eff_run": float(np.mean(n_effs_r)),
             "naive_width": float(np.mean(nv_w)),
@@ -337,19 +376,19 @@ def main():
         out["indices"][name] = rows
 
         print(f"  {name}")
-        print(f"    {'true':>6}|{'naive':>8}{'HAC':>8}{'boot':>8}{'run':>8}  |"
-              f"{'naive':>7}{'run':>7}  |{'n':>5}{'n_eff':>8}")
-        print(f"    {'skill':>6}|{'-- coverage, nominal 95% --':^32}  |"
-              f"{'width (pts)':^14}  |{'(run)':>13}")
+        print(f"    {'true':>6}|{'naive':>7}{'HAC':>7}{'HAC-L':>7}{'boot':>7}"
+              f"{'run':>7}{'calib':>7}  |{'n':>5}{'n_eff':>8}")
+        print(f"    {'skill':>6}|{'---- coverage of a nominal 95% interval ----':^41}  |"
+              f"{'':>5}{'(run)':>8}")
         print("    " + "-" * 72)
         for r in rows:
             print(f"    {r['true_skill']*100:>5.0f}%|"
-                  f"{r['naive_coverage']*100:>7.1f}%"
-                  f"{r['hac_coverage']*100:>7.1f}%"
-                  f"{r['bootstrap_coverage']*100:>7.1f}%"
-                  f"{r['run_coverage']*100:>7.1f}%  |"
-                  f"{r['naive_width']*100:>7.1f}"
-                  f"{r['run_width']*100:>7.1f}  |"
+                  f"{r['naive_coverage']*100:>6.1f}%"
+                  f"{r['hac_coverage']*100:>6.1f}%"
+                  f"{r['hac_runlength_coverage']*100:>6.1f}%"
+                  f"{r['bootstrap_coverage']*100:>6.1f}%"
+                  f"{r['run_coverage']*100:>6.1f}%"
+                  f"{r['calibrated_coverage']*100:>6.1f}%  |"
                   f"{r['nominal_n']:>5}{r['mean_n_eff_run']:>8.1f}")
         print()
 

@@ -28,8 +28,25 @@
         "p_vs_coinflip": 0.1536,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 0.2,
+        "n_eff": 1299.2,
+        "ci_at_n_eff": [
+          0.4786,
+          0.533
+        ],
+        "significant_at_n_eff": false,
+        "seconds": 0.1,
         "pt_p": 0.1501,
+        "per_event": {
+          "model": "logistic regression [per event]",
+          "accuracy": 0.4965,
+          "ci95": [
+            0.4688,
+            0.5242
+          ],
+          "p_vs_coinflip": 0.8234,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.5056
       },
       {
@@ -42,8 +59,25 @@
         "p_vs_coinflip": 0.1276,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 168.6,
+        "n_eff": 1792.5,
+        "ci_at_n_eff": [
+          0.483,
+          0.5293
+        ],
+        "significant_at_n_eff": false,
+        "seconds": 120.0,
         "pt_p": 0.1257,
+        "per_event": {
+          "model": "gradient boosting [per event]",
+          "accuracy": 0.5175,
+          "ci95": [
+            0.4898,
+            0.5452
+          ],
+          "p_vs_coinflip": 0.2196,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.5012
       },
       {
@@ -56,8 +90,25 @@
         "p_vs_coinflip": 0.0097,
         "n": 15390,
         "train_accuracy": null,
+        "n_eff": 1878.0,
+        "ci_at_n_eff": [
+          0.4879,
+          0.5331
+        ],
+        "significant_at_n_eff": false,
         "seconds": 3.4,
         "pt_p": 0.0095,
+        "per_event": {
+          "model": "LightGBM [per event]",
+          "accuracy": 0.5167,
+          "ci95": [
+            0.489,
+            0.5444
+          ],
+          "p_vs_coinflip": 0.2413,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.5016
       },
       {
@@ -70,8 +121,25 @@
         "p_vs_coinflip": 0.0383,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 2.3,
+        "n_eff": 1799.9,
+        "ci_at_n_eff": [
+          0.4853,
+          0.5315
+        ],
+        "significant_at_n_eff": false,
+        "seconds": 2.4,
         "pt_p": 0.0376,
+        "per_event": {
+          "model": "XGBoost [per event]",
+          "accuracy": 0.5152,
+          "ci95": [
+            0.4875,
+            0.5428
+          ],
+          "p_vs_coinflip": 0.2891,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.5023
       },
       {
@@ -84,8 +152,25 @@
         "p_vs_coinflip": 0.9807,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 3.9,
+        "n_eff": 2023.4,
+        "ci_at_n_eff": [
+          0.4781,
+          0.5217
+        ],
+        "significant_at_n_eff": false,
+        "seconds": 4.1,
         "pt_p": 0.9714,
+        "per_event": {
+          "model": "k-nearest neighbours [per event]",
+          "accuracy": 0.4996,
+          "ci95": [
+            0.4719,
+            0.5273
+          ],
+          "p_vs_coinflip": 1.0,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.4982
       },
       {
@@ -98,8 +183,25 @@
         "p_vs_coinflip": 0.0022,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 74.4,
+        "n_eff": 1336.0,
+        "ci_at_n_eff": [
+          0.4855,
+          0.5391
+        ],
+        "significant_at_n_eff": false,
         "pt_p": 0.0021,
+        "per_event": {
+          "model": "LSTM [per event]",
+          "accuracy": 0.4926,
+          "ci95": [
+            0.4649,
+            0.5203
+          ],
+          "p_vs_coinflip": 0.6156,
+          "n": 1285,
+          "train_accuracy": null
+        },
+        "seconds": 76.3,
         "shuffled_accuracy": 0.5019
       },
       {
@@ -112,8 +214,25 @@
         "p_vs_coinflip": 0.0465,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 553.6,
+        "n_eff": 1504.2,
+        "ci_at_n_eff": [
+          0.4828,
+          0.5333
+        ],
+        "significant_at_n_eff": false,
         "pt_p": 0.0453,
+        "per_event": {
+          "model": "Transformer [per event]",
+          "accuracy": 0.4918,
+          "ci95": [
+            0.4642,
+            0.5195
+          ],
+          "p_vs_coinflip": 0.5769,
+          "n": 1285,
+          "train_accuracy": null
+        },
+        "seconds": 462.3,
         "shuffled_accuracy": 0.5018
       },
       {
@@ -126,8 +245,25 @@
         "p_vs_coinflip": 0.043,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 264.2,
+        "n_eff": 1367.5,
+        "ci_at_n_eff": [
+          0.4817,
+          0.5347
+        ],
+        "significant_at_n_eff": false,
         "pt_p": 0.0417,
+        "per_event": {
+          "model": "Temporal Fusion Transformer [per event]",
+          "accuracy": 0.5222,
+          "ci95": [
+            0.4945,
+            0.5498
+          ],
+          "p_vs_coinflip": 0.1182,
+          "n": 1285,
+          "train_accuracy": null
+        },
+        "seconds": 250.7,
         "shuffled_accuracy": 0.4995
       }
     ]
@@ -161,8 +297,25 @@
         "p_vs_coinflip": 0.0159,
         "n": 15390,
         "train_accuracy": null,
+        "n_eff": 1310.3,
+        "ci_at_n_eff": [
+          0.4632,
+          0.5173
+        ],
+        "significant_at_n_eff": false,
         "seconds": 0.1,
         "pt_p": 0.0143,
+        "per_event": {
+          "model": "logistic regression [per event]",
+          "accuracy": 0.4996,
+          "ci95": [
+            0.4719,
+            0.5273
+          ],
+          "p_vs_coinflip": 1.0,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.5013
       },
       {
@@ -175,8 +328,25 @@
         "p_vs_coinflip": 0.0465,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 117.9,
+        "n_eff": 1562.8,
+        "ci_at_n_eff": [
+          0.4672,
+          0.5167
+        ],
+        "significant_at_n_eff": false,
+        "seconds": 122.6,
         "pt_p": 0.04,
+        "per_event": {
+          "model": "gradient boosting [per event]",
+          "accuracy": 0.4802,
+          "ci95": [
+            0.4525,
+            0.5079
+          ],
+          "p_vs_coinflip": 0.163,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.4968
       },
       {
@@ -189,8 +359,25 @@
         "p_vs_coinflip": 0.236,
         "n": 15390,
         "train_accuracy": null,
+        "n_eff": 1753.3,
+        "ci_at_n_eff": [
+          0.4718,
+          0.5186
+        ],
+        "significant_at_n_eff": false,
         "seconds": 3.4,
         "pt_p": 0.2222,
+        "per_event": {
+          "model": "LightGBM [per event]",
+          "accuracy": 0.4957,
+          "ci95": [
+            0.468,
+            0.5234
+          ],
+          "p_vs_coinflip": 0.7803,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.5019
       },
       {
@@ -203,8 +390,25 @@
         "p_vs_coinflip": 0.1583,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 2.3,
+        "n_eff": 1668.5,
+        "ci_at_n_eff": [
+          0.4703,
+          0.5183
+        ],
+        "significant_at_n_eff": false,
+        "seconds": 2.4,
         "pt_p": 0.1462,
+        "per_event": {
+          "model": "XGBoost [per event]",
+          "accuracy": 0.4957,
+          "ci95": [
+            0.468,
+            0.5234
+          ],
+          "p_vs_coinflip": 0.7803,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.4981
       },
       {
@@ -217,8 +421,25 @@
         "p_vs_coinflip": 0.9936,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 4.1,
+        "n_eff": 2010.2,
+        "ci_at_n_eff": [
+          0.4781,
+          0.5218
+        ],
+        "significant_at_n_eff": false,
+        "seconds": 4.2,
         "pt_p": 0.9844,
+        "per_event": {
+          "model": "k-nearest neighbours [per event]",
+          "accuracy": 0.4981,
+          "ci95": [
+            0.4704,
+            0.5258
+          ],
+          "p_vs_coinflip": 0.9112,
+          "n": 1285,
+          "train_accuracy": null
+        },
         "shuffled_accuracy": 0.5006
       },
       {
@@ -231,8 +452,25 @@
         "p_vs_coinflip": 0.0042,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 75.3,
+        "n_eff": 1333.8,
+        "ci_at_n_eff": [
+          0.4616,
+          0.5153
+        ],
+        "significant_at_n_eff": false,
         "pt_p": 0.0042,
+        "per_event": {
+          "model": "LSTM [per event]",
+          "accuracy": 0.4786,
+          "ci95": [
+            0.451,
+            0.5063
+          ],
+          "p_vs_coinflip": 0.1319,
+          "n": 1285,
+          "train_accuracy": null
+        },
+        "seconds": 77.1,
         "shuffled_accuracy": 0.4962
       },
       {
@@ -245,8 +483,25 @@
         "p_vs_coinflip": 0.043,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 525.7,
+        "n_eff": 1561.9,
+        "ci_at_n_eff": [
+          0.467,
+          0.5166
+        ],
+        "significant_at_n_eff": false,
         "pt_p": 0.0421,
+        "per_event": {
+          "model": "Transformer [per event]",
+          "accuracy": 0.4996,
+          "ci95": [
+            0.4719,
+            0.5273
+          ],
+          "p_vs_coinflip": 1.0,
+          "n": 1285,
+          "train_accuracy": null
+        },
+        "seconds": 483.7,
         "shuffled_accuracy": 0.5037
       },
       {
@@ -259,8 +514,25 @@
         "p_vs_coinflip": 0.0076,
         "n": 15390,
         "train_accuracy": null,
-        "seconds": 279.2,
+        "n_eff": 1318.9,
+        "ci_at_n_eff": [
+          0.4622,
+          0.5162
+        ],
+        "significant_at_n_eff": false,
         "pt_p": 0.0078,
+        "per_event": {
+          "model": "Temporal Fusion Transformer [per event]",
+          "accuracy": 0.5012,
+          "ci95": [
+            0.4735,
+            0.5289
+          ],
+          "p_vs_coinflip": 0.9555,
+          "n": 1285,
+          "train_accuracy": null
+        },
+        "seconds": 268.5,
         "shuffled_accuracy": 0.5021
       }
     ]

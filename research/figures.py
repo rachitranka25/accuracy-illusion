@@ -188,9 +188,15 @@ def fig_breakeven():
         req = [min(r["breakeven_accuracy"], 1.15) for r in rows]
         ach = [r["achieved_accuracy"] for r in rows]
 
+        req_mean = [min(r.get("breakeven_accuracy_mean_move", float("nan")), 1.15)
+                    for r in rows]
         for y, r_req in zip(ys, req):
             ax.plot([0.5, r_req], [y, y], color=GRID, lw=3, solid_capstyle="round", zorder=1)
-        ax.scatter(req, ys, color=ORANGE, s=30, zorder=3, label="required to break even")
+        ax.scatter(req_mean, ys, facecolors="none", edgecolors=ORANGE, s=34,
+                   linewidths=1.3, zorder=3,
+                   label="required, hold-to-horizon (mean move)")
+        ax.scatter(req, ys, color=ORANGE, s=30, zorder=3,
+                   label="required, symmetric bracket (median)")
         got = [(a, y) for a, y in zip(ach, ys) if a]
         if got:
             ax.scatter([a for a, _ in got], [y for _, y in got],
@@ -216,7 +222,7 @@ def fig_breakeven():
 
     axes[0].set_ylabel("horizon")
     handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=2,
+    fig.legend(handles, labels, loc="lower center", ncol=3, fontsize=6,
                bbox_to_anchor=(0.5, -0.06))
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     _save(fig, "fig3_breakeven_gap")
