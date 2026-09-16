@@ -274,10 +274,53 @@ def fig_model_zoo():
     _save(fig, "fig4_model_zoo")
 
 
+def fig_autocorrelation_column():
+    """Column-width variant: panels stacked, so it stays legible at 3.4 inches.
+
+    The two-column version squeezed a 7-inch figure into a single column, which
+    shrank every label past readability in the short papers.
+    """
+    panels = []
+    for horizon in ("30m", "60m"):
+        d = _load(f"ceiling_test_{horizon}.json")
+        if not d:
+            continue
+        blk = next((b for b in d if b["index"] == "BANKNIFTY"), d[0])
+        panels.append((horizon, blk))
+    if not panels:
+        return
+
+    fig, axes = plt.subplots(len(panels), 1, figsize=(COL_W, 3.3), sharex=True)
+    axes = [axes] if len(panels) == 1 else list(axes)
+    for ax, (horizon, blk) in zip(axes, panels):
+        ac = blk["autocorrelation"]; lags, k = ac["lags"], ac["horizon_bars"]
+        ax.axhline(0, color=INK3, lw=0.8)
+        ax.axvline(k, color=INK3, lw=0.8, ls=(0, (4, 3)))
+        ax.plot(lags, ac["overlapping"]["acf"], "o-", color=ORANGE, lw=1.6, ms=4)
+        ax.plot(lags, ac["non_overlapping"]["acf"], "s-", color=BLUE, lw=1.6, ms=4)
+        ax.annotate(f"lag = k = {k}", (k, 0.88), xytext=(4, 0),
+                    textcoords="offset points", color=INK2, fontsize=6.5)
+        ax.set_title(f"{blk['index']}, {horizon} ($k$ = {k} bars)", loc="left",
+                     fontsize=7.5)
+        ax.set_xticks(lags); ax.grid(axis="y"); ax.set_ylim(-0.12, 1.02)
+        ax.set_ylabel("autocorrelation", fontsize=7)
+    axes[-1].set_xlabel("lag (bars)")
+    from matplotlib.lines import Line2D
+    fig.legend(handles=[
+        Line2D([], [], color=ORANGE, marker="o", lw=1.6, markersize=4,
+               label="overlapping (one forecast per bar)"),
+        Line2D([], [], color=BLUE, marker="s", lw=1.6, markersize=4,
+               label="non-overlapping (one per k bars)"),
+    ], loc="lower center", ncol=1, fontsize=6.5, bbox_to_anchor=(0.5, -0.02))
+    fig.tight_layout(rect=(0, 0.11, 1, 1))
+    _save(fig, "fig1_autocorrelation_col")
+
+
 def main():
     _style()
     print("building figures from results/ …")
     fig_autocorrelation()
+    fig_autocorrelation_column()
     fig_zero_skill()
     fig_breakeven()
     fig_model_zoo()

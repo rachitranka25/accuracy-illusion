@@ -585,8 +585,8 @@ forecaster of known skill whose calls persist per the measured run-length
 distribution. BANKNIFTY, 30-minute horizon, nominal $n = 69$; NIFTY 50 agrees
 within 2 points throughout. True skill is measured from the generative process
 rather than assumed. \emph{HAC-L} is the Bartlett kernel with its bandwidth
-taken from the run structure instead of from $n$; \emph{calibrated} divides the
-design effect by two.}
+taken from the run structure instead of from $n$; \emph{derived} divides the design
+effect by the alternation factor of \eqref{eq:alt}.}
 \label{tab:coverage}
 \centering
 \scriptsize
@@ -594,17 +594,17 @@ design effect by two.}
 \begin{tabular}{@{}lccccccr@{}}
 \toprule
 \textbf{True skill} & \textbf{Naive} & \textbf{HAC} & \textbf{HAC-L} &
-\textbf{Boot} & \textbf{Design} & \textbf{Calib.} &
+\textbf{Boot} & \textbf{Design} & \textbf{Deriv.} &
 $\boldsymbol{n_{\text{eff}}}$ \\
 \midrule
-50\,\% & 75.5 & 87.0 & 88.4 & 86.6 & 99.5 & \textbf{96.0} & 12.4 \\
-55\,\% & 74.8 & 86.6 & 88.2 & 86.4 & 99.6 & \textbf{96.1} & 12.0 \\
-59\,\% & 74.0 & 85.6 & 87.0 & 85.2 & 99.6 & \textbf{95.8} & 11.2 \\
+50\,\% & 75.5 & 87.0 & 88.4 & 86.6 & 99.5 & \textbf{93.2} & 12.4 \\
+55\,\% & 74.8 & 86.6 & 88.2 & 86.4 & 99.6 & \textbf{93.6} & 12.0 \\
+59\,\% & 74.0 & 85.6 & 87.0 & 85.2 & 99.6 & \textbf{93.6} & 11.2 \\
 \bottomrule
 \multicolumn{8}{@{}l@{}}{\scriptsize All figures are coverage in per cent of a
 nominal 95\,\%. $n_{\text{eff}}$ is the raw} \\
-\multicolumn{8}{@{}l@{}}{\scriptsize design-effect estimate; the calibrated
-variant uses twice this.} \\
+\multicolumn{8}{@{}l@{}}{\scriptsize design-effect estimate; the derived
+variant divides it by \eqref{eq:alt}.} \\
 \end{tabular}
 \end{table}
 
@@ -624,20 +624,27 @@ of the problem and not the whole of it, and we report the repair even though it
 mostly fails.
 
 The design effect \eqref{eq:neff} removes the failure mode entirely and
-over-corrects in the other direction, reaching 99.5\,\%. The reason is
-structural: treating runs as independent clusters ignores that consecutive runs
-are negatively dependent, since a run of hits ends precisely when a miss begins.
-That over-statement is close to a constant factor of two, and it is visible from
-two directions at once. The realised spread in Table~\ref{tab:zero} implies a
-true effective sample near 25 for a 69-forecast session where \eqref{eq:neff}
-estimates 12, and coverage sits at 99.5\,\% rather than 95\,\%.
+over-corrects in the other direction, reaching 99.5\,\%. That over-statement is
+derivable rather than incidental. Treating runs as independent blocks ignores
+that a binary sequence's runs alternate deterministically: a run of hits is
+always followed by a run of misses. For geometric run lengths of mean $\mu$,
+\begin{equation}
+\frac{\mathbb{E}[L^2]}{\mathbb{E}[L]} = 2\mu - 1,
+\qquad
+\text{exact } \frac{1+\rho}{1-\rho} = \mu - 1,
+\label{eq:alt}
+\end{equation}
+so \eqref{eq:neff} over-states the dependence by $(2\mu-1)/(\mu-1)$, a quantity
+that tends to 2 for long runs. At our measured $\mu = 3.55$ it is 2.39, against
+a measured over-statement of 2.21; the residual is the departure of real run
+lengths from geometry.
 
-Dividing the inflation by that factor gives the \emph{calibrated} estimator,
-which covers at 95.8--96.1\,\% across all three skill levels and both indices.
-The constant is fixed in advance rather than tuned per sample, and it is judged
-only by whether coverage lands at nominal, which it does. We therefore recommend
-the calibrated interval and report the raw design effect as the conservative
-bound it is.
+Dividing by that factor, computed from each sample's own mean run length,
+introduces no free constant and gives 92.6--93.6\,\% coverage. We report it as
+the recommended estimator and the raw design effect as the conservative bound,
+and we note the two-state Markov form $(1+\rho)/(1-\rho)$ applied directly
+reaches only 89\,\%, since a single lag understates the dependence here.
+
 
 \subsection{A real session}
 
@@ -790,9 +797,9 @@ spanning large-cap, banking, financial-services, midcap and a second exchange
 
 \begin{table}[!tb]
 \caption{Model-independent ceiling test at the 30-minute horizon, replicated
-across five indices. Training accuracy is 100.0\,\% on every row. $\Delta$ is
-the absolute gap between the real and shuffled columns, computed before
-rounding. The positive controls have recoverable accuracies of approximately
+across five indices. Training accuracy is 100.0\,\% on every row. $\Delta$ is the absolute gap between the real and shuffled
+columns, computed before rounding, so it need not match the rounded values
+shown. The positive controls have recoverable accuracies of approximately
 55\,\% and 65\,\% by construction.}
 \label{tab:ceiling}
 \centering
@@ -827,13 +834,11 @@ data.
 Replication across five instruments, two exchanges and four capitalisation
 segments is what separates this from a single-market curiosity.
 
-\subsection{Nine model families}
+\subsection{Eight model families, three horizons}
 
-Table~\ref{tab:zoo} reports nine families on identical splits, features, seeds
+Table~\ref{tab:zoo} reports eight families on identical splits, features, seeds
 and controls, scored three ways: logistic regression, gradient boosting,
-LightGBM~\cite{ke2017}, XGBoost~\cite{chen2016}, an unconstrained forest of the
-Breiman type~\cite{breiman2001} (also the ceiling test's over-capacity model),
-$k$-nearest neighbours, an LSTM~\cite{hochreiter1997}, a
+LightGBM~\cite{ke2017}, XGBoost~\cite{chen2016}, $k$-nearest neighbours, an LSTM~\cite{hochreiter1997}, a
 Transformer~\cite{vaswani2017}, and a compact Temporal Fusion
 Transformer~\cite{lim2021}. Fig.~\ref{fig:zoo} plots the nominal and corrected
 intervals together.
@@ -944,8 +949,8 @@ one exception. It is a null.
 
 Table~\ref{tab:zoo} also contains its own diagnostic. The NIFTY 50 Transformer
 sits at 48.3\,\% with $p<0.001$, which at the nominal $n$ is $4.4$ standard
-errors \emph{below} chance. Under a correctly specified null the largest
-$|z|$ across eighteen tests should land near $2.6$--$2.9$; observing $4.4$ is
+errors \emph{below} chance. Under a correctly specified null the largest $|z|$
+across 48 tests should land near $2.9$--$3.2$; observing $4.4$ is
 not a bug in that model but the variance inflation of
 Section~\ref{sec:mechanism} surfacing inside our own results table. At
 $n_{\text{eff}}$ its interval is $[46.3, 50.4]$ and the anomaly disappears.
@@ -1406,10 +1411,10 @@ every number in it is true.
 
 We state these plainly because the paper's argument is about honest reporting.
 
-\textbf{On the estimator.} The design effect over-states the dependence by
-close to a factor of two, and the calibrated variant divides by a constant we
-fixed at 2.0 rather than deriving. That constant is validated only by coverage,
-on one data-generating process, at three skill levels. Its input is also
+\textbf{On the estimator.} The alternation correction \eqref{eq:alt} assumes
+geometric run lengths. Real runs depart from that, which is why coverage lands
+near 93\,\% rather than 95\,\%, and why the derived over-statement factor (2.39
+at our $\mu$) differs from the measured one (2.21). Its input is also
 imprecisely measured: a single session's $n_{\text{eff}}$ lands between
 $0.65\times$ and $1.67\times$ the pooled value nine times in ten, which is wide
 enough to flip a borderline session's verdict, as
@@ -1505,7 +1510,19 @@ above.
 % IEEEtran fixes the bibliography font itself; override it so the references fit.
 \let\oldthebibliography\thebibliography
 \renewcommand{\thebibliography}[1]{\oldthebibliography{#1}\scriptsize}
-\begin{thebibliography}{00}
+\begin{thebibliography}{38}
+
+\bibitem{timmermann2004} A. Timmermann and C. W. J. Granger, ``Efficient market
+hypothesis and forecasting,'' \emph{International Journal of Forecasting},
+vol. 20, no. 1, pp. 15--27, 2004.
+
+\bibitem{sullivan1999} R. Sullivan, A. Timmermann, and H. White,
+``Data-snooping, technical trading rule performance, and the bootstrap,''
+\emph{The Journal of Finance}, vol. 54, no. 5, pp. 1647--1691, 1999.
+
+\bibitem{sezer2020} O. B. Sezer, M. U. Gudelek, and A. M. Ozbayoglu,
+``Financial time series forecasting with deep learning: A systematic literature
+review: 2005--2019,'' \emph{Applied Soft Computing}, vol. 90, art. 106181, 2020.
 
 \bibitem{hansen1980} L. P. Hansen and R. J. Hodrick, ``Forward exchange rates as
 optimal predictors of future spot rates: An econometric analysis,''
@@ -1515,52 +1532,20 @@ optimal predictors of future spot rates: An econometric analysis,''
 in the presence of overlapping observations,'' \emph{The Review of Financial
 Studies}, vol. 4, no. 2, pp. 227--254, 1991.
 
-\bibitem{boudoukh2008} J. Boudoukh, M. Richardson, and R. F. Whitelaw, ``The
-myth of long-horizon predictability,'' \emph{The Review of Financial Studies},
-vol. 21, no. 4, pp. 1577--1605, 2008.
-
-\bibitem{moulton1990} B. R. Moulton, ``An illustration of a pitfall in
-estimating the effects of aggregate variables on micro units,'' \emph{The Review
-of Economics and Statistics}, vol. 72, no. 2, pp. 334--338, 1990.
-
-\bibitem{kish1965} L. Kish, \emph{Survey Sampling}. New York, NY, USA: Wiley,
-1965.
-
 \bibitem{newey1987} W. K. Newey and K. D. West, ``A simple, positive
 semi-definite, heteroskedasticity and autocorrelation consistent covariance
 matrix,'' \emph{Econometrica}, vol. 55, no. 3, pp. 703--708, 1987.
 
-\bibitem{kunsch1989} H. R. K\"unsch, ``The jackknife and the bootstrap for
-general stationary observations,'' \emph{The Annals of Statistics}, vol. 17,
-no. 3, pp. 1217--1241, 1989.
+\bibitem{boudoukh2008} J. Boudoukh, M. Richardson, and R. F. Whitelaw, ``The
+myth of long-horizon predictability,'' \emph{The Review of Financial Studies},
+vol. 21, no. 4, pp. 1577--1605, 2008.
 
-\bibitem{politis1992} D. N. Politis and J. P. Romano, ``A circular
-block-resampling procedure for stationary data,'' in \emph{Exploring the Limits
-of Bootstrap}, R. LePage and L. Billard, Eds. New York, NY, USA: Wiley, 1992,
-pp. 263--270.
+\bibitem{kish1965} L. Kish, \emph{Survey Sampling}. New York, NY, USA: Wiley,
+1965.
 
-\bibitem{politis1994} D. N. Politis and J. P. Romano, ``The stationary
-bootstrap,'' \emph{Journal of the American Statistical Association}, vol. 89,
-no. 428, pp. 1303--1313, 1994.
-
-\bibitem{pt1992} M. H. Pesaran and A. Timmermann, ``A simple nonparametric test
-of predictive performance,'' \emph{Journal of Business \& Economic Statistics},
-vol. 10, no. 4, 1992.
-
-\bibitem{bh1995} Y. Benjamini and Y. Hochberg, ``Controlling the false discovery
-rate: A practical and powerful approach to multiple testing,'' \emph{Journal of
-the Royal Statistical Society: Series B}, vol. 57, no. 1, pp. 289--300, 1995.
-
-\bibitem{white2000} H. White, ``A reality check for data snooping,''
-\emph{Econometrica}, vol. 68, no. 5, pp. 1097--1126, 2000.
-
-\bibitem{sullivan1999} R. Sullivan, A. Timmermann, and H. White,
-``Data-snooping, technical trading rule performance, and the bootstrap,''
-\emph{The Journal of Finance}, vol. 54, no. 5, pp. 1647--1691, 1999.
-
-\bibitem{hansen2005} P. R. Hansen, ``A test for superior predictive ability,''
-\emph{Journal of Business \& Economic Statistics}, vol. 23, no. 4,
-pp. 365--380, 2005.
+\bibitem{moulton1990} B. R. Moulton, ``An illustration of a pitfall in
+estimating the effects of aggregate variables on micro units,'' \emph{The Review
+of Economics and Statistics}, vol. 72, no. 2, pp. 334--338, 1990.
 
 \bibitem{harvey2016} C. R. Harvey, Y. Liu, and H. Zhu, ``\ldots and the
 cross-section of expected returns,'' \emph{The Review of Financial Studies},
@@ -1574,20 +1559,37 @@ ratio: Correcting for selection bias, backtest overfitting and non-normality,''
 Q. J. Zhu, ``The probability of backtest overfitting,'' \emph{Journal of
 Computational Finance}, vol. 20, no. 4, pp. 39--70, 2017.
 
-\bibitem{prado2018} M. L\'opez de Prado, \emph{Advances in Financial Machine
-Learning}. Hoboken, NJ, USA: Wiley, 2018.
+\bibitem{white2000} H. White, ``A reality check for data snooping,''
+\emph{Econometrica}, vol. 68, no. 5, pp. 1097--1126, 2000.
 
-\bibitem{fama1970} E. F. Fama, ``Efficient capital markets: A review of theory
-and empirical work,'' \emph{The Journal of Finance}, vol. 25, no. 2,
-pp. 383--417, 1970.
+\bibitem{hansen2005} P. R. Hansen, ``A test for superior predictive ability,''
+\emph{Journal of Business \& Economic Statistics}, vol. 23, no. 4,
+pp. 365--380, 2005.
 
-\bibitem{lo1988} A. W. Lo and A. C. MacKinlay, ``Stock market prices do not
-follow random walks: Evidence from a simple specification test,'' \emph{The
-Review of Financial Studies}, vol. 1, no. 1, pp. 41--66, 1988.
+\bibitem{bh1995} Y. Benjamini and Y. Hochberg, ``Controlling the false discovery
+rate: A practical and powerful approach to multiple testing,'' \emph{Journal of
+the Royal Statistical Society: Series B}, vol. 57, no. 1, pp. 289--300, 1995.
 
-\bibitem{timmermann2004} A. Timmermann and C. W. J. Granger, ``Efficient market
-hypothesis and forecasting,'' \emph{International Journal of Forecasting},
-vol. 20, no. 1, pp. 15--27, 2004.
+\bibitem{fischer2018} T. Fischer and C. Krauss, ``Deep learning with long
+short-term memory networks for financial market predictions,'' \emph{European
+Journal of Operational Research}, vol. 270, no. 2, pp. 654--669, 2018.
+
+\bibitem{krauss2017} C. Krauss, X. A. Do, and N. Huck, ``Deep neural networks,
+gradient-boosted trees, random forests: Statistical arbitrage on the
+S\&P 500,'' \emph{European Journal of Operational Research}, vol. 259, no. 2,
+pp. 689--702, 2017.
+
+\bibitem{gu2020} S. Gu, B. Kelly, and D. Xiu, ``Empirical asset pricing via
+machine learning,'' \emph{The Review of Financial Studies}, vol. 33, no. 5,
+pp. 2223--2273, 2020.
+
+\bibitem{zhang2019} Z. Zhang, S. Zohren, and S. Roberts, ``DeepLOB: Deep
+convolutional neural networks for limit order books,'' \emph{IEEE Transactions
+on Signal Processing}, vol. 67, no. 11, pp. 3001--3012, 2019.
+
+\bibitem{kolm2023} P. N. Kolm, J. Turiel, and N. Westray, ``Deep order flow
+imbalance: Extracting alpha at multiple horizons from the limit order book,''
+\emph{Mathematical Finance}, vol. 33, no. 4, pp. 1044--1081, 2023.
 
 \bibitem{engle1982} R. F. Engle, ``Autoregressive conditional
 heteroscedasticity with estimates of the variance of United Kingdom
@@ -1608,35 +1610,33 @@ Review of Financial Studies}, vol. 22, no. 3, pp. 1311--1341, 2009.
 negative market volatility risk premium,'' \emph{The Review of Financial
 Studies}, vol. 16, no. 2, pp. 527--566, 2003.
 
-\bibitem{kolm2023} P. N. Kolm, J. Turiel, and N. Westray, ``Deep order flow
-imbalance: Extracting alpha at multiple horizons from the limit order book,''
-\emph{Mathematical Finance}, vol. 33, no. 4, pp. 1044--1081, 2023.
+\bibitem{prado2018} M. L\'opez de Prado, \emph{Advances in Financial Machine
+Learning}. Hoboken, NJ, USA: Wiley, 2018.
 
-\bibitem{zhang2019} Z. Zhang, S. Zohren, and S. Roberts, ``DeepLOB: Deep
-convolutional neural networks for limit order books,'' \emph{IEEE Transactions
-on Signal Processing}, vol. 67, no. 11, pp. 3001--3012, 2019.
+\bibitem{clopper1934} C. J. Clopper and E. S. Pearson, ``The use of confidence
+or fiducial limits illustrated in the case of the binomial,''
+\emph{Biometrika}, vol. 26, no. 4, pp. 404--413, 1934.
 
-\bibitem{gu2020} S. Gu, B. Kelly, and D. Xiu, ``Empirical asset pricing via
-machine learning,'' \emph{The Review of Financial Studies}, vol. 33, no. 5,
-pp. 2223--2273, 2020.
+\bibitem{pt1992} M. H. Pesaran and A. Timmermann, ``A simple nonparametric test
+of predictive performance,'' \emph{Journal of Business \& Economic Statistics},
+vol. 10, no. 4, 1992.
 
-\bibitem{fischer2018} T. Fischer and C. Krauss, ``Deep learning with long
-short-term memory networks for financial market predictions,'' \emph{European
-Journal of Operational Research}, vol. 270, no. 2, pp. 654--669, 2018.
+\bibitem{fama1970} E. F. Fama, ``Efficient capital markets: A review of theory
+and empirical work,'' \emph{The Journal of Finance}, vol. 25, no. 2,
+pp. 383--417, 1970.
 
-\bibitem{krauss2017} C. Krauss, X. A. Do, and N. Huck, ``Deep neural networks,
-gradient-boosted trees, random forests: Statistical arbitrage on the
-S\&P 500,'' \emph{European Journal of Operational Research}, vol. 259, no. 2,
-pp. 689--702, 2017.
+\bibitem{lo1988} A. W. Lo and A. C. MacKinlay, ``Stock market prices do not
+follow random walks: Evidence from a simple specification test,'' \emph{The
+Review of Financial Studies}, vol. 1, no. 1, pp. 41--66, 1988.
 
-\bibitem{sezer2020} O. B. Sezer, M. U. Gudelek, and A. M. Ozbayoglu,
-``Financial time series forecasting with deep learning: A systematic literature
-review: 2005--2019,'' \emph{Applied Soft Computing}, vol. 90, art. 106181, 2020.
+\bibitem{ke2017} G. Ke, Q. Meng, T. Finley, T. Wang, W. Chen, W. Ma, Q. Ye, and
+T.-Y. Liu, ``LightGBM: A highly efficient gradient boosting decision tree,'' in
+\emph{Advances in Neural Information Processing Systems}, vol. 30, 2017,
+pp. 3146--3154.
 
-\bibitem{lim2021} B. Lim, S. \"O. Ar{\i}k, N. Loeff, and T. Pfister, ``Temporal
-fusion transformers for interpretable multi-horizon time series forecasting,''
-\emph{International Journal of Forecasting}, vol. 37, no. 4, pp. 1748--1764,
-2021.
+\bibitem{chen2016} T. Chen and C. Guestrin, ``XGBoost: A scalable tree boosting
+system,'' in \emph{Proc. 22nd ACM SIGKDD Int. Conf. Knowledge Discovery and
+Data Mining}, 2016, pp. 785--794.
 
 \bibitem{hochreiter1997} S. Hochreiter and J. Schmidhuber, ``Long short-term
 memory,'' \emph{Neural Computation}, vol. 9, no. 8, pp. 1735--1780, 1997.
@@ -1646,22 +1646,23 @@ A. N. Gomez, {\L}. Kaiser, and I. Polosukhin, ``Attention is all you need,'' in
 \emph{Advances in Neural Information Processing Systems}, vol. 30, 2017,
 pp. 5998--6008.
 
-\bibitem{chen2016} T. Chen and C. Guestrin, ``XGBoost: A scalable tree boosting
-system,'' in \emph{Proc. 22nd ACM SIGKDD Int. Conf. Knowledge Discovery and
-Data Mining}, 2016, pp. 785--794.
+\bibitem{lim2021} B. Lim, S. \"O. Ar{\i}k, N. Loeff, and T. Pfister, ``Temporal
+fusion transformers for interpretable multi-horizon time series forecasting,''
+\emph{International Journal of Forecasting}, vol. 37, no. 4, pp. 1748--1764,
+2021.
 
-\bibitem{ke2017} G. Ke, Q. Meng, T. Finley, T. Wang, W. Chen, W. Ma, Q. Ye, and
-T.-Y. Liu, ``LightGBM: A highly efficient gradient boosting decision tree,'' in
-\emph{Advances in Neural Information Processing Systems}, vol. 30, 2017,
-pp. 3146--3154.
+\bibitem{politis1992} D. N. Politis and J. P. Romano, ``A circular
+block-resampling procedure for stationary data,'' in \emph{Exploring the Limits
+of Bootstrap}, R. LePage and L. Billard, Eds. New York, NY, USA: Wiley, 1992,
+pp. 263--270.
 
-\bibitem{breiman2001} L. Breiman, ``Random forests,'' \emph{Machine Learning},
-vol. 45, no. 1, pp. 5--32, 2001.
+\bibitem{kunsch1989} H. R. K\"unsch, ``The jackknife and the bootstrap for
+general stationary observations,'' \emph{The Annals of Statistics}, vol. 17,
+no. 3, pp. 1217--1241, 1989.
 
-\bibitem{clopper1934} C. J. Clopper and E. S. Pearson, ``The use of confidence
-or fiducial limits illustrated in the case of the binomial,''
-\emph{Biometrika}, vol. 26, no. 4, pp. 404--413, 1934.
-
+\bibitem{politis1994} D. N. Politis and J. P. Romano, ``The stationary
+bootstrap,'' \emph{Journal of the American Statistical Association}, vol. 89,
+no. 428, pp. 1303--1313, 1994.
 \end{thebibliography}
 
 \end{document}

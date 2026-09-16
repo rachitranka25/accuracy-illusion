@@ -68,12 +68,18 @@ from oracle import paths
 from research import common as C
 from research.overlap_simulation import measured_run_lengths, session_truth
 
-# The design effect over-states the dependence because consecutive runs are
-# negatively dependent: a run of hits ends exactly when a miss begins. The
-# measured over-correction is close to a factor of two, so the calibrated
-# variant divides the inflation by this constant. It is fixed here rather than
-# tuned per sample, and judged only by whether coverage lands near nominal.
-CALIB = 2.0
+# The design effect over-states the dependence, and by a factor that can be
+# derived rather than fitted. Treating runs as independent blocks ignores that a
+# binary sequence's runs alternate deterministically: a run of hits is always
+# followed by a run of misses. For geometric run lengths of mean mu,
+#
+#   E[L^2]/E[L] = 2*mu - 1        (what the independent-block formula returns)
+#   exact design effect = mu - 1  (two-state Markov, (1+rho)/(1-rho))
+#
+# so the over-statement is (2*mu - 1)/(mu - 1), which tends to 2 for long runs
+# and explains the factor of two we first measured. The corrected estimator
+# divides by this quantity, computed from the sample's own mean run length, so
+# there is no free constant.
 
 
 # ── the inflation factor ───────────────────────────────────────────────
@@ -173,15 +179,29 @@ def corrected_interval(h, z=1.96, max_lag=None):
     return p, (p - z * se, p + z * se), n_eff, f
 
 
-def run_corrected_interval(h, z=1.96, calib=1.0):
+def alternation_factor(h):
+    """(2*mu - 1)/(mu - 1) from the sample's own mean hit-run length.
+
+    The amount by which the independent-block design effect over-states the
+    dependence of an alternating binary sequence. Derived, not fitted.
+    """
+    mu = float(hit_runs(h).mean())
+    if mu <= 1.0 + 1e-9:
+        return 1.0
+    return (2.0 * mu - 1.0) / (mu - 1.0)
+
+
+def run_corrected_interval(h, z=1.96, calib=None):
     """Normal interval at the effective size implied by the run structure.
 
-    `calib` divides the inflation factor. Treating runs as independent clusters
-    ignores that consecutive runs are negatively dependent -- a run of hits ends
-    exactly when a miss begins -- so the raw design effect over-states the
-    dependence by a roughly constant factor. Estimating that factor once and
-    dividing by it turns a conservative bound into a calibrated interval.
+    With `calib=None` the raw design effect is used, which is conservative.
+    Passing `calib="derived"` divides by the alternation factor above, which
+    removes the over-statement without introducing a constant.
     """
+    if calib == "derived":
+        calib = alternation_factor(h)
+    elif calib is None:
+        calib = 1.0
     f = run_inflation(h) / max(calib, 1e-9)
     n_eff = max(len(h) / max(f, 1e-9), 2.0)
     p = float(np.mean(h))
@@ -267,7 +287,7 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
                 rn_hit += int(lo4 <= skill <= hi4); rn_w.append(hi4 - lo4)
                 n_effs_r.append(n_eff_r)
 
-                _, (lo5, hi5), _, _ = run_corrected_interval(h, calib=CALIB)
+                _, (lo5, hi5), _, _ = run_corrected_interval(h, calib="derived")
                 cal_hit += int(lo5 <= skill <= hi5); cal_w.append(hi5 - lo5)
 
                 _, (lo6, hi6), _ = hac_runlength_interval(h)
@@ -282,8 +302,10 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
             "hac_coverage": hac_hit / total,
             "bootstrap_coverage": bb_hit / total,
             "run_coverage": rn_hit / total,
-            "calibrated_coverage": cal_hit / total,
-            "calibrated_width": float(np.mean(cal_w)),
+            "derived_coverage": cal_hit / total,
+            "derived_width": float(np.mean(cal_w)),
+            "mean_alternation_factor": float(np.mean(
+                [alternation_factor(np.zeros(2))] )) if False else None,
             "hac_runlength_coverage": hrl_hit / total,
             "hac_runlength_width": float(np.mean(hrl_w)),
             "run_width": float(np.mean(rn_w)),
@@ -377,7 +399,7 @@ def main():
 
         print(f"  {name}")
         print(f"    {'true':>6}|{'naive':>7}{'HAC':>7}{'HAC-L':>7}{'boot':>7}"
-              f"{'run':>7}{'calib':>7}  |{'n':>5}{'n_eff':>8}")
+              f"{'run':>7}{'deriv':>7}  |{'n':>5}{'n_eff':>8}")
         print(f"    {'skill':>6}|{'---- coverage of a nominal 95% interval ----':^41}  |"
               f"{'':>5}{'(run)':>8}")
         print("    " + "-" * 72)
@@ -388,7 +410,7 @@ def main():
                   f"{r['hac_runlength_coverage']*100:>6.1f}%"
                   f"{r['bootstrap_coverage']*100:>6.1f}%"
                   f"{r['run_coverage']*100:>6.1f}%"
-                  f"{r['calibrated_coverage']*100:>6.1f}%  |"
+                  f"{r['derived_coverage']*100:>6.1f}%  |"
                   f"{r['nominal_n']:>5}{r['mean_n_eff_run']:>8.1f}")
         print()
 
