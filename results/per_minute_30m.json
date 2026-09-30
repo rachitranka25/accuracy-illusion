@@ -1,30 +1,41 @@
 {
   "horizon": "30m",
   "outcome_window_min": 30,
-  "run_mean_min": 13.5,
-  "run_max_min": 207,
+  "run_mean_min": 15.2,
+  "run_max_min": 263,
   "indices": {
     "BANKNIFTY": {
       "sessions": 4,
-      "n": 314.0,
-      "n_eff": 16.5,
-      "stated_sd": 0.02822,
-      "realised_sd": 0.08764,
-      "understatement_factor": 3.106,
-      "p_session_ge_71": 0.00625,
-      "mean": 0.5028,
-      "max": 0.756
+      "n": 313.2,
+      "n_eff": 16.4,
+      "stated_sd": 0.02825,
+      "realised_sd": 0.09604,
+      "understatement_factor": 3.4,
+      "p_session_ge_71": 0.0125,
+      "mean": 0.5029,
+      "max": 0.7838
     },
     "NIFTY50": {
       "sessions": 4,
-      "n": 312.8,
-      "n_eff": 15.9,
-      "stated_sd": 0.02827,
-      "realised_sd": 0.09253,
-      "understatement_factor": 3.273,
-      "p_session_ge_71": 0.01312,
-      "mean": 0.5034,
-      "max": 0.8006
+      "n": 312.0,
+      "n_eff": 16.0,
+      "stated_sd": 0.02831,
+      "realised_sd": 0.10489,
+      "understatement_factor": 3.705,
+      "p_session_ge_71": 0.01875,
+      "mean": 0.5059,
+      "max": 0.8937
+    },
+    "FINNIFTY": {
+      "sessions": 2,
+      "n": 329.5,
+      "n_eff": 13.7,
+      "stated_sd": 0.02754,
+      "realised_sd": 0.12093,
+      "understatement_factor": 4.39,
+      "p_session_ge_71": 0.02625,
+      "mean": 0.4994,
+      "max": 0.7809
     }
   }
 }

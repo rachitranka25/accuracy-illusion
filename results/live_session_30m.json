@@ -4,6 +4,12 @@
     "day": "2026-08-03",
     "n": 336,
     "hit_rate": 0.5714,
+    "n_eff_p05_ratio": 0.65,
+    "run_ci_at_n_eff_p05": [
+      0.2893,
+      0.8535
+    ],
+    "excludes_half_at_n_eff_p05": false,
     "naive_ci": [
       0.5185,
       0.6243
@@ -28,29 +34,35 @@
   },
   {
     "index": "BANKNIFTY",
-    "day": "2026-07-29",
-    "n": 250,
-    "hit_rate": 0.516,
+    "day": "2026-08-05",
+    "n": 322,
+    "hit_rate": 0.4938,
+    "n_eff_p05_ratio": 0.65,
+    "run_ci_at_n_eff_p05": [
+      0.244,
+      0.7436
+    ],
+    "excludes_half_at_n_eff_p05": false,
     "naive_ci": [
-      0.4541,
-      0.5779
+      0.4392,
+      0.5484
     ],
     "hac_ci": [
-      0.3514,
-      0.6806
+      0.347,
+      0.6405
     ],
     "bootstrap_ci": [
-      0.3879,
-      0.6361
+      0.3446,
+      0.6273
     ],
     "run_ci": [
-      0.3118,
-      0.7202
+      0.2924,
+      0.6952
     ],
-    "n_eff_run": 23.0,
-    "subsample_min": 0.4762,
-    "subsample_max": 0.5952,
-    "subsample_spread_pts": 11.9,
+    "n_eff_run": 23.7,
+    "subsample_min": 0.4259,
+    "subsample_max": 0.6226,
+    "subsample_spread_pts": 19.7,
     "excludes_half_at_n_eff": false
   },
   {
@@ -58,6 +70,12 @@
     "day": "2026-08-03",
     "n": 335,
     "hit_rate": 0.6955,
+    "n_eff_p05_ratio": 0.64,
+    "run_ci_at_n_eff_p05": [
+      0.4512,
+      0.9398
+    ],
+    "excludes_half_at_n_eff_p05": false,
     "naive_ci": [
       0.6462,
       0.7448
@@ -82,29 +100,95 @@
   },
   {
     "index": "NIFTY50",
-    "day": "2026-07-29",
-    "n": 245,
-    "hit_rate": 0.5796,
+    "day": "2026-08-05",
+    "n": 325,
+    "hit_rate": 0.6523,
+    "n_eff_p05_ratio": 0.64,
+    "run_ci_at_n_eff_p05": [
+      0.3638,
+      0.9408
+    ],
+    "excludes_half_at_n_eff_p05": false,
     "naive_ci": [
-      0.5178,
-      0.6414
+      0.6005,
+      0.7041
     ],
     "hac_ci": [
-      0.4591,
-      0.7001
+      0.4776,
+      0.827
     ],
     "bootstrap_ci": [
-      0.4449,
-      0.6857
+      0.5292,
+      0.7693
     ],
     "run_ci": [
-      0.3669,
-      0.7923
+      0.4215,
+      0.8831
     ],
-    "n_eff_run": 20.7,
-    "subsample_min": 0.5122,
-    "subsample_max": 0.6341,
-    "subsample_spread_pts": 12.2,
+    "n_eff_run": 16.4,
+    "subsample_min": 0.5926,
+    "subsample_max": 0.7222,
+    "subsample_spread_pts": 13.0,
+    "excludes_half_at_n_eff": false
+  },
+  {
+    "index": "FINNIFTY",
+    "day": "2026-08-07",
+    "n": 335,
+    "hit_rate": 0.403,
+    "n_eff_p05_ratio": null,
+    "run_ci_at_n_eff_p05": null,
+    "excludes_half_at_n_eff_p05": false,
+    "naive_ci": [
+      0.3505,
+      0.4555
+    ],
+    "hac_ci": [
+      0.1215,
+      0.6845
+    ],
+    "bootstrap_ci": [
+      0.179,
+      0.5584
+    ],
+    "run_ci": [
+      0.0429,
+      0.7631
+    ],
+    "n_eff_run": 7.1,
+    "subsample_min": 0.375,
+    "subsample_max": 0.4464,
+    "subsample_spread_pts": 7.1,
+    "excludes_half_at_n_eff": false
+  },
+  {
+    "index": "FINNIFTY",
+    "day": "2026-08-05",
+    "n": 324,
+    "hit_rate": 0.3148,
+    "n_eff_p05_ratio": null,
+    "run_ci_at_n_eff_p05": null,
+    "excludes_half_at_n_eff_p05": false,
+    "naive_ci": [
+      0.2642,
+      0.3654
+    ],
+    "hac_ci": [
+      0.1774,
+      0.4522
+    ],
+    "bootstrap_ci": [
+      0.1975,
+      0.4537
+    ],
+    "run_ci": [
+      0.0554,
+      0.5742
+    ],
+    "n_eff_run": 12.3,
+    "subsample_min": 0.2778,
+    "subsample_max": 0.3519,
+    "subsample_spread_pts": 7.4,
     "excludes_half_at_n_eff": false
   }
 ]

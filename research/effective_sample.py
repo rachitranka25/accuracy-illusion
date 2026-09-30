@@ -266,6 +266,7 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
         nv_hit = hac_hit = bb_hit = rn_hit = cal_hit = hrl_hit = 0
         nv_w, hac_w, bb_w, rn_w, cal_w, hrl_w = [], [], [], [], [], []
         factors, n_effs, n_effs_r = [], [], []
+        mus, alts = [], []
         total = 0
 
         for t in sessions:
@@ -289,6 +290,8 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
 
                 _, (lo5, hi5), _, _ = run_corrected_interval(h, calib="derived")
                 cal_hit += int(lo5 <= skill <= hi5); cal_w.append(hi5 - lo5)
+                mus.append(float(hit_runs(h).mean()))
+                alts.append(alternation_factor(h))
 
                 _, (lo6, hi6), _ = hac_runlength_interval(h)
                 hrl_hit += int(lo6 <= skill <= hi6); hrl_w.append(hi6 - lo6)
@@ -304,8 +307,8 @@ def coverage_study(name, k, run_bars, rng, biases, trials):
             "run_coverage": rn_hit / total,
             "derived_coverage": cal_hit / total,
             "derived_width": float(np.mean(cal_w)),
-            "mean_alternation_factor": float(np.mean(
-                [alternation_factor(np.zeros(2))] )) if False else None,
+            "mean_hit_run_length": float(np.mean(mus)),
+            "mean_alternation_factor": float(np.mean(alts)),
             "hac_runlength_coverage": hrl_hit / total,
             "hac_runlength_width": float(np.mean(hrl_w)),
             "run_width": float(np.mean(rn_w)),

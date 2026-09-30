@@ -68,13 +68,38 @@ def subsample_spread(h, k):
     return np.array([h[o::k].mean() for o in range(k) if len(h[o::k]) >= 5])
 
 
-def report(index, day, h, k):
+def neff_p05_ratio(horizon, index):
+    """How far a single session's n_eff can fall below the pooled reference.
+
+    Section V-C widens the interval by the estimator's own uncertainty, which
+    is measured -- not assumed -- by the sensitivity study in
+    research/effective_sample.py. This reads the 5th-percentile ratio it wrote
+    rather than restating it, so the two cannot drift apart.
+    """
+    f = paths.ROOT / "results" / f"effective_sample_{horizon}.json"
+    if not f.exists():
+        return None
+    sens = json.loads(f.read_text()).get("sensitivity", {})
+    row = sens.get(index) or sens.get(index.replace(" ", ""))
+    return float(row["ratio_p05_p95"][0]) if row else None
+
+
+def widen_at(p, n_eff, ratio, z=1.96):
+    """The same interval recomputed at a pessimistic effective sample size."""
+    ne = max(n_eff * ratio, 2.0)
+    se = np.sqrt(max(p * (1 - p), 1e-12) / ne)
+    return max(0.0, p - z * se), min(1.0, p + z * se)
+
+
+def report(index, day, h, k, horizon):
     n = len(h)
     p, (nl, nh), _ = naive_interval(h)
     _, (hl, hh), n_eff_hac, _ = corrected_interval(h)
     _, (bl, bh) = block_bootstrap_interval(h, rng=np.random.default_rng(C.SEED))
     _, (rl, rh), n_eff_run, _ = run_corrected_interval(h)
     subs = subsample_spread(h, k)
+    ratio = neff_p05_ratio(horizon, index)
+    wide = widen_at(p, n_eff_run, ratio) if ratio else None
 
     print(f"\n  {index}  {day}   {n} forecasts, hit-rate {p*100:.1f}%")
     print(f"    {'estimator':<26}{'95% interval':>20}{'width':>9}{'n_eff':>8}")
@@ -89,10 +114,22 @@ def report(index, day, h, k):
           f"{f'{subs.min()*100:.1f} to {subs.max()*100:.1f}':>20}"
           f"{(subs.max()-subs.min())*100:>9.1f}{len(h)//k:>8}")
 
+    if wide:
+        print(f"    {'same, at 5th pct of n_eff':<26}"
+              f"{f'[{wide[0]*100:.1f}, {wide[1]*100:.1f}]':>20}"
+              f"{(wide[1]-wide[0])*100:>9.1f}{n_eff_run*ratio:>8.1f}")
+
     excl = rl > 0.5
+    excl_wide = bool(wide and wide[0] > 0.5)
     print(f"    -> at n_eff the interval {'EXCLUDES' if excl else 'includes'} 50%"
           f"; the session {'supports' if excl else 'does not support'} a claim of skill")
+    if excl and wide and not excl_wide:
+        print(f"    -> but not once the estimator's own noise is carried through:"
+              f" the lower bound falls to {wide[0]*100:.1f}%")
     return {"index": index, "day": str(day), "n": int(n), "hit_rate": round(p, 4),
+            "n_eff_p05_ratio": ratio,
+            "run_ci_at_n_eff_p05": [round(wide[0], 4), round(wide[1], 4)] if wide else None,
+            "excludes_half_at_n_eff_p05": excl_wide,
             "naive_ci": [round(nl, 4), round(nh, 4)],
             "hac_ci": [round(hl, 4), round(hh, 4)],
             "bootstrap_ci": [round(bl, 4), round(bh, 4)],
@@ -122,7 +159,7 @@ def main():
     for index, days in data.items():
         best = sorted(days.items(), key=lambda kv: -kv[1].mean())[:a.top]
         for day, h in best:
-            out.append(report(index, day, h, k))
+            out.append(report(index, day, h, k, a.horizon))
 
     spreads = [o["subsample_spread_pts"] for o in out]
     print(f"\n{'='*78}\nWHY NOT SIMPLY SCORE PER EVENT\n{'='*78}")
