@@ -41,17 +41,14 @@ variance far larger than its nominal sample size implies. The reading is not
 biased upward. Its stated precision is. A forecaster with \emph{exactly zero
 skill}, simulated against real NSE index bars, posts a $\geq$71\% session once
 in 48 while reporting an interval $1.68\times$ too narrow, rising to
-$3.40\times$ at the per-minute density these systems publish. We give the
-closed form behind this, the classical design effect with clusters given by
-runs of identical calls, and a calibrated interval built on it that covers at
-93\% where the conventional one covers at 73\%. Applied to our own results it
-leaves nothing: across 48 model--index--horizon tests, 16 clear $p<0.05$ scored
-per bar and \emph{zero} clear it per event or at an effective sample size. A
-premium-selling strategy we had published as this project's one measurable edge
-fails the same correction. Break-even accuracy derived from measured move
-distributions is 71.5\% at thirty minutes against a best achieved 51.1\% on the
-same index, and at five minutes no accuracy suffices under a symmetric bracket.
-Code and raw results are public.
+$3.40\times$ at the per-minute density these systems publish. We give the closed form behind this, the classical design effect with clusters
+given by runs of identical calls, and a calibrated interval built on it that
+covers at 93\% where the conventional one covers at 73\%. Applied to our own
+results it leaves nothing: across 48 model--index--horizon tests, 16 clear
+$p<0.05$ scored per bar and \emph{zero} clear it per event. Break-even accuracy
+derived from measured move distributions is 71.5\% at thirty minutes against a
+best achieved 51.1\%, and at five minutes no accuracy suffices under a symmetric
+bracket. Code and raw results are public.
 
 \keywords{Overlapping observations \and Backtest overfitting \and Directional
 forecasting \and Negative results \and Reproducibility \and Index derivatives}
@@ -68,13 +65,10 @@ catalogue many higher figures reported without those controls \cite{sezer2020}.
 This paper began as an attempt to build such a system. Over fourteen months we
 ran a live multi-horizon forecasting platform for Indian index derivatives, and
 it reported 71\%. That number was wrong. The session producing it cannot be
-re-audited, because the portion of the log holding it was lost before this
+re-audited, the portion of the log holding it having been lost before this
 analysis; every figure below comes from sessions that survive.
 
-The econometrics of overlapping observations is not new
-\cite{hansen1980,richardson1991}, and Boudoukh et al.\ \cite{boudoukh2008} show
-that overlap manufactures apparent long-horizon predictability which vanishes
-under correct inference. What that literature does not document is the magnitude
+What the overlapping-observations literature does not document is the magnitude
 of the distortion in a now-ubiquitous practice: the every-minute multi-horizon
 dashboard, where overlap meets a second ingredient, prediction persistence, and
 is amplified across a panel.
@@ -95,75 +89,41 @@ raw results and the free-data corpus are at
 
 \section{Related Work}
 
-Hansen and Hodrick \cite{hansen1980} and Richardson and Smith
-\cite{richardson1991} characterise inference under overlapping returns; Newey and
-West \cite{newey1987} give the standard heteroskedasticity- and
-autocorrelation-consistent correction. That work concerns regression
-coefficients. We apply the same logic to what practitioners publish, the session
-hit-rate, and reach the classical design effect \cite{kish1965,moulton1990} with
-clusters given by runs of identical calls. The contribution is its application to
-forecast streams, not the statistic.
+Hansen and Hodrick \cite{hansen1980} characterise inference under overlapping
+returns and Newey and West \cite{newey1987} give the standard correction, but
+that work concerns
+regression coefficients. We apply the same logic to what practitioners publish,
+the session hit-rate, and reach the classical design effect
+\cite{kish1965} with clusters given by runs of identical calls. The
+contribution is the application to forecast streams, not the statistic.
+Boudoukh et al.\ \cite{boudoukh2008} are the closest antecedent: they show
+overlap manufacturing apparent long-horizon predictability that vanishes under
+correct inference.
 
 On multiplicity, Harvey et al.\ \cite{harvey2016} argue the conventional $t>2$
 threshold is indefensible after decades of factor mining. Two deflation
-statistics address the same concern from different directions: one discounts a
+statistics address the concern from different directions: one discounts a
 reported Sharpe ratio by the number of trials behind it \cite{bailey2014}, the
 other estimates how often an in-sample winner fails out of sample
-\cite{bailey2017}. Complementary controls come from White's reality check
-\cite{white2000}, its refinement by Hansen \cite{hansen2005}, and the
-false-discovery-rate procedure of Benjamini and Hochberg \cite{bh1995}; Sullivan
-et al.\ \cite{sullivan1999} apply the reality check to a universe of technical
-trading rules, the direct precedent for our strategy sweep. On machine learning
-for finance, Fischer and Krauss \cite{fischer2018} and Krauss et al.\
-\cite{krauss2017} report headline performance gross of costs, Gu et al.\
-\cite{gu2020} give a comprehensive asset-pricing comparison with modest
-out-of-sample $R^2$, and Zhang et al.\ \cite{zhang2019} and Kolm et al.\
-\cite{kolm2023} demonstrate genuine short-horizon alpha --- both from
-message-level exchange data rather than bars, the distinction that matters
-here.
+\cite{bailey2017}. White's reality check \cite{white2000} and the
+false-discovery-rate procedure of Benjamini and Hochberg \cite{bh1995} are
+complementary, and Sullivan et al.\ \cite{sullivan1999} apply the former to a
+universe of technical trading rules --- the direct precedent for our strategy
+sweep. On machine learning for finance, Fischer and Krauss \cite{fischer2018}
+report performance gross of costs and Gu et al.\ \cite{gu2020} modest
+out-of-sample $R^2$, while Zhang et al.\ \cite{zhang2019} and Kolm et al.\
+\cite{kolm2023} find genuine short-horizon alpha from message-level data rather
+than bars.
 
-Table~\ref{tab:related} places this work against that set. The point is not that
-the cited studies are wrong but that the scoring unit differs: per-bar scoring of
-a multi-bar horizon, the condition under which the artefact arises, is
-characteristic of intraday dashboards rather than of the published work we
-cite.
-
-\begin{table}[htbp]
-\caption{Methodological comparison with representative prior work. ``Scoring
-unit'' is the unit in which hit-rate or return is aggregated; per-bar scoring of
-a multi-bar horizon is the condition under which the artefact of
-Section~\ref{sec:mech} appears. MT: multiple-testing correction. NC: null
-control (shuffled labels or equivalent). C: transaction costs modelled. R: code
-and raw results public.}
-\label{tab:related}
-\centering
-\scriptsize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llllcccc@{}}
-\toprule
-\textbf{Study} & \textbf{Market} & \textbf{Granularity} & \textbf{Scoring unit} &
-\textbf{MT} & \textbf{NC} & \textbf{C} & \textbf{R} \\
-\midrule
-Fischer \& Krauss \cite{fischer2018} & S\&P 500 & Daily bars & Per day & --- & --- & pre-cost & --- \\
-Krauss et al.\ \cite{krauss2017} & S\&P 500 & Daily bars & Per day & --- & --- & pre-cost & --- \\
-Gu et al.\ \cite{gu2020} & US equities & Monthly & Per month & partial & --- & partial & partial \\
-Zhang et al.\ \cite{zhang2019} & LSE & Message-level LOB & Per event & --- & --- & --- & partial \\
-Kolm et al.\ \cite{kolm2023} & Nasdaq & Message-level LOB & Per horizon & --- & --- & discussed & --- \\
-\midrule
-\textbf{This work} & NSE index & 5-min bars, EOD chains & \textbf{Per event} &
-yes & yes & yes & yes \\
-\bottomrule
-\end{tabular}
-
-\vspace{4pt}
-\begin{flushleft}\scriptsize
-Multiple-testing control here means Bonferroni and Benjamini--Hochberg, which
-applied cleanly, plus the two deflation statistics, which we ran and found
-inapplicable and degenerate respectively (Section~\ref{sec:pred}). We omit a row
-for ``typical applied studies'': characterising that population would require
-citing specific papers as negative examples, and the argument does not need it.
-\end{flushleft}
-\end{table}
+The point is not that any of that work is wrong but that the scoring unit
+differs: those studies aggregate per day or per month over non-overlapping
+periods, where the artefact cannot arise, or score per event. Per-bar scoring of
+a multi-bar horizon, the condition under which it does arise, is characteristic
+of intraday dashboards rather than of the published work we cite. None of them
+reports a multiple-testing correction or a shuffled-label null in the form used
+here. This paper scores per event, corrects by Bonferroni and
+Benjamini--Hochberg, carries a shuffled-label null and injected positive
+controls, models costs explicitly, and releases code and raw output.
 
 \section{Data and Method}
 
@@ -172,22 +132,19 @@ archives: 26\,265 and 26\,267 five-minute bars on BANKNIFTY and NIFTY~50 from
 February 2025 to July 2026, 9.6k--14k bars on three further indices, 1\,382\,738
 rows of end-of-day option chain with open interest, a ten-year chain history
 covering 2\,181 days, 515 days of participant-wise open interest and 639 days of
-index futures carrying real volume. Two practical notes: index spot prints zero
+index futures carrying real volume. One practical note: index spot prints zero
 volume, so a feature computed as a ``VWAP'' on spot is an unweighted expanding
-mean and real volume exists only on futures; and the exchange's \emph{live}
-option-chain API is geo-restricted while its static end-of-day archive is not,
-which turned an assumed constraint into a decade of usable data.
+mean, and real volume exists only on futures.
 
 Every accuracy below passes through one harness. Splits are expanding-window
 walk-forward with the $k$ bars whose labels overlap the test window purged from
 training \cite{prado2018}. Accuracies carry Clopper--Pearson \cite{clopper1934}
 intervals, exact binomial $p$-values and the Pesaran--Timmermann statistic
-\cite{pt1992}, which is the appropriate null for directional accuracy. Every
-model is additionally trained on randomly permuted labels; if real and shuffled
-scores coincide, the pipeline is reading noise. A synthetic feature of known
-strength is injected as a positive control, since a pipeline that cannot recover
-planted signal cannot be trusted to report a null. Strategy returns use
-non-overlapping $k$-bar holds with explicit costs.
+\cite{pt1992}. Every model is additionally trained on randomly permuted labels;
+if real and shuffled scores coincide, the pipeline is reading noise. A synthetic
+feature of known strength is injected as a positive control, since a pipeline
+that cannot recover planted signal cannot be trusted to report a null. Strategy
+returns use non-overlapping $k$-bar holds with explicit costs.
 
 \paragraph{Units.}
 All analysis is on 5-minute bars, so the 30-minute horizon is $k=6$ and a
@@ -211,14 +168,13 @@ the whole of the mechanism below.
 \subsection{Persistence is the second ingredient}
 
 Overlap alone is insufficient, and getting this wrong was instructive: if
-predictions are drawn independently each bar, the hit indicator is i.i.d.\
-Bernoulli regardless of how autocorrelated the outcome series is, and our first
-simulation made exactly that error and correctly found nothing. Real models do
-not re-decide every bar. Their features move slowly, so they repeat the same call
-for long stretches: measured on the production log at the 30-minute horizon,
-BANKNIFTY calls persist for a mean of 25.9 minutes and NIFTY~50 for 10.3, against
-a mean run of one for a model that re-drew each bar. When both the call and the
-outcome persist, one lucky trending stretch is recorded as dozens of hits.
+predictions are drawn independently each bar the hit indicator is i.i.d.\
+Bernoulli however autocorrelated the outcome, and our first simulation made that
+error and correctly found nothing. Real models do not re-decide every bar.
+Measured on the production log at the 30-minute horizon, BANKNIFTY calls persist
+for a mean of 25.9 minutes and NIFTY~50 for 10.3, against a mean run of one for a
+model that re-drew each bar. When both call and outcome persist, one lucky
+trending stretch is recorded as dozens of hits.
 
 \subsection{What a zero-skill forecaster reports}
 
@@ -247,24 +203,23 @@ $P(\text{session} \geq 71\%)$ & 2.1\% & 7.1\% \\
 \end{tabular}
 \end{table}
 
-The table states a point easily read backwards. Per-bar scoring does \emph{not}
-produce extreme readings more often than honest scoring; it produces them
-\emph{less} often. What it does is report them with an interval $1.68\times$ too
-narrow, because the quoted $n$ of 69 is a fiction. Overlap manufactures
-unwarranted \emph{confidence}, not high hit-rates, and that false precision is
-what misleads.
+The table is easily read backwards. Per-bar scoring does \emph{not} produce
+extreme readings more often than honest scoring; it produces them \emph{less}
+often, and reports them with an interval $1.68\times$ too narrow because the
+quoted $n$ of 69 is a fiction. Overlap manufactures unwarranted
+\emph{confidence}, not high hit-rates.
 
 \subsection{At the real granularity, and across a panel}
 
 The production system forecasts every minute, so a session yields about 313
-scored forecasts rather than 69. Taking the outcome series from the log and
-simulating the same zero-skill forecaster, the understatement factor rises to
-$3.40\times$ while extreme sessions become slightly \emph{rarer}, so every
-5-minute-bar figure here understates the artefact. A dashboard also watches more
-than one number: two indices at four horizons is eight hit-rates per session, and
+forecasts rather than 69, and simulating the same zero-skill forecaster against
+the log's own outcome series raises the understatement factor to $3.40\times$
+while extreme sessions become slightly \emph{rarer}. Every 5-minute-bar figure
+here therefore understates the artefact. A dashboard also watches more than one
+number: two indices at four horizons is eight hit-rates per session, and
 simulating the panel jointly gives $P(\exists\,\text{series}\geq 71\%) = 17.1\%$
-against 17.2\% under independence --- about one session in six, so a headline
-71\% arrives within the first weeks of live operation with no edge at all.
+--- about one session in six, so a headline 71\% arrives within the first weeks
+of live operation with no edge at all.
 
 \section{A Calibrated Estimator}
 \label{sec:est}
@@ -287,9 +242,9 @@ n_{\text{eff}} = \frac{n}{\sum_i L_i^2/n}
 \;\xrightarrow[n\to\infty]{}\; \frac{n\,\mathbb{E}[L]}{\mathbb{E}[L^2]}.
 \label{eq:neff}
 \end{equation}
-This is the classical design effect \cite{kish1965,moulton1990}; what is new is
-that a forecast stream has exactly this structure and that nobody reports it. The
-inflation is governed by $\mathbb{E}[L^2]$, so the tail matters, not the mean.
+This is the classical design effect \cite{kish1965}; what is new is that a
+forecast stream has exactly this structure and that nobody reports it, and that
+the inflation is governed by $\mathbb{E}[L^2]$, so the tail matters.
 
 \subsection{Validation by coverage}
 
@@ -318,11 +273,9 @@ effect by the alternation factor of \eqref{eq:alt}.}
 \end{table}
 
 HAC and a block bootstrap (86.2\%, omitted from the table) both under-cover by
-about nine points. The obvious diagnosis is bandwidth: the automatic Bartlett
-rule gives 3.7 bars at $n=69$, close to the pooled mean run of 3.4, while the
-tail reaches 53. A run-structure bandwidth recovers one to two points and no
-more, so bandwidth was part of the problem and not the whole of it. The design
-effect \eqref{eq:neff} removes the failure mode entirely and over-corrects in the
+about nine points. The diagnosis is bandwidth: the automatic Bartlett rule gives
+3.7 bars at $n=69$ against a pooled mean run of 3.4 and a tail reaching 53, and a
+run-structure bandwidth recovers only one to two points. The design effect \eqref{eq:neff} removes the failure mode entirely and over-corrects in the
 other direction, reaching 99.7\%. That over-statement is derivable rather than
 incidental: treating runs as independent blocks ignores that a binary sequence's
 runs alternate deterministically, a run of hits always being followed by a run of
@@ -346,25 +299,21 @@ raw design effect as the conservative bound.
 \subsection{Reliability, and a real session}
 
 Equation~\eqref{eq:neff} depends on a tail-driven second moment estimated from a
-few dozen runs, and a tail is what a short sample estimates worst. Measured
-against a pooled reference of 10.6, a single session's $n_{\text{eff}}$ lands
-between $0.63\times$ and $1.73\times$ that value nine times in ten, so it should
-be estimated from a run of sessions and treated as an order of magnitude when it
-comes from one. That matters immediately. Applying the estimators to the production log, a
-BANKNIFTY session reporting 57.1\% has a naive interval that excludes 50\% and a
-corrected interval of $[34.4, 79.9]$ that does not. The best NIFTY~50 session,
-69.6\% over 335 forecasts, has a corrected interval of $[50.0, 89.1]$, which does
-exclude 50\% --- but at the 5th percentile of the $n_{\text{eff}}$ uncertainty it
-becomes $[45.1, 94.0]$ and no longer does. The margin is smaller than the
-estimator's own noise, so the session supports no claim of skill. An earlier
-draft reported that it did.
+few dozen runs, and a tail is what a short sample estimates worst: against a
+pooled reference of 10.6, a single session's $n_{\text{eff}}$ lands between
+$0.63\times$ and $1.73\times$ that value nine times in ten, so it should be
+estimated from a run of sessions. That matters immediately. On the production log
+the best NIFTY~50 session, 69.6\% over 335 forecasts, has a naive interval
+excluding 50\% and corrects to $[50.0, 89.1]$, which still excludes it --- but at
+the 5th percentile of the $n_{\text{eff}}$ uncertainty it becomes
+$[45.1, 94.0]$ and no longer does. The margin is smaller than the estimator's own
+noise, so the session supports no claim of skill. An earlier draft reported that
+it did.
 
-Per-event scoring is unbiased, needs no estimator, and is what we use for every
-backtest here. It is nonetheless insufficient for a live stream: a dashboard
-cannot wait $k$ bars or discard forecasts it has already shown; subsampling
-throws away 83\% of the observations; and which of the $k$ offsets is chosen
-moves the same session by 7 to 20 points, so an analyst free to pick the offset
-is free to pick the answer.
+Per-event scoring is unbiased and is what we use for every backtest here, but it
+is insufficient for a live stream: a dashboard cannot wait $k$ bars, subsampling
+throws away 83\% of the observations, and which of the $k$ offsets is chosen
+moves the same session by 7 to 20 points.
 
 \section{Predictability Under Correct Scoring}
 \label{sec:pred}
@@ -373,31 +322,13 @@ is free to pick the answer.
 
 Before asking which model is best, we ask whether any model could succeed. An
 unconstrained forest was fitted until it memorised the training data, on five
-indices across two exchanges (Table~\ref{tab:ceiling}). Each memorises completely
-and generalises at chance; permuting labels moves accuracy by 0.3 to 0.7 points;
-no real-label result is distinguishable from a coinflip ($p = 0.22$ to $0.91$);
-and both injected positive controls are recovered at $p<0.001$. The null is a
+indices across two exchanges. Training accuracy reaches 100.0\% everywhere and
+test accuracy stays at chance: 50.5 and 50.0 on BANKNIFTY and NIFTY~50 over
+16\,856 and 16\,853 scored bars, 49.7--50.2 on the other three. Permuting labels
+moves accuracy by 0.3 to 0.7 points, no real-label result is distinguishable from
+a coinflip ($p = 0.22$ to $0.91$), and both injected positive controls, planted
+at about 55\% and 65\%, are recovered at $p<0.001$ everywhere. The null is a
 property of the data, not of the estimator.
-
-\begin{table}[htbp]
-\caption{Model-independent ceiling test, 30-minute horizon. Training accuracy is
-100.0\% on both rows. FINNIFTY, MIDCPNIFTY and SENSEX were run identically and
-agree within 0.8 points on every column (real 49.7--50.2, shuffled 50.1--50.8).
-The positive controls have recoverable accuracies of about 55\% and 65\% by
-construction.}
-\label{tab:ceiling}
-\centering
-\footnotesize
-\begin{tabular}{@{}lrccccc@{}}
-\toprule
-\textbf{Index} & $\boldsymbol{n}$ & \textbf{Real} & \textbf{Shuffled} &
-\textbf{Majority} & $\boldsymbol{s{=}0.10}$ & $\boldsymbol{s{=}0.30}$ \\
-\midrule
-BANKNIFTY & 16\,856 & 50.5 & 50.2 & 49.3 & 52.4 & 63.5 \\
-NIFTY 50 & 16\,853 & 50.0 & 50.2 & 49.8 & 52.0 & 63.7 \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \subsection{Eight model families, three horizons}
 
@@ -405,111 +336,79 @@ Eight families were trained on identical splits, features, seeds and controls:
 logistic regression, gradient boosting, LightGBM \cite{ke2017}, XGBoost
 \cite{chen2016}, $k$-nearest neighbours, an LSTM \cite{hochreiter1997}, a
 Transformer \cite{vaswani2017} and a compact Temporal Fusion Transformer
-\cite{lim2021}, each scored three ways. Counting families significant at
-$p<0.05$ per horizon and index, per-bar scoring yields 0 and 2 at 15 minutes on
-BANKNIFTY and NIFTY~50, 3 and 1 at 30 minutes, and 5 and 5 at 60 minutes: 16 of
-48 tests. At an effective sample size, and again scored one observation per
-event, the count is \emph{zero} in every one of the six cells.
+\cite{lim2021}. Counting families significant at $p<0.05$, per-bar scoring yields
+0 and 2 at 15 minutes on BANKNIFTY and NIFTY~50, 3 and 1 at 30 minutes and 5 and
+5 at 60: 16 of 48 tests. At an effective sample size, and again scored one
+observation per event, the count is \emph{zero} in all six cells.
 
-Scored per bar, XGBoost reaches 51.3\% on BANKNIFTY at $p=0.001$. That was, in an
-earlier draft, our one surviving positive result, described as robust to
+Scored per bar, XGBoost reaches 51.3\% on BANKNIFTY at $p=0.001$ --- in an
+earlier draft our one surviving positive result, described as robust to
 Bonferroni correction. It does not survive our own correction: re-scored one
 observation per 6 bars it is 50.4\% at $p=0.692$, and widening intervals to
-$n_{\text{eff}}$ puts 50\% inside every one. Across all 48 tests the count falls
-from 16 to zero. The count of \emph{apparent} discoveries rises with horizon,
-from none at 15 minutes on BANKNIFTY to five at 60 on both indices, exactly as it
-should if the artefact scales with $k$; the count of surviving discoveries stays
-at zero.
+$n_{\text{eff}}$ puts 50\% inside every one. The count of \emph{apparent}
+discoveries rises with horizon, exactly as it should if the artefact scales with
+$k$; the count of surviving discoveries stays at zero.
 
-The zoo also contains its own diagnostic. The NIFTY~50 Transformer
-sits at 48.4\% with $p<0.001$, which at the nominal $n$ is 4.3 standard errors
-\emph{below} chance, where the largest $|z|$ across 48 tests should land near
-2.9--3.2. That is not a broken model but the variance inflation of
-Section~\ref{sec:mech} surfacing in our own results; at $n_{\text{eff}}$ it
-vanishes.
+The zoo contains its own diagnostic: the NIFTY~50 Transformer sits at 48.4\%
+with $p<0.001$, which at the nominal $n$ is 4.3 standard errors \emph{below}
+chance, where the largest $|z|$ across 48 tests should land near 2.9--3.2. That
+is the variance inflation of Section~\ref{sec:mech} surfacing in our own results;
+at $n_{\text{eff}}$ it vanishes.
 
 \subsection{Eighty-six strategies}
 
 Separately, 86 parameterised rules --- momentum, mean reversion, moving-average
-crosses, RSI, Bollinger bands, breakout, gap, volatility regime, time-of-day and
-streak variants --- were evaluated on non-overlapping 30-minute holds at 4\,bp
-round-trip cost with a one-sided test for profit. Two have a positive Sharpe
-ratio; none is significantly profitable, before or after
-Benjamini--Hochberg.
+crosses, RSI, Bollinger, breakout, gap, volatility-regime, time-of-day and streak
+variants --- were evaluated on non-overlapping 30-minute holds at 4\,bp cost with
+a one-sided test for profit. Two have a positive Sharpe ratio; none is
+significantly profitable, before or after Benjamini--Hochberg.
 
 The deflated Sharpe ratio returns an implausible null benchmark of 7.77 here,
 because trial Sharpe dispersion is dominated by deterministic turnover
 differences rather than by noise, violating the assumption it rests on. We
 replaced it with a circular block bootstrap \cite{politis1992} that resamples
-forward returns while holding each strategy's positions fixed. The best observed
+forward returns while holding each strategy's positions fixed: the best observed
 Sharpe is 0.21 against a null best-of-86 median of 0.44, with
-$P(\text{null} \geq \text{observed}) = 0.658$: the winner of the sweep is worse
+$P(\text{null} \geq \text{observed}) = 0.658$. The winner of the sweep is worse
 than what selection alone produces from no edge at all. The probability of
 backtest overfitting via combinatorially symmetric cross-validation
-\cite{bailey2017} is degenerate here and is reported as such.
+\cite{bailey2017} is degenerate here and reported as such.
 
 \section{Economic Significance}
 \label{sec:econ}
 
-A hit-rate without a payoff ratio is not a result. For a symmetric bracket with
-target and stop at the typical move $m$ and round-trip cost $c$, expectancy is
-$m(2p-1) - c$, so break-even requires
+A hit-rate without a payoff ratio is not a result. For a symmetric bracket at the
+typical move $m$ with round-trip cost $c$, expectancy is $m(2p-1) - c$, so
+break-even requires
 \begin{equation}
 p^{\ast} = \tfrac{1}{2} + \frac{c}{2m}.
 \label{eq:be}
 \end{equation}
-The ratio $c/m$ is the entire problem (Table~\ref{tab:be}).
+The ratio $c/m$ is the entire problem. At 4\,bp round-trip cost, with the
+median move taken from seventeen months of bars, $p^{\ast}$ is 79.8\%, 71.5\%
+and 65.4\% at 15, 30 and 60 minutes on BANKNIFTY and 84.9\%, 75.1\% and 67.7\%
+on NIFTY~50, against best per-event accuracies of 51.3\%, 51.1\% and 52.2\%, and
+50.5\%, 51.2\% and 50.1\%. A hold-to-horizon rule, which collects the mean move
+rather than the median, lowers the requirement to 71.3--60.8\% and 74.9--62.7\%
+and does not close the gap either.
 
-\begin{table}[htbp]
-\caption{Break-even accuracy at 4\,bp round-trip cost.
-$p^{\ast}_{\text{med}}$ assumes a symmetric bracket at the median move;
-$p^{\ast}_{\text{mean}}$ is the requirement for a hold-to-horizon rule with no
-bracket. Achieved is the best per-event accuracy of the eight families. Moves
-are in index points.}
-\label{tab:be}
-\centering
-\footnotesize
-\begin{tabular}{@{}lrrrrr@{}}
-\toprule
-\textbf{Horizon} & \textbf{Median} & \textbf{Mean} &
-$\boldsymbol{p^{\ast}_{\text{med}}}$ & $\boldsymbol{p^{\ast}_{\text{mean}}}$ &
-\textbf{Achieved} \\
-\midrule
-\multicolumn{6}{@{}l@{}}{\emph{BANKNIFTY}} \\
-5\,min & 22.1 & 30.8 & \textbf{$>$100} & \textbf{86.4} & --- \\
-15\,min & 37.7 & 52.9 & 79.8 & 71.3 & 51.3 \\
-30\,min & 52.3 & 73.8 & \textbf{71.5} & 65.3 & \textbf{51.1} \\
-60\,min & 72.9 & 103.8 & 65.4 & 60.8 & 52.2 \\
-\midrule
-\multicolumn{6}{@{}l@{}}{\emph{NIFTY 50}} \\
-5\,min & 8.1 & 11.5 & \textbf{$>$100} & \textbf{93.0} & --- \\
-15\,min & 14.1 & 19.8 & 84.9 & 74.9 & 50.5 \\
-30\,min & 19.7 & 27.8 & \textbf{75.1} & 67.8 & \textbf{51.2} \\
-60\,min & 27.7 & 38.5 & 67.7 & 62.7 & 50.1 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Two consequences follow. At the shortest horizon the
-median move is smaller than the round trip, so under a symmetric bracket
-$p^{\ast}$ exceeds 100\% and no accuracy suffices. That conclusion is specific to
-the bracket: moves are right-skewed, with a mean-to-median ratio near 1.4 at every
-horizon, so a hold-to-horizon rule requires 86\% on BANKNIFTY and 93\% on
-NIFTY~50 instead --- not impossible, merely far beyond anything reported here or
-in the literature we cite. The point survives either payoff model.
+At the shortest horizon the median move is smaller than the round trip, so under
+a symmetric bracket $p^{\ast}$ exceeds 100\% and no accuracy suffices. That is
+specific to the bracket: moves are right-skewed, so a hold-to-horizon rule
+requires 86\% and 93\% instead --- far beyond anything reported here or in the
+literature we cite.
 
 Second, instrument choice can make the requirement unreachable. On the BANKNIFTY
 30-minute horizon, where the median move is 9.3\,bp, break-even is 55.4\% at
-1\,bp of cost, 60.8\% at 2\,bp, 71.5\% at 4\,bp and 93.0\% at 8\,bp; at the
-20\,bp that a retail at-the-money option round trip costs over that horizon,
-$c > m$ and $p^{\ast}>1$, so a perfect forecaster still loses on the median
-trade. The instrument most retail participants actually use, over the horizon
-they actually hold it, has no directional accuracy that makes it profitable.
+1\,bp of cost, 71.5\% at 4\,bp and 93.0\% at 8\,bp; at the 20\,bp a retail
+at-the-money option round trip costs over that horizon, $c > m$ and
+$p^{\ast}>1$, so a perfect forecaster still loses on the median trade. The
+instrument most retail participants use, over the horizon they hold it, has no
+directional accuracy that makes it profitable.
 
-A genuine 85\% would therefore clear break-even by 13.5 points on BANKNIFTY
-futures and still remain unprofitable on options: such a claim is either an
-artefact of the kind measured in Section~\ref{sec:mech} or true and far less
-valuable than it sounds.
+A genuine 85\% would clear break-even by 13.5 points on BANKNIFTY futures and
+still lose on options: such a claim is either an artefact of the kind measured in
+Section~\ref{sec:mech} or true and far less valuable than it sounds.
 
 \section{What Is Predictable Instead}
 
@@ -517,60 +416,49 @@ These results went through the same harness, and what it leaves is narrow enough
 to state precisely: \emph{none of this project's findings survives as a finding
 of ours.}
 
-\paragraph{Volatility.}
+\paragraph{Volatility, confirmed but not ours.}
 A binary magnitude target reaches 70.8\% per bar and 71.3\% per event on
 BANKNIFTY (72.0 and 72.1 on NIFTY~50), with shuffled controls at 52--54\%. That
-it is untouched by the correction which destroyed the directional result matters,
-since an instrument flattening everything would be useless. But a persistence
-rule already scores 67.4\%, the model's edge is $+3.3$ to $+3.7$ points per
-event, and at $n_{\text{eff}}$ the model and baseline intervals overlap. This
-confirms volatility clustering \cite{engle1982,bollerslev1986} rather than
-discovering anything.
+it survives the correction which destroyed the directional result matters, since
+an instrument flattening everything would be useless. But a persistence rule
+already scores 67.4\%, the edge is $+3.3$ to $+3.7$ points per event, and at
+$n_{\text{eff}}$ the two intervals overlap: this confirms volatility clustering
+\cite{engle1982} rather than discovering anything.
 
-\paragraph{Variance risk premium, withdrawn.}
-Short at-the-money straddles held to expiry, on real end-of-day premiums, across
-four entry points: no configuration is significantly profitable on either index,
-before or after Benjamini--Hochberg, and no bootstrap interval on the mean
-excludes zero on the profitable side. Recentring each configuration and
-resampling gives a best-of-four null median of 17.8 against an observed 12.1 on
-NIFTY ($P=0.68$). The exchange also moved BANKNIFTY options from weekly to
-monthly expiry mid-sample, so the indices were never comparable: split on expiry
-spacing, the weekly sub-sample returns $-67.5$ points per trade and the monthly
-$+57.5$. The premium is real and documented \cite{carr2009,bakshi2003}; our
-measurement of it as an edge is withdrawn.
-
-\paragraph{Option-chain positioning.}
-Over 2\,181 days, after regressing out the price component, six of eight residual
-features clear $p<0.05$ uncorrected and \emph{one} survives Benjamini--Hochberg:
-the daily change in the put--call open-interest ratio ($\text{IC}=0.059$,
-$t\approx 2.8$, $\approx 51\%$ hit-rate), also the only feature strengthening in
-the second half. Flow beats position. Nothing in the price-only set clears
-$p<0.05$ at all.
+\paragraph{Premium selling and positioning, withdrawn.}
+Short at-the-money straddles held to expiry, on real end-of-day premiums across
+four entry points, are not significantly profitable on either index before or
+after Benjamini--Hochberg, and no bootstrap interval on the mean excludes zero on
+the profitable side; recentring and resampling gives a best-of-four null median
+of 17.8 against an observed 12.1 on NIFTY ($P=0.68$). The exchange also moved
+BANKNIFTY options from weekly to monthly expiry mid-sample, so the indices were
+never comparable: split on expiry spacing the weekly sub-sample returns $-67.5$
+points per trade and the monthly $+57.5$. The premium is real and documented \cite{carr2009}; our measurement of it as an edge is withdrawn.
+Option-chain positioning fares no better: over 2\,181 days, six of eight
+price-residual features clear $p<0.05$ uncorrected and \emph{one} survives
+Benjamini--Hochberg --- the daily change in the put--call open-interest ratio
+($\text{IC}=0.059$, $t\approx 2.8$), also the only feature strengthening in the
+second half. Nothing in the price-only set clears $p<0.05$ at all.
 
 \section{Limitations}
 
 The alternation correction assumes geometric run lengths; real runs depart from
-that, which is why coverage lands near 93\% rather than 95\%, and its input is
-imprecisely measured from a single session. Two indices carry the primary
-intraday analysis over seventeen months in one market; the ceiling test
-replicates across five indices and two exchanges, but the model zoo and strategy
-sweep do not. Break-even is computed for two payoff models, neither of which
-models the price path. Two figures that were re-run did not reproduce and are
-withdrawn in place rather than quietly deleted. Our Temporal Fusion Transformer
-is a compact variant, not the published architecture \cite{lim2021}. Finally, the
-order-flow hypothesis, where the literature locates genuine short-horizon alpha
-\cite{kolm2023,zhang2019}, is untested here for want of message-level history.
+that, which is why coverage lands near 93\% rather than 95\%. Two indices carry
+the primary intraday analysis over seventeen months in one market; the ceiling
+test replicates across five, but the model zoo and strategy sweep do not.
+Break-even is computed for two payoff models, neither of which models the price
+path. Two figures that were re-run did not reproduce and are withdrawn in place
+rather than quietly deleted, and our Temporal Fusion Transformer is a compact
+variant, not the published architecture \cite{lim2021}. Finally, the order-flow
+hypothesis, where the literature locates genuine short-horizon alpha
+\cite{kolm2023,zhang2019}, is untested here for want of message-level
+history.
 
 \section{Conclusion}
 
 The headline metric of intraday directional forecasting is not merely noisy; its
 stated precision is systematically wrong, by enough to make a coinflip look like
-a discovery. A zero-skill forecaster posts a $\geq$71\% session once in 48, and
-once every six sessions somewhere on a modest panel, while reporting an interval
-$1.68\times$ too narrow at 5-minute granularity and $3.40\times$ too narrow at
-the density these systems publish.
-
-Applied to our own work the correction leaves nothing standing. Sixteen of 48
+a discovery. Applied to our own work the correction leaves nothing standing. Sixteen of 48
 model--index--horizon tests clear $p<0.05$ per bar and none clears it per event;
 86 strategies produce a winner worse than a bootstrap null; premium selling,
 published as this project's one measurable edge, fails the same correction; and
@@ -581,11 +469,10 @@ The honest summary is that this project found nothing tradeable, and its value
 lies in how thoroughly that was established. What we offer is a method: an
 effective sample size for overlapping persistent forecasts, a calibrated interval
 built on it, and a framing that turns an accuracy figure into a question about
-cost. Reporting practice should change to match, and the change is cheap.
-Scoring unit, effective sample size, multiplicity correction, a shuffled-label
-control and an explicit cost model are not optional refinements. Without them an
-accuracy figure does not mean anything, and we know that because we published
-several that did not.
+cost. Scoring unit, effective sample size, multiplicity correction, a
+shuffled-label control and an explicit cost model are not optional refinements:
+without them an accuracy figure means nothing, and we know that because we
+published several that did not.
 
 \subsubsection{Reproducibility, data availability and scope.}
 Every number here is regenerated by a script in the public repository, with the
@@ -594,12 +481,15 @@ raw output of each committed alongside it, at
 the project's complete research record, including the positive results withdrawn
 above; all experiments use a fixed seed, and collectors for every data source are
 included so the corpus can be rebuilt. This is a measurement study, not
-investment advice: its central finding is that the reported accuracy of intraday
-directional systems is not a valid estimate of skill, a conclusion we apply first
-and most severely to our own published claims.
+investment advice, and its central finding is one we apply first to our own
+published claims.
 
 \scriptsize
-\begin{thebibliography}{33}
+\begin{thebibliography}{27}
+
+\setlength{\itemsep}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
 
 \bibitem{timmermann2004}
 Timmermann, A., Granger, C.W.J.: Efficient market hypothesis and forecasting.
@@ -619,14 +509,6 @@ Hansen, L.P., Hodrick, R.J.: Forward exchange rates as optimal predictors of
 future spot rates: an econometric analysis. J. Polit. Econ. \textbf{88}(5),
 829--853 (1980)
 
-\bibitem{richardson1991}
-Richardson, M., Smith, T.: Tests of financial models in the presence of
-overlapping observations. Rev. Financ. Stud. \textbf{4}(2), 227--254 (1991)
-
-\bibitem{boudoukh2008}
-Boudoukh, J., Richardson, M., Whitelaw, R.F.: The myth of long-horizon
-predictability. Rev. Financ. Stud. \textbf{21}(4), 1577--1605 (2008)
-
 \bibitem{newey1987}
 Newey, W.K., West, K.D.: A simple, positive semi-definite, heteroskedasticity
 and autocorrelation consistent covariance matrix. Econometrica \textbf{55}(3),
@@ -635,10 +517,9 @@ and autocorrelation consistent covariance matrix. Econometrica \textbf{55}(3),
 \bibitem{kish1965}
 Kish, L.: Survey Sampling. Wiley, New York (1965)
 
-\bibitem{moulton1990}
-Moulton, B.R.: An illustration of a pitfall in estimating the effects of
-aggregate variables on micro units. Rev. Econ. Stat. \textbf{72}(2), 334--338
-(1990)
+\bibitem{boudoukh2008}
+Boudoukh, J., Richardson, M., Whitelaw, R.F.: The myth of long-horizon
+predictability. Rev. Financ. Stud. \textbf{21}(4), 1577--1605 (2008)
 
 \bibitem{harvey2016}
 Harvey, C.R., Liu, Y., Zhu, H.: \ldots and the cross-section of expected
@@ -650,16 +531,12 @@ selection bias, backtest overfitting, and non-normality. J. Portf. Manage.
 \textbf{40}(5), 94--107 (2014)
 
 \bibitem{bailey2017}
-Bailey, D.H., Borwein, J., L\'opez de Prado, M., Zhu, Q.J.: The probability of
+Bailey, D.H., et al.: The probability of
 backtest overfitting. J. Comput. Finance \textbf{20}(4), 39--70 (2017)
 
 \bibitem{white2000}
 White, H.: A reality check for data snooping. Econometrica \textbf{68}(5),
 1097--1126 (2000)
-
-\bibitem{hansen2005}
-Hansen, P.R.: A test for superior predictive ability. J. Bus. Econ. Stat.
-\textbf{23}(4), 365--380 (2005)
 
 \bibitem{bh1995}
 Benjamini, Y., Hochberg, Y.: Controlling the false discovery rate: a practical
@@ -670,11 +547,6 @@ and powerful approach to multiple testing. J. R. Stat. Soc. B \textbf{57}(1),
 Fischer, T., Krauss, C.: Deep learning with long short-term memory networks for
 financial market predictions. Eur. J. Oper. Res. \textbf{270}(2), 654--669
 (2018)
-
-\bibitem{krauss2017}
-Krauss, C., Do, X.A., Huck, N.: Deep neural networks, gradient-boosted trees,
-random forests: statistical arbitrage on the S\&P 500. Eur. J. Oper. Res.
-\textbf{259}(2), 689--702 (2017)
 
 \bibitem{gu2020}
 Gu, S., Kelly, B., Xiu, D.: Empirical asset pricing via machine learning. Rev.
@@ -704,8 +576,7 @@ Pesaran, M.H., Timmermann, A.: A simple nonparametric test of predictive
 performance. J. Bus. Econ. Stat. \textbf{10}(4), 461--465 (1992)
 
 \bibitem{ke2017}
-Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., Ye, Q., Liu, T.-Y.:
-LightGBM: a highly efficient gradient boosting decision tree. In: Advances in
+Ke, G., et al.: LightGBM: a highly efficient gradient boosting decision tree. In: Advances in
 Neural Information Processing Systems, vol. 30, pp. 3146--3154 (2017)
 
 \bibitem{chen2016}
@@ -718,12 +589,11 @@ Hochreiter, S., Schmidhuber, J.: Long short-term memory. Neural Comput.
 \textbf{9}(8), 1735--1780 (1997)
 
 \bibitem{vaswani2017}
-Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N.,
-Kaiser, {\L}., Polosukhin, I.: Attention is all you need. In: Advances in Neural
+Vaswani, A., et al.: Attention is all you need. In: Advances in Neural
 Information Processing Systems, vol. 30, pp. 5998--6008 (2017)
 
 \bibitem{lim2021}
-Lim, B., Ar{\i}k, S.\"O., Loeff, N., Pfister, T.: Temporal fusion transformers
+Lim, B., et al.: Temporal fusion transformers
 for interpretable multi-horizon time series forecasting. Int. J. Forecast.
 \textbf{37}(4), 1748--1764 (2021)
 
@@ -737,18 +607,9 @@ Engle, R.F.: Autoregressive conditional heteroscedasticity with estimates of the
 variance of United Kingdom inflation. Econometrica \textbf{50}(4), 987--1007
 (1982)
 
-\bibitem{bollerslev1986}
-Bollerslev, T.: Generalized autoregressive conditional heteroskedasticity. J.
-Econom. \textbf{31}(3), 307--327 (1986)
-
 \bibitem{carr2009}
 Carr, P., Wu, L.: Variance risk premiums. Rev. Financ. Stud. \textbf{22}(3),
 1311--1341 (2009)
-
-\bibitem{bakshi2003}
-Bakshi, G., Kapadia, N.: Delta-hedged gains and the negative market volatility
-risk premium. Rev. Financ. Stud. \textbf{16}(2), 527--566 (2003)
-
 \end{thebibliography}
 
 \end{document}

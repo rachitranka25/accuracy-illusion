@@ -1,7 +1,7 @@
 # Springer LNCS version
 
 `accuracy_illusion_springer.tex` — Springer Lecture Notes in Computer Science
-(`llncs`), single column, 12 pages including references.
+(`llncs`), single column, 10 pages including references.
 
 Built with: `tectonic accuracy_illusion_springer.tex`
 
@@ -11,9 +11,11 @@ Same results, same numbers, same harness as `paper/short6` (IEEE, 6 pages) and
 `paper/accuracy_illusion.tex` (IEEE, 14 pages). Every figure in all three comes
 from the committed JSON in `results/`.
 
-Relative to the IEEE short version this one adds the methodological comparison
-with prior work (Table 1) and the per-cost-regime break-even discussion, and
-drops the autocorrelation figure, whose two numbers are stated in the text.
+Relative to the IEEE short version this one adds a prose comparison against
+prior work and the per-cost-regime break-even figures. To fit ten pages it
+carries two tables rather than five and no figure; the numbers from the
+remaining tables are stated in the text, and the reference list is 27 rather
+than 33.
 
 ## Word version
 
