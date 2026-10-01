@@ -110,11 +110,13 @@ the session hit-rate, and the correction we reach is the classical design effect
 contribution is its application to forecast streams, not the statistic.
 
 On multiplicity, Harvey et al.\ \cite{harvey2016} argue the conventional $t>2$
-threshold is indefensible after decades of factor mining. Bailey and López de
-Prado \cite{bailey2014} introduce the Deflated Sharpe Ratio and Bailey et al.\
-\cite{bailey2017} the Probability of Backtest Overfitting; White's Reality Check
-\cite{white2000}, its refinement by Hansen \cite{hansen2005} and
-Benjamini--Hochberg \cite{bh1995} provide complementary controls. Sullivan et
+threshold is indefensible after decades of factor mining. Two deflation statistics address the
+same concern from different directions: one discounts a reported Sharpe ratio by
+the number of trials behind it \cite{bailey2014}, the other estimates how often
+an in-sample winner fails out of sample \cite{bailey2017}. Complementary
+controls come from White's reality check \cite{white2000}, its refinement by
+Hansen \cite{hansen2005}, and the false-discovery-rate procedure of Benjamini
+and Hochberg \cite{bh1995}. Sullivan et
 al.\ \cite{sullivan1999} apply the Reality Check to a universe of trading rules,
 the direct precedent for our strategy sweep.
 
